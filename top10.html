@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top 10 Fragrances</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            margin: 0; 
+            background: #0a0a0a; 
+            color: #e0e0e0;
+            line-height: 1.5;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #1a1a1a, #0f0f0f);
+            color: white;
+            padding: 1.8rem 1rem;
+            text-align: center;
+            border-bottom: 1px solid #333;
+            position: relative;
+        }
+        h1 { margin: 0; font-size: 2.2rem; }
+
+        .nav {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+        .hamburger {
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 8px;
+        }
+        .hamburger span {
+            width: 28px;
+            height: 3px;
+            background: #60a5fa;
+            margin: 4px 0;
+            transition: 0.3s;
+        }
+        .menu {
+            display: none;
+            position: absolute;
+            top: 65px;
+            left: 20px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 12px 0;
+            min-width: 180px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        .menu a {
+            display: block;
+            padding: 12px 20px;
+            color: #e0e0e0;
+            text-decoration: none;
+        }
+        .menu a:hover {
+            background: #0066cc;
+            color: white;
+        }
+        .menu.active { display: block; }
+
+        .table-wrapper { 
+            padding: 20px;
+            overflow-x: auto; 
+            max-height: 74vh;
+            overflow-y: auto;
+            padding-bottom: 170px;
+        }
+        table { 
+            min-width: 1050px; 
+            border-collapse: collapse; 
+            background: #111; 
+            width: 100%;
+        }
+        th, td { 
+            padding: 13px 12px; 
+            border-bottom: 1px solid #333;
+            text-align: left;
+        }
+        th { 
+            background: #1a1a1a; 
+            color: #fff; 
+            position: sticky; 
+            top: 0; 
+            z-index: 10;
+        }
+        tr { 
+            cursor: pointer; 
+            transition: all 0.2s; 
+        }
+        tr:hover { background: #1f2a3a; }
+        tr.selected { 
+            background: #2a3a4f; 
+            border: 2px solid #60a5fa; 
+        }
+
+        .link-cell a {
+            color: #60a5fa;
+            text-decoration: underline;
+        }
+        .link-cell a:hover {
+            color: #93c5fd;
+        }
+
+        .notes { 
+            min-width: 420px; 
+            white-space: normal !important; 
+        }
+
+        .name-cell {
+            font-weight: 600;
+        }
+
+        #wear-stats-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #111;
+            border-top: 2px solid #60a5fa;
+            padding: 12px 15px;
+            text-align: center;
+            z-index: 100;
+            box-shadow: 0 -3px 10px rgba(0,0,0,0.5);
+            font-size: 0.95rem;
+            min-height: 110px;
+        }
+        #wear-stats-footer .title {
+            color: #60a5fa;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        #wear-stats-footer .stats {
+            color: #ccc;
+            line-height: 1.45;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Top 10 Fragrances</h1>
+        <div class="nav">
+            <div class="hamburger" onclick="toggleMenu()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <div class="menu" id="menu">
+                <a href="index.html">Home</a>
+                <a href="layers.html">Layers</a>
+                <a href="nowwearing.html">Now Wearing</a>
+                <a href="top.html">Top Fragrances</a>
+                <a href="randomizer.html">Randomizer</a>
+                <a href="top10.html"><strong>Top 10</strong></a>
+            </div>
+        </div>
+    </header>
+    
+    <div class="table-wrapper">
+        <table id="fragrance-table">
+            <thead>
+                <tr>
+                    <th>House</th>
+                    <th>Name</th>
+                    <th>Rating</th>
+                    <th>Usage</th>
+                    <th>Notes</th>
+                    <th>Link</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div id="wear-stats-footer">
+        <div class="title" id="footer-title">Tap a row for full details</div>
+        <div class="stats" id="footer-stats"></div>
+    </div>
+
+    <script>
+        let top10Data = [];
+        let fullCollection = [];
+
+        function cleanValue(val) {
+            if (val === null || val === undefined || val === '' || val === '?' || val === 'N/A') {
+                return 'N/A';
+            }
+            return val.trim();
+        }
+
+        async function loadData() {
+            try {
+                const topUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=146247773&single=true&output=csv";
+                const topRes = await fetch(topUrl + (topUrl.includes('?') ? '&' : '?') + 't=' + Date.now());
+                const topText = await topRes.text();
+
+                Papa.parse(topText, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: async (result) => {
+                        top10Data = result.data
+                            .filter(row => row.Name && row.Name.trim())
+                            .map(row => {
+                                Object.keys(row).forEach(key => {
+                                    if (typeof row[key] === 'string') row[key] = row[key].trim();
+                                });
+                                return row;
+                            });
+
+                        await loadFullCollection();
+                        renderTable();
+                    }
+                });
+            } catch (e) {
+                console.error("Load error:", e);
+            }
+        }
+
+        async function loadFullCollection() {
+            try {
+                const mainUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=1371140242&single=true&output=csv";
+                const res = await fetch(mainUrl + (mainUrl.includes('?') ? '&' : '?') + 't=' + Date.now());
+                const text = await res.text();
+
+                Papa.parse(text, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: (result) => {
+                        fullCollection = result.data.map(row => {
+                            Object.keys(row).forEach(key => {
+                                if (typeof row[key] === 'string') row[key] = row[key].trim();
+                            });
+                            return row;
+                        });
+                    }
+                });
+            } catch (e) {
+                console.error("Failed to load full collection:", e);
+            }
+        }
+
+        function renderTable() {
+            const tbody = document.querySelector('#fragrance-table tbody');
+            let html = '';
+            
+            for (let i = 0; i < top10Data.length; i++) {
+                const f = top10Data[i];
+                
+                const link = cleanValue(f.Link || f.URL || f['Link'] || f['URL'] || '');
+                const linkHtml = (link && link !== 'N/A' && link.startsWith('http')) 
+                    ? `<a href="${link}" target="_blank" rel="noopener">🔗 Link</a>` 
+                    : 'N/A';
+                
+                html += `<tr data-index="${i}">` +
+                    '<td>' + cleanValue(f.House) + '</td>' +
+                    '<td class="name-cell">' + cleanValue(f.Name) + '</td>' +
+                    '<td>' + cleanValue(f.Rating) + '</td>' +
+                    '<td>' + cleanValue(f.Usage || f['Hours of Performance'] || f.Hours) + '</td>' +
+                    '<td class="notes">' + cleanValue(f.Notes) + '</td>' +
+                    '<td class="link-cell">' + linkHtml + '</td>' +
+                    '</tr>';
+            }
+            tbody.innerHTML = html;
+
+            document.querySelectorAll('#fragrance-table tbody tr').forEach(row => {
+                row.addEventListener('click', () => selectRow(row));
+            });
+        }
+
+        function selectRow(rowElement) {
+            document.querySelectorAll('tr.selected').forEach(r => r.classList.remove('selected'));
+            rowElement.classList.add('selected');
+
+            const index = parseInt(rowElement.dataset.index);
+            const topRow = top10Data[index];
+
+            const fullRow = fullCollection.find(r => 
+                r.Name && r.Name.toLowerCase() === topRow.Name.toLowerCase()
+            ) || topRow;
+
+            document.getElementById('footer-title').textContent = `${cleanValue(fullRow.House)} — ${cleanValue(fullRow.Name)}`;
+
+            document.getElementById('footer-stats').innerHTML = `
+                <strong>Perfumer:</strong> ${cleanValue(fullRow.Perfumer)}<br>
+                <strong>Rating:</strong> ${cleanValue(fullRow.Rating)} • 
+                <strong>Parfumo:</strong> ${cleanValue(fullRow['Parfumo Rating'])}<br>
+                <strong>Hours:</strong> ${cleanValue(fullRow['Hours of Performance'])} • 
+                <strong>Sillage:</strong> ${cleanValue(fullRow.Silliage)} • 
+                <strong>Sprays:</strong> ${cleanValue(fullRow.Sprays)}<br>
+                <strong>Notes:</strong> ${cleanValue(fullRow.Notes)}
+            `;
+        }
+
+        function toggleMenu() {
+            document.getElementById('menu').classList.toggle('active');
+        }
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.nav')) {
+                document.getElementById('menu').classList.remove('active');
+            }
+        });
+
+        window.onload = loadData;
+    </script>
+</body>
+</html>
