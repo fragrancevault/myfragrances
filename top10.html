@@ -196,6 +196,15 @@
             return val.trim();
         }
 
+        // Improved name cleaning for better matching
+        function cleanNameForMatch(name) {
+            if (!name) return '';
+            return name.toLowerCase()
+                       .replace(/['’]/g, '')      // remove apostrophes
+                       .replace(/[^a-z0-9]/g, '') // remove all non-alphanumeric
+                       .trim();
+        }
+
         async function loadData() {
             try {
                 const topUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=146247773&single=true&output=csv";
@@ -282,9 +291,17 @@
             const index = parseInt(rowElement.dataset.index);
             const topRow = top10Data[index];
 
-            const fullRow = fullCollection.find(r => 
-                r.Name && r.Name.toLowerCase() === topRow.Name.toLowerCase()
-            ) || topRow;
+            const topNameClean = cleanNameForMatch(topRow.Name);
+            const topHouseClean = cleanNameForMatch(topRow.House);
+
+            // Improved matching
+            const fullRow = fullCollection.find(r => {
+                const mainNameClean = cleanNameForMatch(r.Name);
+                const mainHouseClean = cleanNameForMatch(r.House);
+                
+                return mainNameClean === topNameClean || 
+                       (mainHouseClean === topHouseClean && mainNameClean.includes(topNameClean));
+            }) || topRow;
 
             document.getElementById('footer-title').textContent = `${cleanValue(fullRow.House)} — ${cleanValue(fullRow.Name)}`;
 
