@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<!-- 
+    =============================================
+    MY FRAGRANCE COLLECTION - SALES PAGE
+    =============================================
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Frag Vault</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            margin: 0; 
+            background: #0a0a0a; 
+            color: #e0e0e0;
+            line-height: 1.5;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #1a1a1a, #0f0f0f);
+            color: white;
+            padding: 1.6rem 1rem;
+            text-align: center;
+            border-bottom: 1px solid #333;
+            position: relative;
+        }
+        h1 { 
+            margin: 0; 
+            font-size: 2.0rem; 
+        }
+
+        #total-display {
+            margin-top: 10px;
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #4ade80;
+        }
+
+        .controls { 
+            padding: 18px 20px 14px; 
+            background: #111; 
+            border-bottom: 1px solid #333;
+        }
+
+        .control-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .search-row {
+            margin-bottom: 12px;
+        }
+
+        input { 
+            padding: 10px 12px; 
+            font-size: 14px;
+            border-radius: 8px; 
+            background: #1f1f1f;
+            color: #e0e0e0;
+            border: 1px solid #444;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        button { 
+            background: #0066cc; 
+            color: white; 
+            border: none; 
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13.5px;
+            padding: 9px 16px;
+            border-radius: 20px;
+            white-space: nowrap;
+            min-width: 110px;
+        }
+
+        .startover-btn { 
+            background: #d97706 !important; 
+            min-width: 120px;
+        }
+        .export-btn { 
+            background: #15803d !important; 
+            min-width: 160px;
+            padding: 9px 20px;
+        }
+
+        .table-wrapper { 
+            padding: 0 20px 20px; 
+            overflow-x: auto; 
+            max-height: 75vh;
+            overflow-y: auto;
+        }
+        table { 
+            min-width: 1120px; 
+            border-collapse: collapse; 
+            background: #111; 
+            width: 100%;
+            table-layout: fixed;
+        }
+        th, td { 
+            padding: 10px 8px; 
+            border-bottom: 1px solid #333;
+            font-size: 14px;
+            vertical-align: top;
+            text-align: left;
+        }
+        th { 
+            background: #1a1a1a; 
+            color: #fff; 
+            position: sticky; 
+            top: 0; 
+            z-index: 10;
+            font-size: 14.5px;
+            text-align: left;
+        }
+
+        /* Checkbox column */
+        th:nth-child(1),
+        td:nth-child(1) {
+            width: 50px;
+            max-width: 50px;
+            text-align: center;
+        }
+
+        /* House column */
+        th:nth-child(2),
+        td:nth-child(2) {
+            width: 140px;
+            max-width: 140px;
+            word-wrap: break-word;
+            white-space: normal;
+            hyphens: auto;
+        }
+
+        /* Name column */
+        th:nth-child(3),
+        td:nth-child(3) {
+            width: 130px;
+            max-width: 130px;
+            word-wrap: break-word;
+            white-space: normal;
+            hyphens: auto;
+        }
+
+        /* 5ml column */
+        th:nth-child(4),
+        td:nth-child(4) {
+            width: 90px;
+            max-width: 90px;
+            text-align: right;
+        }
+
+        /* Genre column */
+        th:nth-child(5),
+        td:nth-child(5) {
+            width: 95px;
+            max-width: 95px;
+            word-wrap: break-word;
+            white-space: normal;
+            hyphens: auto;
+        }
+
+        /* Status column */
+        th:nth-child(6),
+        td:nth-child(6) {
+            width: 95px;
+            max-width: 95px;
+            word-wrap: break-word;
+            white-space: normal;
+        }
+
+        /* Link column */
+        th:nth-child(7),
+        td:nth-child(7) {
+            width: 60px;
+            max-width: 60px;
+            text-align: left;
+        }
+
+        /* Notes column */
+        th:nth-child(8),
+        td:nth-child(8) {
+            width: 220px;
+            max-width: 220px;
+            word-wrap: break-word;
+            white-space: normal;
+            hyphens: auto;
+        }
+
+        .link-cell {
+            text-align: left;
+            padding-left: 12px;
+        }
+        .link-cell a {
+            color: #60a5fa;
+            font-size: 1.4rem;
+            text-decoration: none;
+        }
+        .link-cell a:hover {
+            color: #93c5fd;
+        }
+
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #0066cc;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #22c55e;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            z-index: 3000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            display: none;
+        }
+
+        .status-available { color: #4ade80; font-weight: 600; }
+        .status-sold { color: #f87171; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>The Frag Vault</h1>
+        <div id="total-display">Total Selected: $0</div>
+    </header>
+    
+    <div class="controls">
+        <!-- Search Row -->
+        <div class="control-row search-row">
+            <input type="text" id="search" placeholder="Search House, Name, Genre, Status, Notes..." onkeyup="filterTable()">
+        </div>
+
+        <!-- Sort Buttons Row -->
+        <div class="control-row">
+            <button onclick="sortTable(1)">House</button>
+            <button onclick="sortTable(2)">Name</button>
+            <button onclick="sortTable(3)">5ml</button>
+            <button onclick="sortTable(4)">Genre</button>
+            <button onclick="sortTable(5)">Status</button>
+        </div>
+
+        <!-- Export / Start Over Row -->
+        <div class="control-row">
+            <button onclick="startOver()" class="startover-btn">Start Over</button>
+            <button onclick="exportToCSV()" class="export-btn">Export Selected</button>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table id="sales-table">
+            <thead>
+                <tr>
+                    <th><input type="checkbox" id="select-all" onchange="toggleSelectAll()"></th>
+                    <th onclick="sortTable(1)">House</th>
+                    <th onclick="sortTable(2)">Name</th>
+                    <th onclick="sortTable(3)">5ml</th>
+                    <th onclick="sortTable(4)">Genre</th>
+                    <th onclick="sortTable(5)">Status</th>
+                    <th>Link</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <footer id="footer">Loading sales...</footer>
+
+    <div id="toast" class="toast">✅ Link copied!</div>
+
+    <script>
+        let sales = [];
+        let fragrances = [];
+        let sortState = {};
+
+        function cleanValue(val) {
+            if (val === null || val === undefined || val === '' || val === '?') {
+                return 'N/A';
+            }
+            return val.trim();
+        }
+
+        function formatPrice(val) {
+            const cleaned = cleanValue(val);
+            if (cleaned === 'N/A') return 'N/A';
+            if (!isNaN(parseFloat(cleaned))) {
+                return '$' + cleaned;
+            }
+            return cleaned;
+        }
+
+        function isAvailable(status) {
+            return status && status.toLowerCase().includes('available');
+        }
+
+        function updateTotal() {
+            const selectedRows = getSelectedRows();
+            let total = 0;
+
+            selectedRows.forEach(row => {
+                const priceCell = row.cells[3]; // 5ml column (index 3 after checkbox)
+                const priceText = priceCell.textContent.trim().replace('$', '');
+                const price = parseFloat(priceText);
+                if (!isNaN(price)) total += price;
+            });
+
+            document.getElementById('total-display').textContent = `Total Selected: $${total.toLocaleString()}`;
+        }
+
+        async function loadCSV() {
+            try {
+                const mainUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=1371140242&single=true&output=csv";
+                const mainRes = await fetch(mainUrl + (mainUrl.includes('?') ? '&' : '?') + 't=' + Date.now());
+                const mainText = await mainRes.text();
+
+                Papa.parse(mainText, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: (mainResult) => {
+                        fragrances = mainResult.data
+                            .filter(row => row.Name && row.Name.trim())
+                            .map(row => {
+                                Object.keys(row).forEach(key => {
+                                    if (typeof row[key] === 'string') row[key] = row[key].trim();
+                                });
+                                return row;
+                            });
+
+                        loadSalesCSV();
+                    }
+                });
+            } catch (e) {
+                console.error("Load error:", e);
+                document.getElementById('footer').innerHTML = `<strong style="color:#ff6666;">Error loading data</strong>`;
+            }
+        }
+
+        async function loadSalesCSV() {
+            try {
+                const salesUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=1452885969&single=true&output=csv";
+                
+                const res = await fetch(salesUrl + (salesUrl.includes('?') ? '&' : '?') + 't=' + Date.now());
+                const text = await res.text();
+
+                Papa.parse(text, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: (result) => {
+                        sales = result.data
+                            .filter(row => row.Name && row.Name.trim())
+                            .map(row => {
+                                Object.keys(row).forEach(key => {
+                                    if (typeof row[key] === 'string') row[key] = row[key].trim();
+                                });
+                                const match = fragrances.find(f => 
+                                    f.House === row.House && 
+                                    f.Name === row.Name
+                                );
+                                row.Genre = match ? match.Genre : 'N/A';
+                                row.Notes = match ? (match.Notes || match.Comments || '') : 'N/A';
+                                return row;
+                            });
+                        
+                        console.log("✅ Loaded", sales.length, "sales items");
+                        renderTable(sales);
+                        sortTable(1, true);
+                        updateFooter();
+                    }
+                });
+            } catch (e) {
+                console.error("Sales load error:", e);
+            }
+        }
+
+        function renderTable(data) {
+            const tbody = document.querySelector('#sales-table tbody');
+            let html = '';
+            for (let i = 0; i < data.length; i++) {
+                const s = data[i];
+                const link = s.Link && s.Link.trim() !== '' && s.Link !== 'N/A' 
+                    ? `<a href="${s.Link}" target="_blank" title="View listing">🔗</a>` 
+                    : 'N/A';
+                
+                const statusClass = isAvailable(s.Status) ? 'status-available' : 'status-sold';
+                const isAvail = isAvailable(s.Status);
+
+                html += '<tr>' +
+                    '<td><input type="checkbox" class="row-select" ' + (isAvail ? '' : 'disabled') + ' onchange="updateSelectAllState(); updateTotal()"></td>' +
+                    '<td>' + cleanValue(s.House) + '</td>' +
+                    '<td><strong>' + cleanValue(s.Name) + '</strong></td>' +
+                    '<td>' + formatPrice(s['5ml']) + '</td>' +
+                    '<td>' + cleanValue(s.Genre) + '</td>' +
+                    '<td class="' + statusClass + '">' + cleanValue(s.Status) + '</td>' +
+                    '<td class="link-cell">' + link + '</td>' +
+                    '<td>' + cleanValue(s.Notes) + '</td>' +
+                    '</tr>';
+            }
+            tbody.innerHTML = html;
+            updateTotal();
+        }
+
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('select-all');
+            const checkboxes = document.querySelectorAll('.row-select:not([disabled])');
+            checkboxes.forEach(cb => cb.checked = selectAll.checked);
+            updateTotal();
+        }
+
+        function updateSelectAllState() {
+            const selectAll = document.getElementById('select-all');
+            const enabledCheckboxes = Array.from(document.querySelectorAll('.row-select:not([disabled])'));
+            const allChecked = enabledCheckboxes.length > 0 && enabledCheckboxes.every(cb => cb.checked);
+            selectAll.checked = allChecked;
+        }
+
+        function getSelectedRows() {
+            const rows = Array.from(document.querySelectorAll('#sales-table tbody tr'));
+            return rows.filter(row => {
+                const cb = row.querySelector('.row-select');
+                return cb && cb.checked;
+            });
+        }
+
+        function filterTable() {
+            const term = document.getElementById('search').value.toLowerCase().trim();
+            
+            const filtered = sales.filter(s => {
+                if (!term) return true;
+                const searchableText = [
+                    s.House, s.Name, s.Genre, s['5ml'], s.Status, s.Notes
+                ].filter(Boolean).join(' ').toLowerCase();
+                return searchableText.includes(term);
+            });
+            
+            renderTable(filtered);
+            updateFooter(filtered);
+            updateUrl();
+        }
+
+        function updateFooter(filteredData = null) {
+            const data = filteredData || sales;
+            document.getElementById('footer').innerHTML = `
+                <strong>${data.length}</strong> items listed
+            `;
+        }
+
+        function startOver() {
+            document.getElementById('search').value = '';
+            document.getElementById('select-all').checked = false;
+            sortState = {};
+            renderTable(sales);
+            sortTable(1, true);
+            updateFooter();
+            updateUrl();
+        }
+
+        function exportToCSV() {
+            const selectedRows = getSelectedRows();
+            if (selectedRows.length === 0) {
+                alert("Please select at least one Available item to export.");
+                return;
+            }
+
+            let csv = "House,Name,5ml,Genre,Status,Link,Notes\n";
+            
+            selectedRows.forEach(row => {
+                const cells = Array.from(row.cells).slice(1);
+                const cellTexts = cells.map(cell => {
+                    let text = cell.textContent.trim();
+                    if (cell.querySelector('a')) {
+                        text = cell.querySelector('a').href;
+                    }
+                    return `"${text.replace(/"/g, '""')}"`;
+                });
+                csv += cellTexts.join(',') + '\n';
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Fragrance_Sales_Selected_${new Date().toISOString().slice(0,10)}.csv`;
+            link.click();
+        }
+
+        function sortTable(colIndex, forceInitial = false) {
+            const tbody = document.querySelector('#sales-table tbody');
+            let rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            if (forceInitial) {
+                rows.sort((a, b) => {
+                    const houseA = a.cells[1].textContent.trim();
+                    const houseB = b.cells[1].textContent.trim();
+                    const nameA = a.cells[2].textContent.trim();
+                    const nameB = b.cells[2].textContent.trim();
+                    
+                    const houseCompare = houseA.localeCompare(houseB);
+                    if (houseCompare !== 0) return houseCompare;
+                    return nameA.localeCompare(nameB);
+                });
+            } else {
+                if (sortState[colIndex] === undefined) {
+                    sortState[colIndex] = (colIndex === 3) ? false : true;
+                } else {
+                    sortState[colIndex] = !sortState[colIndex];
+                }
+                const ascending = sortState[colIndex];
+
+                rows.sort((a, b) => {
+                    let x = a.cells[colIndex].textContent.trim();
+                    let y = b.cells[colIndex].textContent.trim();
+                    
+                    const numX = parseFloat(x.replace('$', ''));
+                    const numY = parseFloat(y.replace('$', ''));
+                    
+                    if (!isNaN(numX) && !isNaN(numY)) {
+                        return ascending ? numX - numY : numY - numX;
+                    }
+                    return ascending ? x.localeCompare(y) : y.localeCompare(x);
+                });
+            }
+            
+            rows.forEach(row => tbody.appendChild(row));
+            updateTotal();
+        }
+
+        window.onload = loadCSV;
+    </script>
+</body>
+</html>
