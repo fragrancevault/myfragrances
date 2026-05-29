@@ -28,12 +28,12 @@
         header {
             background: linear-gradient(135deg, #1a1a1a, #0f0f0f);
             color: white;
-            padding: 1.8rem 1rem;
+            padding: 1.6rem 1rem;
             text-align: center;
             border-bottom: 1px solid #333;
             position: relative;
         }
-        h1 { margin: 0; font-size: 2.2rem; }
+        h1 { margin: 0; font-size: 2.0rem; }
 
         .nav {
             position: absolute;
@@ -61,9 +61,9 @@
             background: #0066cc;
             color: white;
             border: none;
-            padding: 8px 16px;
+            padding: 7px 14px;
             border-radius: 20px;
-            font-size: 14px;
+            font-size: 13px;
             cursor: pointer;
         }
 
@@ -85,6 +85,7 @@
             padding: 12px 20px;
             color: #e0e0e0;
             text-decoration: none;
+            font-size: 15px;
         }
         .menu a:hover {
             background: #0066cc;
@@ -93,7 +94,7 @@
         .menu.active { display: block; }
 
         .controls { 
-            padding: 16px 20px 12px; 
+            padding: 18px 20px 14px; 
             background: #111; 
             display: flex; 
             flex-wrap: wrap; 
@@ -105,7 +106,7 @@
 
         input, select { 
             padding: 10px 12px; 
-            font-size: 15px; 
+            font-size: 14px;
             border-radius: 8px; 
             background: #1f1f1f;
             color: #e0e0e0;
@@ -118,6 +119,10 @@
             border: none; 
             cursor: pointer;
             font-weight: bold;
+            font-size: 13.5px;
+            padding: 9px 14px;
+            border-radius: 20px;
+            white-space: nowrap;
         }
 
         .startover-btn { background: #d97706 !important; }
@@ -136,8 +141,9 @@
             width: 100%;
         }
         th, td { 
-            padding: 12px 10px; 
+            padding: 10px 8px; 
             border-bottom: 1px solid #333;
+            font-size: 14px;
         }
         th { 
             background: #1a1a1a; 
@@ -145,8 +151,8 @@
             position: sticky; 
             top: 0; 
             z-index: 10;
+            font-size: 14.5px;
         }
-        tr:hover { background: #1f2a3a; }
 
         .toast {
             position: fixed;
@@ -158,13 +164,14 @@
             padding: 12px 24px;
             border-radius: 8px;
             font-weight: 600;
+            font-size: 14px;
             z-index: 3000;
             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
             display: none;
         }
 
         .genre-btn { 
-            padding: 8px 16px; 
+            padding: 8px 15px; 
             margin: 4px; 
             border: 2px solid #0066cc; 
             background: #1f1f1f; 
@@ -172,6 +179,7 @@
             border-radius: 30px; 
             cursor: pointer; 
             font-weight: 600;
+            font-size: 13.5px;
         }
         .genre-btn.active { 
             background: #0066cc; 
@@ -265,12 +273,8 @@
 
         function updateUrl() {
             const searchTerm = document.getElementById('search').value.trim();
-            const genres = Array.from(currentGenres);
-            
             const params = new URLSearchParams();
             if (searchTerm) params.set('search', searchTerm);
-            if (genres.length) params.set('genres', genres.join(','));
-            
             const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
             window.history.replaceState({}, '', newUrl);
         }
@@ -310,20 +314,12 @@
                         renderGenreButtons();
                         updateFooter();
 
-                        // Apply URL parameters (Search + Genres)
                         const params = new URLSearchParams(window.location.search);
                         const urlSearch = params.get('search');
-                        const urlGenres = params.get('genres');
-                        
-                        if (urlSearch) document.getElementById('search').value = urlSearch;
-                        if (urlGenres) {
-                            currentGenres = new Set(urlGenres.split(','));
-                            document.querySelectorAll('.genre-btn').forEach(btn => {
-                                if (currentGenres.has(btn.textContent)) btn.classList.add('active');
-                            });
+                        if (urlSearch) {
+                            document.getElementById('search').value = urlSearch;
+                            filterTable();
                         }
-                        
-                        filterTable();
                     }
                 });
             } catch (e) {
