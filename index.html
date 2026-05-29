@@ -186,6 +186,14 @@
             <div class="hamburger" onclick="toggleMenu()">
                 <span></span><span></span><span></span>
             </div>
+            <div class="menu" id="menu">
+                <a href="index.html">Home</a>
+                <a href="layers.html">Layers</a>
+                <a href="nowwearing.html">Now Wearing</a>
+                <a href="top.html">Top Fragrances</a>
+                <a href="randomizer.html">Randomizer</a>
+                <a href="top10.html"><strong>Top 10</strong></a>
+            </div>
         </div>
         <button onclick="shareCurrentView()" class="share-header-btn">Share</button>
     </header>
@@ -257,8 +265,12 @@
 
         function updateUrl() {
             const searchTerm = document.getElementById('search').value.trim();
+            const genres = Array.from(currentGenres);
+            
             const params = new URLSearchParams();
             if (searchTerm) params.set('search', searchTerm);
+            if (genres.length) params.set('genres', genres.join(','));
+            
             const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
             window.history.replaceState({}, '', newUrl);
         }
@@ -298,12 +310,20 @@
                         renderGenreButtons();
                         updateFooter();
 
+                        // Apply URL parameters (Search + Genres)
                         const params = new URLSearchParams(window.location.search);
                         const urlSearch = params.get('search');
-                        if (urlSearch) {
-                            document.getElementById('search').value = urlSearch;
-                            filterTable();
+                        const urlGenres = params.get('genres');
+                        
+                        if (urlSearch) document.getElementById('search').value = urlSearch;
+                        if (urlGenres) {
+                            currentGenres = new Set(urlGenres.split(','));
+                            document.querySelectorAll('.genre-btn').forEach(btn => {
+                                if (currentGenres.has(btn.textContent)) btn.classList.add('active');
+                            });
                         }
+                        
+                        filterTable();
                     }
                 });
             } catch (e) {
