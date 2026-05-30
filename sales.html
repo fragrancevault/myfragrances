@@ -488,7 +488,7 @@
             document.getElementById('selection-modal').style.display = 'none';
         }
 
-        // FIXED Export - House + Name only
+        // Export: House + 5ml only
         function exportSelectedToCSV() {
             const selectedRows = getSelectedRows();
             if (selectedRows.length === 0) {
@@ -496,12 +496,12 @@
                 return;
             }
 
-            let csv = "House,Name\n";
+            let csv = "House,5ml\n";
 
             selectedRows.forEach(row => {
                 const house = row.cells[2].textContent.trim();
-                const name = row.cells[3].textContent.trim();
-                csv += `"\( {house.replace(/"/g, '""')}"," \){name.replace(/"/g, '""')}"\n`;
+                const price = row.cells[4].textContent.trim();
+                csv += `"\( {house.replace(/"/g, '""')}"," \){price}"\n`;
             });
 
             const blob = new Blob([csv], { type: 'text/csv' });
