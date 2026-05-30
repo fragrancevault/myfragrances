@@ -478,8 +478,6 @@
             ).join('');
             
             document.getElementById('selection-list').innerHTML = listHtml;
-            
-            // Use the exact value from the header
             const headerTotal = document.getElementById('total-display').textContent;
             document.getElementById('modal-total').innerHTML = headerTotal;
             
@@ -492,13 +490,17 @@
 
         function exportSelectedToCSV() {
             const selectedRows = getSelectedRows();
-            if (selectedRows.length === 0) return;
+            if (selectedRows.length === 0) {
+                alert("No items selected.");
+                return;
+            }
 
             let csv = "House,Name,Quantity,5ml,Row Total\n";
 
             selectedRows.forEach(row => {
                 const qtyInput = row.querySelector('.quantity-input');
                 const qty = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
+                
                 const house = row.cells[2].textContent.trim();
                 const name = row.cells[3].textContent.trim();
                 const priceText = row.cells[4].textContent.trim().replace('$', '').replace(',', '');
