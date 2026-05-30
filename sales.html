@@ -267,7 +267,7 @@
             <div id="modal-total" class="modal-total">Total: $0</div>
             
             <div class="modal-buttons">
-                <button onclick="exportSelectedToCSV()" class="export-csv-btn">Export to CSV</button>
+                <button onclick="exportHousesOnly()" class="export-csv-btn">Export Houses Only</button>
                 <button onclick="closeModal()" class="close-btn">Close</button>
             </div>
         </div>
@@ -488,32 +488,24 @@
             document.getElementById('selection-modal').style.display = 'none';
         }
 
-        function exportSelectedToCSV() {
+        // FIXED: Export ONLY House names
+        function exportHousesOnly() {
             const selectedRows = getSelectedRows();
             if (selectedRows.length === 0) {
-                alert("No items selected.");
+                alert("Please select at least one item.");
                 return;
             }
 
-            let csv = "House,Name,Quantity,5ml,Row Total\n";
-
+            let csv = "House\n";
             selectedRows.forEach(row => {
-                const qtyInput = row.querySelector('.quantity-input');
-                const qty = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
-                
                 const house = row.cells[2].textContent.trim();
-                const name = row.cells[3].textContent.trim();
-                const priceText = row.cells[4].textContent.trim().replace('$', '').replace(',', '');
-                const price = parseFloat(priceText) || 0;
-                const rowTotal = qty * price;
-
-                csv += `"\( {house.replace(/"/g, '""')}"," \){name.replace(/"/g, '""')}",\( {qty}," \){price}",${rowTotal}\n`;
+                csv += `"${house.replace(/"/g, '""')}"\n`;
             });
 
             const blob = new Blob([csv], { type: 'text/csv' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = `Fragrance_Sales_Selected_${new Date().toISOString().slice(0,10)}.csv`;
+            link.download = `Fragrance_Houses_${new Date().toISOString().slice(0,10)}.csv`;
             link.click();
         }
 
