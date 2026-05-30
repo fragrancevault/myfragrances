@@ -74,11 +74,11 @@
             padding: 9px 16px;
             border-radius: 20px;
             white-space: nowrap;
-            min-width: 110px;
+            min-width: 120px; /* Made both buttons same width */
         }
 
-        .startover-btn { background: #d97706 !important; min-width: 120px; }
-        .export-btn { background: #15803d !important; min-width: 160px; padding: 9px 20px; }
+        .startover-btn { background: #d97706 !important; }
+        .export-btn { background: #15803d !important; }
 
         .table-wrapper { 
             padding: 0 20px 20px; 
@@ -267,7 +267,7 @@
             <div id="modal-total" class="modal-total">Total: $0</div>
             
             <div class="modal-buttons">
-                <button onclick="exportHousesOnly()" class="export-csv-btn">Export Houses Only</button>
+                <button onclick="exportSelectedToCSV()" class="export-csv-btn">Export to CSV</button>
                 <button onclick="closeModal()" class="close-btn">Close</button>
             </div>
         </div>
@@ -488,24 +488,26 @@
             document.getElementById('selection-modal').style.display = 'none';
         }
 
-        // FIXED: Export ONLY House names
-        function exportHousesOnly() {
+        // FIXED Export: House + Name
+        function exportSelectedToCSV() {
             const selectedRows = getSelectedRows();
             if (selectedRows.length === 0) {
-                alert("Please select at least one item.");
+                alert("No items selected.");
                 return;
             }
 
-            let csv = "House\n";
+            let csv = "House,Name\n";
+
             selectedRows.forEach(row => {
                 const house = row.cells[2].textContent.trim();
-                csv += `"${house.replace(/"/g, '""')}"\n`;
+                const name = row.cells[3].textContent.trim();
+                csv += `"\( {house.replace(/"/g, '""')}"," \){name.replace(/"/g, '""')}"\n`;
             });
 
             const blob = new Blob([csv], { type: 'text/csv' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = `Fragrance_Houses_${new Date().toISOString().slice(0,10)}.csv`;
+            link.download = `Fragrance_Selected_${new Date().toISOString().slice(0,10)}.csv`;
             link.click();
         }
 
