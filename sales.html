@@ -110,6 +110,7 @@
             text-align: left;
         }
 
+        /* Minimal first columns */
         th:nth-child(1), td:nth-child(1) { width: 38px; max-width: 38px; text-align: center; }
         th:nth-child(2), td:nth-child(2) { width: 72px; max-width: 72px; text-align: center; }
 
@@ -123,6 +124,7 @@
             padding: 4px;
         }
 
+        /* Other columns */
         th:nth-child(3), td:nth-child(3) { width: 140px; word-wrap: break-word; white-space: normal; }
         th:nth-child(4), td:nth-child(4) { width: 130px; word-wrap: break-word; white-space: normal; }
         th:nth-child(5), td:nth-child(5) { width: 90px; text-align: right; }
@@ -374,10 +376,9 @@
                 const qtyInput = row.querySelector('.quantity-input');
                 const qty = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
                 
-                // Correct indices (0=checkbox, 1=qty, 2=House, 3=Name, 4=5ml)
                 const house = row.cells[2].textContent.trim();
                 const name = row.cells[3].textContent.trim();
-                const priceText = row.cells[4].textContent.trim().replace('$', '').replace(',', '').replace(/[^0-9.]/g, '');
+                const priceText = row.cells[4].textContent.trim().replace('$', '').replace(',', '');
                 const price = parseFloat(priceText) || 0;
                 const rowTotal = qty * price;
                 grandTotal += rowTotal;
