@@ -74,11 +74,11 @@
             padding: 9px 16px;
             border-radius: 20px;
             white-space: nowrap;
-            min-width: 120px;
+            min-width: 110px;
         }
 
-        .startover-btn { background: #d97706 !important; }
-        .export-btn { background: #15803d !important; }
+        .startover-btn { background: #d97706 !important; min-width: 120px; }
+        .export-btn { background: #15803d !important; min-width: 160px; padding: 9px 20px; }
 
         .table-wrapper { 
             padding: 0 20px 20px; 
@@ -261,13 +261,14 @@
     <!-- Selection Modal -->
     <div id="selection-modal">
         <div id="modal-content">
+            <h2>Copy/Paste into Chat</h2>
             <h2>Selected Items (<span id="modal-count">0</span>)</h2>
             <ul id="selection-list" class="selection-list"></ul>
             
             <div id="modal-total" class="modal-total">Total: $0</div>
             
             <div class="modal-buttons">
-                <button onclick="exportSelectedToCSV()" class="export-csv-btn">Export to CSV</button>
+       <!--         <button onclick="exportSelectedToCSV()" class="export-csv-btn">Export to CSV</button> -->
                 <button onclick="closeModal()" class="close-btn">Close</button>
             </div>
         </div>
@@ -488,7 +489,6 @@
             document.getElementById('selection-modal').style.display = 'none';
         }
 
-        // Export: House + 5ml only
         function exportSelectedToCSV() {
             const selectedRows = getSelectedRows();
             if (selectedRows.length === 0) {
@@ -496,18 +496,25 @@
                 return;
             }
 
-            let csv = "House,5ml\n";
+            let csv = "House,Name,Quantity,5ml,Row Total\n";
 
             selectedRows.forEach(row => {
+                const qtyInput = row.querySelector('.quantity-input');
+                const qty = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
+                
                 const house = row.cells[2].textContent.trim();
-                const price = row.cells[4].textContent.trim();
-                csv += `"\( {house.replace(/"/g, '""')}"," \){price}"\n`;
+                const name = row.cells[3].textContent.trim();
+                const priceText = row.cells[4].textContent.trim().replace('$', '').replace(',', '');
+                const price = parseFloat(priceText) || 0;
+                const rowTotal = qty * price;
+
+                csv += `"\( {house.replace(/"/g, '""')}"," \){name.replace(/"/g, '""')}",\( {qty}," \){price}",${rowTotal}\n`;
             });
 
             const blob = new Blob([csv], { type: 'text/csv' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = `Fragrance_Selected_${new Date().toISOString().slice(0,10)}.csv`;
+            link.download = `Fragrance_Sales_Selected_${new Date().toISOString().slice(0,10)}.csv`;
             link.click();
         }
 
