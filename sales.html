@@ -507,20 +507,20 @@
                 text += `${house} - ${name} - ${priceStr} × ${qty}\n\n`;
             });
 
-            // Add total at the bottom with a blank line before it
             const totalText = document.getElementById('total-display').textContent;
             text += `${totalText}`;
 
+            const copyButton = event.currentTarget;
+
             navigator.clipboard.writeText(text.trim()).then(() => {
-                const btn = event.currentTarget;
-                const originalText = btn.textContent;
-                btn.textContent = '✅ Copied!';
+                const originalText = copyButton.textContent;
+                copyButton.textContent = '✅ Copied!';
                 setTimeout(() => {
-                    btn.textContent = originalText;
+                    copyButton.textContent = originalText;
                 }, 2000);
             }).catch(err => {
-                console.error('Failed to copy:', err);
-                alert('Failed to copy to clipboard');
+                console.error('Copy failed:', err);
+                alert('Failed to copy to clipboard. Please try again.');
             });
         }
 
