@@ -370,7 +370,6 @@
             }
 
             let csv = "House,Name,Quantity,5ml,Row Total\n";
-            let grandTotal = 0;
 
             selectedRows.forEach(row => {
                 const qtyInput = row.querySelector('.quantity-input');
@@ -381,13 +380,10 @@
                 const priceText = row.cells[4].textContent.trim().replace('$', '').replace(',', '');
                 const price = parseFloat(priceText) || 0;
                 const rowTotal = qty * price;
-                grandTotal += rowTotal;
 
-                // Fixed CSV row with proper escaping for names containing commas or quotes
+                // Clean CSV row with proper escaping
                 csv += `"\( {house.replace(/"/g, '""')}"," \){name.replace(/"/g, '""')}",\( {qty}," \){price}",${rowTotal}\n`;
             });
-
-            csv += `,,,,Grand Total,${grandTotal}\n`;
 
             const blob = new Blob([csv], { type: 'text/csv' });
             const link = document.createElement('a');
