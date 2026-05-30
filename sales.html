@@ -209,7 +209,6 @@
             padding: 12px;
         }
         .close-btn { background: #f87171; }
-        .export-csv-btn { background: #15803d; }
     </style>
 </head>
 <body>
@@ -268,7 +267,7 @@
             <div id="modal-total" class="modal-total">Total: $0</div>
             
             <div class="modal-buttons">
-       <!--         <button onclick="exportSelectedToCSV()" class="export-csv-btn">Export to CSV</button> -->
+                <button onclick="copySelectionToClipboard()" style="background: #15803d;">📋 Copy</button>
                 <button onclick="closeModal()" class="close-btn">Close</button>
             </div>
         </div>
@@ -489,33 +488,40 @@
             document.getElementById('selection-modal').style.display = 'none';
         }
 
-        function exportSelectedToCSV() {
+        function copySelectionToClipboard() {
             const selectedRows = getSelectedRows();
             if (selectedRows.length === 0) {
                 alert("No items selected.");
                 return;
             }
 
-            let csv = "House,Name,Quantity,5ml,Row Total\n";
-
+            let text = '';
+            
             selectedRows.forEach(row => {
                 const qtyInput = row.querySelector('.quantity-input');
                 const qty = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
-                
                 const house = row.cells[2].textContent.trim();
                 const name = row.cells[3].textContent.trim();
-                const priceText = row.cells[4].textContent.trim().replace('$', '').replace(',', '');
-                const price = parseFloat(priceText) || 0;
-                const rowTotal = qty * price;
-
-                csv += `"\( {house.replace(/"/g, '""')}"," \){name.replace(/"/g, '""')}",\( {qty}," \){price}",${rowTotal}\n`;
+                const priceStr = row.cells[4].textContent.trim();
+                
+                text += `${house} - ${name} - ${priceStr} × ${qty}\n\n`;
             });
 
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `Fragrance_Sales_Selected_${new Date().toISOString().slice(0,10)}.csv`;
-            link.click();
+            // Add total at the bottom with a blank line before it
+            const totalText = document.getElementById('total-display').textContent;
+            text += `${totalText}`;
+
+            navigator.clipboard.writeText(text.trim()).then(() => {
+                const btn = event.currentTarget;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Copied!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                alert('Failed to copy to clipboard');
+            });
         }
 
         function sortTable(colIndex, forceInitial = false) {
