@@ -383,7 +383,7 @@
                 const rowTotal = qty * price;
                 grandTotal += rowTotal;
 
-                // Properly escaped CSV row - handles commas and quotes in fragrance names
+                // Fixed: Properly formatted CSV row with escaping for special characters
                 csv += `"\( {house.replace(/"/g, '""')}"," \){name.replace(/"/g, '""')}",\( {qty}," \){price}",${rowTotal}\n`;
             });
 
