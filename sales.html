@@ -74,7 +74,7 @@
             padding: 9px 16px;
             border-radius: 20px;
             white-space: nowrap;
-            min-width: 120px; /* Made both buttons same width */
+            min-width: 120px;
         }
 
         .startover-btn { background: #d97706 !important; }
@@ -488,7 +488,7 @@
             document.getElementById('selection-modal').style.display = 'none';
         }
 
-        // FIXED Export: House + Name
+        // FIXED Export - House + Name only
         function exportSelectedToCSV() {
             const selectedRows = getSelectedRows();
             if (selectedRows.length === 0) {
