@@ -141,6 +141,66 @@
 
         .status-available { color: #4ade80; font-weight: 600; }
         .status-sold { color: #f87171; font-weight: 600; }
+
+        /* Modal Styles */
+        #selection-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        #modal-content {
+            background: #1a1a1a;
+            padding: 25px;
+            border-radius: 12px;
+            max-width: 700px;
+            max-height: 85vh;
+            overflow-y: auto;
+            border: 1px solid #444;
+            width: 90%;
+        }
+        #modal-content h2 {
+            margin-top: 0;
+            color: #4ade80;
+        }
+        .selection-list {
+            list-style: none;
+            padding: 0;
+        }
+        .selection-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .item-info {
+            flex: 1;
+        }
+        .house-name {
+            font-weight: bold;
+            color: #93c5fd;
+            font-size: 1.1em;
+        }
+        .price-info {
+            text-align: right;
+            min-width: 140px;
+            color: #4ade80;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .modal-buttons button {
+            flex: 1;
+            padding: 12px;
+        }
+        .close-btn { background: #f87171; }
+        .export-csv-btn { background: #15803d; }
     </style>
 </head>
 <body>
@@ -164,7 +224,7 @@
 
         <div class="control-row">
             <button onclick="startOver()" class="startover-btn">Start Over</button>
-            <button onclick="exportToCSV()" class="export-btn">Export Selected</button>
+            <button onclick="showSelectionModal()" class="export-btn">Total</button>
         </div>
     </div>
 
@@ -188,6 +248,19 @@
     </div>
 
     <footer id="footer">Loading sales...</footer>
+
+    <!-- Selection Modal -->
+    <div id="selection-modal">
+        <div id="modal-content">
+            <h2>Selected Items (<span id="modal-count">0</span>)</h2>
+            <ul id="selection-list" class="selection-list"></ul>
+            
+            <div class="modal-buttons">
+                <button onclick="exportSelectedToCSV()" class="export-csv-btn">Export to CSV</button>
+                <button onclick="closeModal()" class="close-btn">Close</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         let sales = [];
@@ -362,31 +435,63 @@
             updateUrl();
         }
 
-        function exportToCSV() {
+        function showSelectionModal() {
             const selectedRows = getSelectedRows();
             if (selectedRows.length === 0) {
-                alert("Please select at least one Available item to export.");
+                alert("Please select at least one Available item.");
                 return;
             }
 
+            const items = selectedRows.map(row => {
+                const qtyInput = row.querySelector('.quantity-input');
+                const qty = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
+                const house = row.cells[2].textContent.trim();
+                const name = row.cells[3].textContent.trim();
+                const priceStr = row.cells[4].textContent.trim();
+
+                return { house, name, price: priceStr, qty };
+            });
+
+            document.getElementById('modal-count').textContent = items.length;
+            
+            const listHtml = items.map(item => 
+                `<li>
+                    <div class="item-info">
+                        <span class="house-name">${item.house}</span><br>
+                        ${item.name}
+                    </div>
+                    <div class="price-info">
+                        ${item.price} × ${item.qty}
+                    </div>
+                </li>`
+            ).join('');
+            
+            document.getElementById('selection-list').innerHTML = listHtml;
+            document.getElementById('selection-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('selection-modal').style.display = 'none';
+        }
+
+        // Export to CSV from modal
+        function exportSelectedToCSV() {
+            const selectedRows = getSelectedRows();
+            if (selectedRows.length === 0) return;
+
             let csv = "House,Name,Quantity,5ml,Row Total\n";
-            let grandTotal = 0;
 
             selectedRows.forEach(row => {
                 const qtyInput = row.querySelector('.quantity-input');
                 const qty = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
-                
                 const house = row.cells[2].textContent.trim();
                 const name = row.cells[3].textContent.trim();
                 const priceText = row.cells[4].textContent.trim().replace('$', '').replace(',', '');
                 const price = parseFloat(priceText) || 0;
                 const rowTotal = qty * price;
-                grandTotal += rowTotal;
 
-                csv += `"\( {house}"," \){name}",\( {qty}," \){price}",${rowTotal}\n`;
+                csv += `"\( {house.replace(/"/g, '""')}"," \){name.replace(/"/g, '""')}",\( {qty}," \){price}",${rowTotal}\n`;
             });
-
-            csv += `,,,,Grand Total,${grandTotal}\n`;
 
             const blob = new Blob([csv], { type: 'text/csv' });
             const link = document.createElement('a');
