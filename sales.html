@@ -203,7 +203,7 @@
             text-decoration: none;
         }
 
-        /* Modal Styles (Selection) */
+        /* Selection Modal */
         #selection-modal {
             display: none;
             position: fixed;
@@ -321,7 +321,7 @@
 
     <footer id="footer">Loading sales...</footer>
 
-    <!-- Detail Modal -->
+    <!-- Detail Modal (Tap Feature) -->
     <div id="detail-modal">
         <div id="detail-content">
             <div class="detail-header">
@@ -400,22 +400,18 @@
             return status && status.toLowerCase().includes('available');
         }
 
-        // 10-Star Rating System (Stars only)
         function createStarRating(rating) {
             const num = Math.round(parseFloat(rating) || 0);
             let stars = '';
-            
             for (let i = 1; i <= 10; i++) {
                 stars += i <= num ? '★' : '☆';
             }
-            
             return stars;
         }
 
         function updateTotal() {
             const selectedRows = getSelectedRows();
             let total = 0;
-
             selectedRows.forEach(row => {
                 const qtyInput = row.querySelector('.quantity-input');
                 const qty = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
@@ -424,7 +420,6 @@
                 const price = parseFloat(priceText) || 0;
                 total += qty * price;
             });
-
             document.getElementById('total-display').textContent = `Total Selected: $${total.toLocaleString()}`;
         }
 
@@ -579,7 +574,6 @@
                 const house = row.cells[2].textContent.trim();
                 const name = row.cells[3].textContent.trim();
                 const priceStr = row.cells[4].textContent.trim();
-
                 return { house, name, price: priceStr, qty };
             });
 
@@ -598,9 +592,7 @@
             ).join('');
             
             document.getElementById('selection-list').innerHTML = listHtml;
-            const headerTotal = document.getElementById('total-display').textContent;
-            document.getElementById('modal-total').innerHTML = headerTotal;
-            
+            document.getElementById('modal-total').innerHTML = document.getElementById('total-display').textContent;
             document.getElementById('selection-modal').style.display = 'flex';
         }
 
