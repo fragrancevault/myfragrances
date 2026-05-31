@@ -25,7 +25,6 @@
             padding: 1.6rem 1rem;
             text-align: center;
             border-bottom: 1px solid #333;
-            position: relative;
         }
         h1 { margin: 0; font-size: 2.0rem; }
 
@@ -87,7 +86,7 @@
             overflow-y: auto;
         }
         table { 
-            min-width: 1100px; 
+            min-width: 1250px; 
             border-collapse: collapse; 
             background: #111; 
             width: 100%;
@@ -107,12 +106,22 @@
             top: 0; 
             z-index: 10;
             font-size: 14.5px;
-            text-align: left;
         }
 
-        /* Minimal first columns */
+        /* Column widths */
         th:nth-child(1), td:nth-child(1) { width: 38px; max-width: 38px; text-align: center; }
         th:nth-child(2), td:nth-child(2) { width: 72px; max-width: 72px; text-align: center; }
+        th:nth-child(3), td:nth-child(3) { width: 150px; }
+        th:nth-child(4), td:nth-child(4) { width: 200px; }
+        th:nth-child(5), td:nth-child(5) { width: 95px; text-align: right; }
+        th:nth-child(6), td:nth-child(6) { width: 100px; }
+        th:nth-child(7), td:nth-child(7) { width: 60px; text-align: left; }
+        th:nth-child(8), td:nth-child(8) { width: 130px; }
+        th:nth-child(9), td:nth-child(9) { width: 130px; }
+        th:nth-child(10), td:nth-child(10) { width: 140px; }
+
+        tr { cursor: pointer; }
+        tr:hover { background: #1f1f1f; }
 
         input.quantity-input {
             width: 50px;
@@ -124,15 +133,6 @@
             padding: 4px;
         }
 
-        /* Other columns */
-        th:nth-child(3), td:nth-child(3) { width: 140px; word-wrap: break-word; white-space: normal; }
-        th:nth-child(4), td:nth-child(4) { width: 130px; word-wrap: break-word; white-space: normal; }
-        th:nth-child(5), td:nth-child(5) { width: 90px; text-align: right; }
-        th:nth-child(6), td:nth-child(6) { width: 95px; word-wrap: break-word; white-space: normal; }
-        th:nth-child(7), td:nth-child(7) { width: 95px; word-wrap: break-word; white-space: normal; }
-        th:nth-child(8), td:nth-child(8) { width: 60px; text-align: left; }
-        th:nth-child(9), td:nth-child(9) { width: 220px; word-wrap: break-word; white-space: normal; }
-
         .link-cell { text-align: left; padding-left: 12px; }
         .link-cell a { color: #60a5fa; font-size: 1.4rem; text-decoration: none; }
         .link-cell a:hover { color: #93c5fd; }
@@ -142,7 +142,68 @@
         .status-available { color: #4ade80; font-weight: 600; }
         .status-sold { color: #f87171; font-weight: 600; }
 
-        /* Modal Styles */
+        /* Star Rating - 10 Star System */
+        .stars {
+            color: #fbbf24;
+            font-size: 1.6rem;
+            letter-spacing: 2px;
+        }
+
+        /* Detail Modal */
+        #detail-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 1100;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+        #detail-content {
+            background: #1a1a1a;
+            padding: 25px;
+            border-radius: 16px;
+            max-width: 420px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid #444;
+        }
+        .detail-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .detail-house {
+            color: #93c5fd;
+            font-size: 1.35rem;
+            margin: 0;
+        }
+        .detail-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 8px 0 15px 0;
+        }
+        .detail-section {
+            margin-bottom: 20px;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #aaa;
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+        }
+        .detail-link {
+            text-align: center;
+            margin-top: 25px;
+        }
+        .detail-link a {
+            font-size: 2.2rem;
+            color: #60a5fa;
+            text-decoration: none;
+        }
+
+        /* Modal Styles (Selection) */
         #selection-modal {
             display: none;
             position: fixed;
@@ -219,15 +280,17 @@
     
     <div class="controls">
         <div class="control-row search-row">
-            <input type="text" id="search" placeholder="Search House, Name, Genre, Status, Notes..." onkeyup="filterTable()">
+            <input type="text" id="search" placeholder="Search House, Name, Perfumer, Notes..." onkeyup="filterTable()">
         </div>
 
         <div class="control-row">
             <button onclick="sortTable(2)">House</button>
             <button onclick="sortTable(3)">Name</button>
             <button onclick="sortTable(4)">5ml</button>
-            <button onclick="sortTable(5)">Genre</button>
-            <button onclick="sortTable(6)">Status</button>
+            <button onclick="sortTable(5)">Status</button>
+            <button onclick="sortTable(7)">Genre</button>
+            <button onclick="sortTable(8)">Attribute</button>
+            <button onclick="sortTable(9)">Perfumer</button>
         </div>
 
         <div class="control-row">
@@ -245,10 +308,11 @@
                     <th onclick="sortTable(2)">House</th>
                     <th onclick="sortTable(3)">Name</th>
                     <th onclick="sortTable(4)">5ml</th>
-                    <th onclick="sortTable(5)">Genre</th>
-                    <th onclick="sortTable(6)">Status</th>
+                    <th onclick="sortTable(5)">Status</th>
                     <th>Link</th>
-                    <th>Notes</th>
+                    <th>Genre</th>
+                    <th>Attribute</th>
+                    <th>Perfumer</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -256,6 +320,49 @@
     </div>
 
     <footer id="footer">Loading sales...</footer>
+
+    <!-- Detail Modal -->
+    <div id="detail-modal">
+        <div id="detail-content">
+            <div class="detail-header">
+                <h2 class="detail-house" id="modal-house"></h2>
+                <h3 class="detail-name" id="modal-name"></h3>
+            </div>
+
+            <div class="detail-section">
+                <div class="detail-label">Perfumer</div>
+                <div id="modal-perfumer"></div>
+            </div>
+
+            <div class="detail-section">
+                <div class="detail-label">Performance</div>
+                <div id="modal-performance" class="stars"></div>
+            </div>
+
+            <div class="detail-section">
+                <div class="detail-label">Rating</div>
+                <div id="modal-rating" class="stars"></div>
+            </div>
+
+            <div class="detail-section">
+                <div class="detail-label">Notes</div>
+                <div id="modal-notes"></div>
+            </div>
+
+            <div class="detail-section">
+                <div class="detail-label">Comments</div>
+                <div id="modal-comments"></div>
+            </div>
+
+            <div class="detail-link">
+                <a href="#" id="modal-link" target="_blank">🔗 Reviews</a>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <button onclick="closeDetailModal()" class="close-btn" style="min-width: 140px;">Close</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Selection Modal -->
     <div id="selection-modal">
@@ -275,7 +382,6 @@
 
     <script>
         let sales = [];
-        let fragrances = [];
         let sortState = {};
 
         function cleanValue(val) {
@@ -292,6 +398,18 @@
 
         function isAvailable(status) {
             return status && status.toLowerCase().includes('available');
+        }
+
+        // 10-Star Rating System (Stars only)
+        function createStarRating(rating) {
+            const num = Math.round(parseFloat(rating) || 0);
+            let stars = '';
+            
+            for (let i = 1; i <= 10; i++) {
+                stars += i <= num ? '★' : '☆';
+            }
+            
+            return stars;
         }
 
         function updateTotal() {
@@ -312,32 +430,6 @@
 
         async function loadCSV() {
             try {
-                const mainUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=1371140242&single=true&output=csv";
-                const mainRes = await fetch(mainUrl + (mainUrl.includes('?') ? '&' : '?') + 't=' + Date.now());
-                const mainText = await mainRes.text();
-
-                Papa.parse(mainText, {
-                    header: true,
-                    skipEmptyLines: true,
-                    complete: (mainResult) => {
-                        fragrances = mainResult.data
-                            .filter(row => row.Name && row.Name.trim())
-                            .map(row => {
-                                Object.keys(row).forEach(key => {
-                                    if (typeof row[key] === 'string') row[key] = row[key].trim();
-                                });
-                                return row;
-                            });
-                        loadSalesCSV();
-                    }
-                });
-            } catch (e) {
-                console.error("Load error:", e);
-            }
-        }
-
-        async function loadSalesCSV() {
-            try {
                 const salesUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=1452885969&single=true&output=csv";
                 const res = await fetch(salesUrl + (salesUrl.includes('?') ? '&' : '?') + 't=' + Date.now());
                 const text = await res.text();
@@ -352,9 +444,6 @@
                                 Object.keys(row).forEach(key => {
                                     if (typeof row[key] === 'string') row[key] = row[key].trim();
                                 });
-                                const match = fragrances.find(f => f.House === row.House && f.Name === row.Name);
-                                row.Genre = match ? match.Genre : 'N/A';
-                                row.Notes = match ? (match.Notes || match.Comments || '') : 'N/A';
                                 return row;
                             });
                         
@@ -364,7 +453,7 @@
                     }
                 });
             } catch (e) {
-                console.error("Sales load error:", e);
+                console.error("Load error:", e);
             }
         }
 
@@ -380,20 +469,50 @@
                 const statusClass = isAvailable(s.Status) ? 'status-available' : 'status-sold';
                 const isAvail = isAvailable(s.Status);
 
-                html += '<tr>' +
-                    '<td><input type="checkbox" class="row-select" ' + (isAvail ? '' : 'disabled') + ' onchange="updateSelectAllState(); updateTotal()"></td>' +
-                    '<td><input type="number" min="1" value="1" class="quantity-input" onchange="updateTotal()" ' + (isAvail ? '' : 'disabled') + ' onfocus="this.select()"></td>' +
+                html += `<tr onclick="showDetailModal(${i})">` +
+                    '<td><input type="checkbox" class="row-select" ' + (isAvail ? '' : 'disabled') + ' onchange="event.stopImmediatePropagation(); updateSelectAllState(); updateTotal()"></td>' +
+                    '<td><input type="number" min="1" value="1" class="quantity-input" onchange="event.stopImmediatePropagation(); updateTotal()" ' + (isAvail ? '' : 'disabled') + ' onfocus="this.select()"></td>' +
                     '<td>' + cleanValue(s.House) + '</td>' +
                     '<td><strong>' + cleanValue(s.Name) + '</strong></td>' +
                     '<td>' + formatPrice(s['5ml']) + '</td>' +
-                    '<td>' + cleanValue(s.Genre) + '</td>' +
                     '<td class="' + statusClass + '">' + cleanValue(s.Status) + '</td>' +
                     '<td class="link-cell">' + link + '</td>' +
-                    '<td>' + cleanValue(s.Notes) + '</td>' +
+                    '<td>' + cleanValue(s.Genre) + '</td>' +
+                    '<td>' + cleanValue(s.Attribute) + '</td>' +
+                    '<td>' + cleanValue(s.Perfumer) + '</td>' +
                     '</tr>';
             }
             tbody.innerHTML = html;
             updateTotal();
+        }
+
+        function showDetailModal(index) {
+            const s = sales[index];
+            if (!s) return;
+
+            document.getElementById('modal-house').textContent = cleanValue(s.House);
+            document.getElementById('modal-name').textContent = cleanValue(s.Name);
+            document.getElementById('modal-perfumer').textContent = cleanValue(s.Perfumer);
+            
+            document.getElementById('modal-performance').innerHTML = createStarRating(s.Performance);
+            document.getElementById('modal-rating').innerHTML = createStarRating(s.Rating);
+            
+            document.getElementById('modal-notes').textContent = cleanValue(s.Notes);
+            document.getElementById('modal-comments').textContent = cleanValue(s.Comment || s.Comments);
+            
+            const linkEl = document.getElementById('modal-link');
+            if (s.Link && s.Link.trim() !== '' && s.Link !== 'N/A') {
+                linkEl.href = s.Link;
+                linkEl.style.display = 'inline';
+            } else {
+                linkEl.style.display = 'none';
+            }
+
+            document.getElementById('detail-modal').style.display = 'flex';
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detail-modal').style.display = 'none';
         }
 
         function toggleSelectAll() {
@@ -422,8 +541,9 @@
             const term = document.getElementById('search').value.toLowerCase().trim();
             const filtered = sales.filter(s => {
                 if (!term) return true;
-                const searchableText = [s.House, s.Name, s.Genre, s['5ml'], s.Status, s.Notes]
-                    .filter(Boolean).join(' ').toLowerCase();
+                const searchableText = [
+                    s.House, s.Name, s.Perfumer, s.Notes, s.Comment, s.Comments, s.Genre, s.Attribute
+                ].filter(Boolean).join(' ').toLowerCase();
                 return searchableText.includes(term);
             });
             renderTable(filtered);
@@ -490,20 +610,15 @@
 
         function copySelectionToClipboard() {
             const selectedRows = getSelectedRows();
-            if (selectedRows.length === 0) {
-                alert("No items selected.");
-                return;
-            }
+            if (selectedRows.length === 0) return;
 
             let text = '';
-            
             selectedRows.forEach(row => {
                 const qtyInput = row.querySelector('.quantity-input');
                 const qty = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
                 const house = row.cells[2].textContent.trim();
                 const name = row.cells[3].textContent.trim();
                 const priceStr = row.cells[4].textContent.trim();
-                
                 text += `${house} - ${name} - ${priceStr} × ${qty}\n\n`;
             });
 
@@ -511,16 +626,10 @@
             text += `${totalText}`;
 
             const copyButton = event.currentTarget;
-
             navigator.clipboard.writeText(text.trim()).then(() => {
-                const originalText = copyButton.textContent;
+                const original = copyButton.textContent;
                 copyButton.textContent = '✅ Copied!';
-                setTimeout(() => {
-                    copyButton.textContent = originalText;
-                }, 2000);
-            }).catch(err => {
-                console.error('Copy failed:', err);
-                alert('Failed to copy to clipboard. Please try again.');
+                setTimeout(() => copyButton.textContent = original, 2000);
             });
         }
 
@@ -534,9 +643,7 @@
                     const houseB = b.cells[2].textContent.trim();
                     const nameA = a.cells[3].textContent.trim();
                     const nameB = b.cells[3].textContent.trim();
-                    const houseCompare = houseA.localeCompare(houseB);
-                    if (houseCompare !== 0) return houseCompare;
-                    return nameA.localeCompare(nameB);
+                    return houseA.localeCompare(houseB) || nameA.localeCompare(nameB);
                 });
             } else {
                 if (sortState[colIndex] === undefined) {
@@ -566,8 +673,7 @@
             const searchTerm = document.getElementById('search').value.trim();
             const params = new URLSearchParams();
             if (searchTerm) params.set('search', searchTerm);
-            const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
-            window.history.replaceState({}, '', newUrl);
+            window.history.replaceState({}, '', window.location.pathname + (params.toString() ? '?' + params.toString() : ''));
         }
 
         window.onload = loadCSV;
