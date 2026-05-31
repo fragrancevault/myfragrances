@@ -291,6 +291,7 @@
             <button onclick="sortTable(7)">Genre</button>
             <button onclick="sortTable(8)">Attribute</button>
             <button onclick="sortTable(9)">Perfumer</button>
+            <button onclick="sortTable(10)">New</button>
         </div>
 
         <div class="control-row">
@@ -479,13 +480,9 @@
             }
             tbody.innerHTML = html;
 
-            // Add click handler only to the row (but ignore first two cells)
             tbody.querySelectorAll('tr').forEach(row => {
                 row.addEventListener('click', function(e) {
-                    // Ignore clicks on checkbox and quantity input
-                    if (e.target.type === 'checkbox' || e.target.classList.contains('quantity-input')) {
-                        return;
-                    }
+                    if (e.target.type === 'checkbox' || e.target.classList.contains('quantity-input')) return;
                     const index = parseInt(this.getAttribute('data-index'));
                     showDetailModal(index);
                 });
@@ -523,7 +520,6 @@
             document.getElementById('detail-modal').style.display = 'none';
         }
 
-        // ... (rest of functions unchanged)
         function toggleSelectAll() {
             const selectAll = document.getElementById('select-all');
             const checkboxes = document.querySelectorAll('.row-select:not([disabled])');
@@ -551,7 +547,7 @@
             const filtered = sales.filter(s => {
                 if (!term) return true;
                 const searchableText = [
-                    s.House, s.Name, s.Perfumer, s.Notes, s.Comment, s.Comments, s.Genre, s.Attribute
+                    s.House, s.Name, s.Perfumer, s.Notes, s.Comment, s.Comments, s.Genre, s.Attribute, s.New
                 ].filter(Boolean).join(' ').toLowerCase();
                 return searchableText.includes(term);
             });
@@ -653,13 +649,23 @@
                 });
             } else {
                 if (sortState[colIndex] === undefined) {
-                    sortState[colIndex] = (colIndex === 4) ? false : true;
+                    // For "New" column (index 10), default to newest first (descending)
+                    sortState[colIndex] = (colIndex === 10) ? false : true;
                 } else {
                     sortState[colIndex] = !sortState[colIndex];
                 }
                 const ascending = sortState[colIndex];
 
                 rows.sort((a, b) => {
+                    // Special handling for "New" date column
+                    if (colIndex === 10) {
+                        const dateA = sales[parseInt(a.getAttribute('data-index'))].New || '';
+                        const dateB = sales[parseInt(b.getAttribute('data-index'))].New || '';
+                        const timeA = new Date(dateA).getTime() || 0;
+                        const timeB = new Date(dateB).getTime() || 0;
+                        return ascending ? timeA - timeB : timeB - timeA;
+                    }
+
                     let x = a.cells[colIndex].textContent.trim();
                     let y = b.cells[colIndex].textContent.trim();
                     const numX = parseFloat(x.replace('$', '').replace(',', ''));
