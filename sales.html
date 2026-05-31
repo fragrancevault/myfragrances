@@ -50,17 +50,41 @@
             margin-bottom: 12px;
         }
 
-        .search-row { margin-bottom: 12px; }
+        .search-row { 
+            margin-bottom: 12px;
+            position: relative;
+            max-width: 600px;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+        }
 
-        input { 
-            padding: 10px 12px; 
+        #search {
+            padding: 10px 40px 10px 12px; 
             font-size: 14px;
             border-radius: 8px; 
             background: #1f1f1f;
             color: #e0e0e0;
             border: 1px solid #444;
             width: 100%;
-            max-width: 600px;
+        }
+
+        .clear-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px 8px;
+            display: none;
+        }
+
+        .clear-btn:hover {
+            color: #e0e0e0;
         }
 
         button { 
@@ -281,6 +305,7 @@
     <div class="controls">
         <div class="control-row search-row">
             <input type="text" id="search" placeholder="Search House, Name, Perfumer, Notes..." onkeyup="filterTable()">
+            <button class="clear-btn" id="clear-search" onclick="clearSearch()">×</button>
         </div>
 
         <div class="control-row">
@@ -544,6 +569,9 @@
 
         function filterTable() {
             const term = document.getElementById('search').value.toLowerCase().trim();
+            const clearBtn = document.getElementById('clear-search');
+            clearBtn.style.display = term ? 'block' : 'none';
+
             const filtered = sales.filter(s => {
                 if (!term) return true;
                 const searchableText = [
@@ -556,6 +584,12 @@
             updateUrl();
         }
 
+        function clearSearch() {
+            document.getElementById('search').value = '';
+            document.getElementById('clear-search').style.display = 'none';
+            filterTable();
+        }
+
         function updateFooter(filteredData = null) {
             const data = filteredData || sales;
             document.getElementById('footer').innerHTML = `<strong>${data.length}</strong> items listed`;
@@ -563,6 +597,7 @@
 
         function startOver() {
             document.getElementById('search').value = '';
+            document.getElementById('clear-search').style.display = 'none';
             document.getElementById('select-all').checked = false;
             sortState = {};
             renderTable(sales);
@@ -649,15 +684,13 @@
                 });
             } else {
                 if (sortState[colIndex] === undefined) {
-                    // For "New" column (index 10), default to newest first (descending)
-                    sortState[colIndex] = (colIndex === 10) ? false : true;
+                    sortState[colIndex] = (colIndex === 4 || colIndex === 10) ? false : true;
                 } else {
                     sortState[colIndex] = !sortState[colIndex];
                 }
                 const ascending = sortState[colIndex];
 
                 rows.sort((a, b) => {
-                    // Special handling for "New" date column
                     if (colIndex === 10) {
                         const dateA = sales[parseInt(a.getAttribute('data-index'))].New || '';
                         const dateB = sales[parseInt(b.getAttribute('data-index'))].New || '';
