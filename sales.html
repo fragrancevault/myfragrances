@@ -321,7 +321,7 @@
 
     <footer id="footer">Loading sales...</footer>
 
-    <!-- Detail Modal (Tap Feature) -->
+    <!-- Detail Modal -->
     <div id="detail-modal">
         <div id="detail-content">
             <div class="detail-header">
@@ -464,9 +464,9 @@
                 const statusClass = isAvailable(s.Status) ? 'status-available' : 'status-sold';
                 const isAvail = isAvailable(s.Status);
 
-                html += `<tr onclick="showDetailModal(${i})">` +
-                    '<td><input type="checkbox" class="row-select" ' + (isAvail ? '' : 'disabled') + ' onchange="event.stopImmediatePropagation(); updateSelectAllState(); updateTotal()"></td>' +
-                    '<td><input type="number" min="1" value="1" class="quantity-input" onchange="event.stopImmediatePropagation(); updateTotal()" ' + (isAvail ? '' : 'disabled') + ' onfocus="this.select()"></td>' +
+                html += `<tr data-index="${i}">` +
+                    '<td><input type="checkbox" class="row-select" ' + (isAvail ? '' : 'disabled') + ' onchange="updateSelectAllState(); updateTotal()"></td>' +
+                    '<td><input type="number" min="1" value="1" class="quantity-input" onchange="updateTotal()" ' + (isAvail ? '' : 'disabled') + ' onfocus="this.select()"></td>' +
                     '<td>' + cleanValue(s.House) + '</td>' +
                     '<td><strong>' + cleanValue(s.Name) + '</strong></td>' +
                     '<td>' + formatPrice(s['5ml']) + '</td>' +
@@ -478,6 +478,19 @@
                     '</tr>';
             }
             tbody.innerHTML = html;
+
+            // Add click handler only to the row (but ignore first two cells)
+            tbody.querySelectorAll('tr').forEach(row => {
+                row.addEventListener('click', function(e) {
+                    // Ignore clicks on checkbox and quantity input
+                    if (e.target.type === 'checkbox' || e.target.classList.contains('quantity-input')) {
+                        return;
+                    }
+                    const index = parseInt(this.getAttribute('data-index'));
+                    showDetailModal(index);
+                });
+            });
+
             updateTotal();
         }
 
@@ -510,6 +523,7 @@
             document.getElementById('detail-modal').style.display = 'none';
         }
 
+        // ... (rest of functions unchanged)
         function toggleSelectAll() {
             const selectAll = document.getElementById('select-all');
             const checkboxes = document.querySelectorAll('.row-select:not([disabled])');
