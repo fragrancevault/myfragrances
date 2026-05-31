@@ -3,14 +3,6 @@
     =============================================
     MY FRAGRANCE COLLECTION - CUSTOMIZATION GUIDE
     =============================================
-    
-    To make this your own collection:
-    1. Create your own Google Sheet with the same column structure
-    2. Publish it to the web as CSV
-    3. Replace the URL below with your own CSV link
-    
-    Your new site will be at: https://yourusername.github.io/your-repo-name
-    =============================================
 -->
 <html lang="en">
 <head>
@@ -36,48 +28,17 @@
         }
         h1 { margin: 0; font-size: 2.2rem; }
 
-        /* Hamburger Menu */
-        .nav {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-        }
-        .hamburger {
-            display: flex;
-            flex-direction: column;
-            cursor: pointer;
-            padding: 8px;
-        }
-        .hamburger span {
-            width: 28px;
-            height: 3px;
-            background: #60a5fa;
-            margin: 4px 0;
-            transition: 0.3s;
-        }
+        .nav { position: absolute; top: 20px; left: 20px; }
+        .hamburger { display: flex; flex-direction: column; cursor: pointer; padding: 8px; }
+        .hamburger span { width: 28px; height: 3px; background: #60a5fa; margin: 4px 0; transition: 0.3s; }
+
         .menu {
-            display: none;
-            position: absolute;
-            top: 65px;
-            left: 20px;
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 12px 0;
-            min-width: 180px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-            z-index: 1000;
+            display: none; position: absolute; top: 65px; left: 20px;
+            background: #1a1a1a; border: 1px solid #333; border-radius: 8px;
+            padding: 12px 0; min-width: 180px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 1000;
         }
-        .menu a {
-            display: block;
-            padding: 12px 20px;
-            color: #e0e0e0;
-            text-decoration: none;
-        }
-        .menu a:hover {
-            background: #0066cc;
-            color: white;
-        }
+        .menu a { display: block; padding: 12px 20px; color: #e0e0e0; text-decoration: none; }
+        .menu a:hover { background: #0066cc; color: white; }
         .menu.active { display: block; }
 
         .table-wrapper { 
@@ -99,25 +60,66 @@
             color: #fff; 
             text-align: left;
         }
-        tr:hover { background: #1f2a3a; }
+        tr:hover { background: #1f2a3a; cursor: pointer; }
 
         .ratio { 
             font-weight: bold; 
             color: #60a5fa; 
         }
 
-        /* Mobile improvements */
-        @media (max-width: 768px) {
-            table { min-width: 700px; }
-            th, td { padding: 12px 8px; }
+        /* Compact Layers Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.92);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+        .modal-content {
+            background: #1f2a3a;
+            border: 2px solid #60a5fa;
+            border-radius: 16px;
+            padding: 20px 18px;
+            width: 100%;
+            max-width: 340px;
+            text-align: center;
+            position: relative;
+        }
+        .close-btn {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            font-size: 32px;
+            color: #60a5fa;
+            cursor: pointer;
+            line-height: 1;
         }
 
-        footer {
-            text-align: center;
-            padding: 30px 20px;
-            color: #888;
-            background: #111;
-            border-top: 1px solid #333;
+        .layer-title { font-size: 1.1rem; color: #60a5fa; margin: 10px 0 4px; }
+        .house { font-size: 1.0rem; color: #aaa; }
+        .name { font-size: 1.45rem; color: #60a5fa; margin-bottom: 10px; font-weight: 600; }
+
+        .main-stats { 
+            font-size: 0.98rem; 
+            color: #ddd; 
+            margin: 8px 0; 
+            line-height: 1.35;
+        }
+        .perfume-info { 
+            font-size: 0.95rem; 
+            color: #bbb; 
+            margin: 8px 0; 
+            line-height: 1.4;
+        }
+
+        .separator {
+            border: 0;
+            height: 1px;
+            background: #444;
+            margin: 16px 0;
         }
     </style>
 </head>
@@ -156,16 +158,63 @@
         </table>
     </div>
 
-    <footer id="footer">
-        Loading layers...
-    </footer>
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content" onclick="event.stopImmediatePropagation()">
+            <span class="close-btn" onclick="closeModal()">×</span>
+            <div id="modal-card"></div>
+        </div>
+    </div>
 
     <script>
+        let layersData = [];
+        let fragrances = [];
+
         function cleanValue(val) {
             if (val === null || val === undefined || val === '' || val === '?') {
                 return 'N/A';
             }
-            return val;
+            return val.trim();
+        }
+
+        // Smart matching - ignores rows with () and prefers exact matches
+        function findFragrance(name) {
+            if (!name) return null;
+            const searchName = name.toLowerCase().trim();
+
+            // Exact match first, ignoring rows with parentheses
+            let match = fragrances.find(f => {
+                const fName = (f.Name || '').toLowerCase().trim();
+                return fName === searchName && !fName.includes('(') && !fName.includes(')');
+            });
+
+            if (match) return match;
+
+            // Partial match as fallback
+            match = fragrances.find(f => {
+                const fName = (f.Name || '').toLowerCase().trim();
+                return fName.includes(searchName) && !fName.includes('(') && !fName.includes(')');
+            });
+
+            return match || null;
+        }
+
+        async function loadMainCollection() {
+            try {
+                const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=1371140242&single=true&output=csv";
+                const res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now());
+                const text = await res.text();
+
+                Papa.parse(text, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: (result) => {
+                        fragrances = result.data.filter(row => row.Name && row.Name.trim());
+                    }
+                });
+            } catch (e) {
+                console.error("Main collection load failed:", e);
+            }
         }
 
         async function loadLayers() {
@@ -173,19 +222,14 @@
                 const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=1331568544&single=true&output=csv";
                 
                 const res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now());
-                
-                if (!res.ok) throw new Error("HTTP error: " + res.status);
-                
                 const text = await res.text();
-                
-                if (!text || text.trim() === '') throw new Error("Empty response from Google");
 
                 Papa.parse(text, {
                     header: true,
                     skipEmptyLines: true,
                     complete: (result) => {
-                        const data = result.data
-                            .filter(row => row['Fragrance 1'] && row['Fragrance 1'].trim())
+                        layersData = result.data
+                            .filter(row => row['Fragrance 1'] || row['Fragrance 2'])
                             .map(row => {
                                 Object.keys(row).forEach(key => {
                                     if (typeof row[key] === 'string') row[key] = row[key].trim();
@@ -193,27 +237,94 @@
                                 return row;
                             });
                         
-                        const tbody = document.querySelector('#layers-table tbody');
-                        tbody.innerHTML = data.map(row => `
-                            <tr>
-                                <td>${cleanValue(row['Fragrance 1'])}</td>
-                                <td>${cleanValue(row['Fragrance 2'])}</td>
-                                <td class="ratio">${cleanValue(row.Ratio)}</td>
-                                <td>${cleanValue(row.Rating)}</td>
-                                <td>${cleanValue(row.Notes)}</td>
-                            </tr>
-                        `).join('');
-                        
-                        document.getElementById('footer').innerHTML = `
-                            <div><strong>${data.length}</strong> layer combinations</div>
-                            <div style="margin-top: 8px; font-size: 0.9rem; opacity: 0.7;">My Fragrance Collection</div>
-                        `;
+                        renderTable();
                     }
                 });
             } catch (e) {
                 console.error("Load error:", e);
-                document.getElementById('footer').innerHTML = `<strong style="color:#ff6666;">Error loading Google Sheet</strong><br><small>${e.message}</small>`;
             }
+        }
+
+        function renderTable() {
+            const tbody = document.querySelector('#layers-table tbody');
+            let html = '';
+            layersData.forEach((row, index) => {
+                html += `<tr data-index="${index}">` +
+                    `<td><strong>${cleanValue(row['Fragrance 1'])}</strong></td>` +
+                    `<td><strong>${cleanValue(row['Fragrance 2'])}</strong></td>` +
+                    `<td class="ratio">${cleanValue(row.Ratio)}</td>` +
+                    `<td>${cleanValue(row.Rating)}</td>` +
+                    `<td>${cleanValue(row.Notes || row.Comments)}</td>` +
+                    '</tr>';
+            });
+            tbody.innerHTML = html;
+
+            document.querySelectorAll('#layers-table tbody tr').forEach(row => {
+                row.addEventListener('click', () => showLayerModal(row));
+            });
+        }
+
+        function showLayerModal(rowElement) {
+            const index = parseInt(rowElement.dataset.index);
+            const layer = layersData[index];
+
+            const frag1 = findFragrance(layer['Fragrance 1']);
+            const frag2 = findFragrance(layer['Fragrance 2']);
+
+            let html = `
+                <div>
+                    <div class="layer-title">Fragrance 1</div>
+                    <div class="house">${cleanValue(frag1 ? frag1.House : layer['Fragrance 1'])}</div>
+                    <div class="name">${cleanValue(layer['Fragrance 1'])}</div>
+            `;
+
+            if (frag1) {
+                html += `
+                    <div class="main-stats">
+                        <strong>Rating:</strong> ${cleanValue(frag1.Rating)} | 
+                        <strong>Hours:</strong> ${cleanValue(frag1['Hours of Performance'])} | 
+                        <strong>Sillage:</strong> ${cleanValue(frag1.Silliage)}
+                    </div>
+                    <div class="perfume-info">
+                        <strong>Genre:</strong> ${cleanValue(frag1.Genre)}<br>
+                        <strong>Season:</strong> ${cleanValue(frag1.Seasons)}<br>
+                        <strong>Perfumer:</strong> ${cleanValue(frag1.Perfumer)}
+                    </div>
+                `;
+            }
+
+            html += `</div><hr class="separator">`;
+
+            html += `
+                <div>
+                    <div class="layer-title">Fragrance 2</div>
+                    <div class="house">${cleanValue(frag2 ? frag2.House : layer['Fragrance 2'])}</div>
+                    <div class="name">${cleanValue(layer['Fragrance 2'])}</div>
+            `;
+
+            if (frag2) {
+                html += `
+                    <div class="main-stats">
+                        <strong>Rating:</strong> ${cleanValue(frag2.Rating)} | 
+                        <strong>Hours:</strong> ${cleanValue(frag2['Hours of Performance'])} | 
+                        <strong>Sillage:</strong> ${cleanValue(frag2.Silliage)}
+                    </div>
+                    <div class="perfume-info">
+                        <strong>Genre:</strong> ${cleanValue(frag2.Genre)}<br>
+                        <strong>Season:</strong> ${cleanValue(frag2.Seasons)}<br>
+                        <strong>Perfumer:</strong> ${cleanValue(frag2.Perfumer)}
+                    </div>
+                `;
+            }
+
+            html += `</div>`;
+
+            document.getElementById('modal-card').innerHTML = html;
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
         }
 
         function toggleMenu() {
@@ -226,7 +337,15 @@
             }
         });
 
-        window.onload = loadLayers;
+        const modal = document.getElementById('modal');
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) closeModal();
+        });
+
+        window.onload = () => {
+            loadMainCollection();
+            loadLayers();
+        };
     </script>
 </body>
 </html>

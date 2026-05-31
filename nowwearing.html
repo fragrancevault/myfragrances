@@ -3,14 +3,6 @@
     =============================================
     MY FRAGRANCE COLLECTION - CUSTOMIZATION GUIDE
     =============================================
-    
-    To make this your own collection:
-    1. Create your own Google Sheet with the same column structure
-    2. Publish it to the web as CSV
-    3. Replace the URL below with your own CSV link
-    
-    Your new site will be at: https://yourusername.github.io/your-repo-name
-    =============================================
 -->
 <html lang="en">
 <head>
@@ -49,34 +41,63 @@
         .menu a:hover { background: #0066cc; color: white; }
         .menu.active { display: block; }
 
-        #wear-stats-footer {
+        /* Compact Mobile Modal */
+        .modal {
+            display: none;
             position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: #111;
-            border-top: 2px solid #60a5fa;
-            padding: 12px 15px;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.92);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+        .modal-content {
+            background: #1f2a3a;
+            border: 2px solid #60a5fa;
+            border-radius: 16px;
+            padding: 20px 18px;
+            width: 100%;
+            max-width: 360px;
             text-align: center;
-            z-index: 100;
-            box-shadow: 0 -3px 10px rgba(0,0,0,0.5);
-            font-size: 0.95rem;
-            min-height: 68px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
         }
-        #wear-stats-footer .title {
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 16px;
+            font-size: 32px;
             color: #60a5fa;
-            font-weight: 600;
-            margin-bottom: 6px;
+            cursor: pointer;
+            line-height: 1;
         }
-        #wear-stats-footer .stats {
-            color: #ccc;
+
+        .house { font-size: 1.1rem; color: #aaa; margin-bottom: 2px; }
+        .name { font-size: 1.65rem; color: #60a5fa; margin: 4px 0 14px; font-weight: 600; }
+
+        .main-stats { 
+            font-size: 1.05rem; 
+            color: #ddd; 
+            margin: 12px 0; 
             line-height: 1.4;
+        }
+        .perfume-info { 
+            font-size: 0.98rem; 
+            color: #bbb; 
+            margin: 12px 0 8px; 
+            line-height: 1.45;
+        }
+        .wear-stat { 
+            margin: 6px 0; 
+            font-size: 1.02rem; 
+            color: #ccc; 
         }
 
         .table-wrapper { 
             padding: 20px; 
             overflow-x: auto; 
-            padding-bottom: 120px;
+            padding-bottom: 80px;
         }
         table { 
             min-width: 1000px; 
@@ -97,7 +118,6 @@
         }
         tr { cursor: pointer; transition: all 0.2s; }
         tr:hover { background: #1f2a3a; }
-        tr.selected { background: #2a3a4f; border: 2px solid #60a5fa; }
 
         .date { text-align: center; font-weight: bold; white-space: nowrap; }
         .rating { text-align: center; color: #ffd700; font-weight: bold; }
@@ -118,7 +138,7 @@
                 <a href="top.html">Top Fragrances</a>
                 <a href="randomizer.html">Randomizer</a>
                 <a href="top10.html"><strong>Top 10</strong></a>
-    </div>
+            </div>
         </div>
     </header>
 
@@ -138,16 +158,20 @@
         </table>
     </div>
 
-    <div id="wear-stats-footer">
-        <div class="title" id="footer-title">Tap a row for wear stats</div>
-        <div class="stats" id="footer-stats"></div>
-    </div>
-
-    <footer id="data-footer" style="text-align: center; padding: 15px; color: #888; background: #111;">
+    <footer id="data-footer" style="text-align: center; padding: 20px; color: #888; background: #111;">
         Loading recent wears...
     </footer>
 
+    <!-- Popup Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content" onclick="event.stopImmediatePropagation()">
+            <span class="close-btn" onclick="closeModal()">×</span>
+            <div id="modal-card"></div>
+        </div>
+    </div>
+
     <script>
+        let fragrances = [];
         let currentData = [];
 
         function cleanValue(val) {
@@ -157,10 +181,45 @@
             return val;
         }
 
+        function findFragrance(house, name) {
+            if (!house || !name) return null;
+            const h = house.toLowerCase().trim();
+            const n = name.toLowerCase().trim();
+            
+            return fragrances.find(f => 
+                String(f.House || f.Brand || '').toLowerCase().trim() === h &&
+                String(f.Name || '').toLowerCase().trim() === n
+            );
+        }
+
+        async function loadMainCollection() {
+            try {
+                const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=1371140242&single=true&output=csv";
+                const res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now());
+                const text = await res.text();
+
+                Papa.parse(text, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: (result) => {
+                        fragrances = result.data
+                            .filter(row => row.Name && row.Name.trim())
+                            .map(row => {
+                                Object.keys(row).forEach(key => {
+                                    if (typeof row[key] === 'string') row[key] = row[key].trim();
+                                });
+                                return row;
+                            });
+                    }
+                });
+            } catch (e) {
+                console.error("Main collection load failed:", e);
+            }
+        }
+
         async function loadNowWearing() {
             try {
                 const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=775413918&single=true&output=csv";
-                
                 const res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now());
                 const text = await res.text();
 
@@ -172,9 +231,7 @@
                             .filter(row => row.Date && row.Name)
                             .map(row => {
                                 Object.keys(row).forEach(key => {
-                                    if (typeof row[key] === 'string') {
-                                        row[key] = row[key].trim();
-                                    }
+                                    if (typeof row[key] === 'string') row[key] = row[key].trim();
                                 });
                                 return row;
                             })
@@ -205,26 +262,52 @@
             `).join('');
 
             document.querySelectorAll('#nowwearing-table tbody tr').forEach(row => {
-                row.addEventListener('click', () => selectRow(row));
+                row.addEventListener('click', () => showModal(row));
             });
         }
 
-        function selectRow(rowElement) {
-            document.querySelectorAll('tr.selected').forEach(r => r.classList.remove('selected'));
-            rowElement.classList.add('selected');
-
+        function showModal(rowElement) {
             const index = parseInt(rowElement.dataset.index);
-            const row = currentData[index];
+            const wear = currentData[index];
+            const frag = findFragrance(wear.Brand || wear.House, wear.Name);
 
-            document.getElementById('footer-title').textContent = `${cleanValue(row.Brand)} — ${cleanValue(row.Name)}`;
-
-            document.getElementById('footer-stats').innerHTML = `
-                Latest Rating: <strong>${cleanValue(row.Rating)}</strong> • 
-                Last Worn: <strong>${cleanValue(row.Date)}</strong><br>
-                This Month: <strong>${cleanValue(row.Month)}</strong> • 
-                This Year: <strong>${cleanValue(row.Year)}</strong> • 
-                Total: <strong>${cleanValue(row.Total)}</strong>
+            let html = `
+                <div class="house">${cleanValue(wear.Brand)}</div>
+                <div class="name">${cleanValue(wear.Name)}</div>
             `;
+
+            if (frag) {
+                html += `
+                    <div class="main-stats">
+                        <strong>Rating:</strong> ${cleanValue(frag.Rating)} &nbsp;|&nbsp; 
+                        <strong>Hours:</strong> ${cleanValue(frag['Hours of Performance'])} &nbsp;|&nbsp; 
+                        <strong>Sillage:</strong> ${cleanValue(frag.Silliage)}
+                    </div>
+                    <div class="perfume-info">
+                        <strong>Genre:</strong> ${cleanValue(frag.Genre)}<br>
+                        <strong>Season:</strong> ${cleanValue(frag.Seasons)}<br>
+                        <strong>Perfumer:</strong> ${cleanValue(frag.Perfumer)}
+                    </div>
+                    ${frag.Notes && frag.Notes !== 'N/A' ? `<div class="wear-stat"><strong>Notes:</strong> ${cleanValue(frag.Notes)}</div>` : ''}
+                `;
+            } else {
+                html += `<div style="color:#ffcc66; margin:12px 0; font-size:0.95rem;">Fragrance details not found in main collection</div>`;
+            }
+
+            html += `
+                <div style="margin-top:20px; padding-top:14px; border-top:1px solid #444;">
+                    <div class="wear-stat"><strong>Date Worn:</strong> ${cleanValue(wear.Date)}</div>
+                    <div class="wear-stat"><strong>This Month:</strong> ${cleanValue(wear.Month)} wears</div>
+                    <div class="wear-stat"><strong>This Year:</strong> ${cleanValue(wear.Year)} wears</div>
+                </div>
+            `;
+
+            document.getElementById('modal-card').innerHTML = html;
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
         }
 
         function toggleMenu() {
@@ -237,7 +320,15 @@
             }
         });
 
-        window.onload = loadNowWearing;
+        const modal = document.getElementById('modal');
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) closeModal();
+        });
+
+        window.onload = () => {
+            loadMainCollection();
+            loadNowWearing();
+        };
     </script>
 </body>
 </html>

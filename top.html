@@ -3,12 +3,6 @@
     =============================================
     MY FRAGRANCE COLLECTION - CUSTOMIZATION GUIDE
     =============================================
-    
-    To make this your own collection:
-    1. Create your own Google Sheet with the same column structure
-    2. Publish it to the web as CSV
-    3. Replace the URL below with your own CSV link
-    =============================================
 -->
 <html lang="en">
 <head>
@@ -136,7 +130,7 @@
             top: 0; 
             z-index: 10;
         }
-        tr:hover { background: #1f2a3a; }
+        tr:hover { background: #1f2a3a; cursor: pointer; }
 
         .toast {
             position: fixed;
@@ -166,6 +160,59 @@
         .genre-btn.active { 
             background: #0066cc; 
             color: white; 
+        }
+
+        /* Compact Mobile Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.92);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+        .modal-content {
+            background: #1f2a3a;
+            border: 2px solid #60a5fa;
+            border-radius: 16px;
+            padding: 20px 18px;
+            width: 100%;
+            max-width: 360px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        }
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 16px;
+            font-size: 32px;
+            color: #60a5fa;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .house { font-size: 1.1rem; color: #aaa; margin-bottom: 2px; }
+        .name { font-size: 1.65rem; color: #60a5fa; margin: 4px 0 14px; font-weight: 600; }
+
+        .main-stats { 
+            font-size: 1.05rem; 
+            color: #ddd; 
+            margin: 12px 0; 
+            line-height: 1.4;
+        }
+        .perfume-info { 
+            font-size: 0.98rem; 
+            color: #bbb; 
+            margin: 12px 0 8px; 
+            line-height: 1.45;
+        }
+        .wear-stat { 
+            margin: 6px 0; 
+            font-size: 1.02rem; 
+            color: #ccc; 
         }
     </style>
 </head>
@@ -220,8 +267,17 @@
 
     <div id="toast" class="toast">✅ Link copied!</div>
 
+    <!-- Popup Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content" onclick="event.stopImmediatePropagation()">
+            <span class="close-btn" onclick="closeModal()">×</span>
+            <div id="modal-card"></div>
+        </div>
+    </div>
+
     <script>
         let fragrances = [];
+        let nowWearingData = [];
         let currentFilter = 'All';
 
         function cleanValue(val) {
@@ -229,6 +285,59 @@
                 return 'N/A';
             }
             return val;
+        }
+
+        function findWearStats(house, name) {
+            if (!house || !name || !nowWearingData.length) return null;
+            const h = house.toLowerCase().trim();
+            const n = name.toLowerCase().trim();
+            
+            const match = nowWearingData.find(row => 
+                String(row.Brand || row.House || '').toLowerCase().trim() === h &&
+                String(row.Name || '').toLowerCase().trim() === n
+            );
+            return match || null;
+        }
+
+        function showModal(fragrance) {
+            const wear = findWearStats(fragrance.House, fragrance.Name);
+
+            let html = `
+                <div class="house">${cleanValue(fragrance.House)}</div>
+                <div class="name">${cleanValue(fragrance.Name)}</div>
+                <div class="main-stats">
+                    <strong>Rating:</strong> ${cleanValue(fragrance.Rating)} &nbsp;|&nbsp; 
+                    <strong>Hours:</strong> ${cleanValue(fragrance['Hours of Performance'])} &nbsp;|&nbsp; 
+                    <strong>Sillage:</strong> ${cleanValue(fragrance.Silliage)}
+                </div>
+                <div class="perfume-info">
+                    <strong>Genre:</strong> ${cleanValue(fragrance.Genre)}<br>
+                    <strong>Season:</strong> ${cleanValue(fragrance.Seasons)}<br>
+                    <strong>Perfumer:</strong> ${cleanValue(fragrance.Perfumer)}
+                </div>
+                ${fragrance.Notes && fragrance.Notes !== 'N/A' ? `<div class="wear-stat"><strong>Notes:</strong> ${cleanValue(fragrance.Notes)}</div>` : ''}
+            `;
+
+            html += `<div style="margin-top:20px; padding-top:14px; border-top:1px solid #444;">`;
+            
+            if (wear) {
+                html += `
+                    <div class="wear-stat"><strong>Date Worn:</strong> ${cleanValue(wear.Date)}</div>
+                    <div class="wear-stat"><strong>This Month:</strong> ${cleanValue(wear.Month)} wears</div>
+                    <div class="wear-stat"><strong>This Year:</strong> ${cleanValue(wear.Year)} wears</div>
+                `;
+            } else {
+                html += `<div class="wear-stat" style="color:#ffcc66;"><strong>Not yet worn</strong></div>`;
+            }
+            
+            html += `</div>`;
+
+            document.getElementById('modal-card').innerHTML = html;
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
         }
 
         function updateUrl() {
@@ -271,12 +380,9 @@
                         console.log("✅ Loaded", fragrances.length, "fragrances for Top");
                         renderGenreButtons();
                         
-                        // Apply URL parameter
                         const params = new URLSearchParams(window.location.search);
                         const urlGenre = params.get('genre');
-                        if (urlGenre) {
-                            currentFilter = urlGenre;
-                        }
+                        if (urlGenre) currentFilter = urlGenre;
                         
                         showTopFragrances(currentFilter);
                         updateFooter();
@@ -285,6 +391,31 @@
             } catch (e) {
                 console.error("Load error:", e);
                 document.getElementById('footer').innerHTML = `<strong style="color:#ff6666;">Error loading Google Sheet</strong>`;
+            }
+        }
+
+        async function loadNowWearing() {
+            try {
+                const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=775413918&single=true&output=csv";
+                const res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now());
+                const text = await res.text();
+
+                Papa.parse(text, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: (result) => {
+                        nowWearingData = result.data
+                            .filter(row => row.Date && row.Name)
+                            .map(row => {
+                                Object.keys(row).forEach(key => {
+                                    if (typeof row[key] === 'string') row[key] = row[key].trim();
+                                });
+                                return row;
+                            });
+                    }
+                });
+            } catch (e) {
+                console.error("Now wearing load failed:", e);
             }
         }
 
@@ -315,7 +446,7 @@
             let html = '';
             for (let i = 0; i < data.length; i++) {
                 const f = data[i];
-                html += '<tr>' +
+                html += `<tr data-index="${i}">` +
                     '<td>' + cleanValue(f.House) + '</td>' +
                     '<td><strong>' + cleanValue(f.Name) + '</strong></td>' +
                     '<td>' + cleanValue(f.Rating) + '</td>' +
@@ -328,6 +459,14 @@
                     '</tr>';
             }
             tbody.innerHTML = html;
+
+            // Add click listeners for modal
+            document.querySelectorAll('#fragrance-table tbody tr').forEach(row => {
+                row.addEventListener('click', () => {
+                    const index = parseInt(row.dataset.index);
+                    showModal(data[index]);
+                });
+            });
         }
 
         function showTopFragrances(filter) {
@@ -380,7 +519,16 @@
             }
         });
 
-        window.onload = loadCSV;
+        // Modal background click to close
+        const modal = document.getElementById('modal');
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) closeModal();
+        });
+
+        window.onload = () => {
+            loadCSV();
+            loadNowWearing();
+        };
     </script>
 </body>
 </html>
