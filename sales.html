@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!-- 
     =============================================
-    MY FRAGRANCE COLLECTION - SALES PAGE
+    THE FRAG VAULT - SALES PAGE
     =============================================
 -->
 <html lang="en">
@@ -22,17 +22,43 @@
         header {
             background: linear-gradient(135deg, #1a1a1a, #0f0f0f);
             color: white;
-            padding: 1.6rem 1rem;
+            padding: 1.6rem 1rem 1.6rem 65px; /* Adjusted for smaller icon */
             text-align: center;
             border-bottom: 1px solid #333;
+            position: relative;
         }
-        h1 { margin: 0; font-size: 2.0rem; }
+        h1 { 
+            margin: 0; 
+            font-size: 2.0rem; 
+        }
 
         #total-display {
             margin-top: 10px;
             font-size: 1.35rem;
             font-weight: bold;
             color: #4ade80;
+        }
+
+        /* Help Icon - Smaller & Subtler */
+        #help-icon {
+            position: absolute;
+            left: 22px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            font-size: 1.35rem; /* Roughly half the previous size */
+            cursor: pointer;
+            color: #60a5fa;
+            padding: 6px;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+            opacity: 0.85;
+        }
+        #help-icon:hover {
+            color: #93c5fd;
+            opacity: 1;
+            transform: translateY(-50%) scale(1.15);
         }
 
         .controls { 
@@ -133,15 +159,15 @@
         }
 
         /* Column widths */
-        th:nth-child(1), td:nth-child(1) { width: 38px; max-width: 38px; text-align: center; }
-        th:nth-child(2), td:nth-child(2) { width: 72px; max-width: 72px; text-align: center; }
-        th:nth-child(3), td:nth-child(3) { width: 150px; }
-        th:nth-child(4), td:nth-child(4) { width: 200px; }
-        th:nth-child(5), td:nth-child(5) { width: 95px; text-align: right; }
-        th:nth-child(6), td:nth-child(6) { width: 100px; }
-        th:nth-child(7), td:nth-child(7) { width: 60px; text-align: left; }
-        th:nth-child(8), td:nth-child(8) { width: 130px; }
-        th:nth-child(9), td:nth-child(9) { width: 130px; }
+        th:nth-child(1), td:nth-child(1) { width: 20px; max-width: 20px; text-align: center; }
+        th:nth-child(2), td:nth-child(2) { width: 30px; max-width: 30px; text-align: center; }
+        th:nth-child(3), td:nth-child(3) { width: 100px; }
+        th:nth-child(4), td:nth-child(4) { width: 125px; }
+        th:nth-child(5), td:nth-child(5) { width: 50px; text-align: right; }
+        th:nth-child(6), td:nth-child(6) { width: 60px; }
+        th:nth-child(7), td:nth-child(7) { width: 30px; text-align: left; }
+        th:nth-child(8), td:nth-child(8) { width: 60px; }
+        th:nth-child(9), td:nth-child(9) { width: 70px; }
         th:nth-child(10), td:nth-child(10) { width: 140px; }
 
         tr { cursor: pointer; }
@@ -166,34 +192,34 @@
         .status-available { color: #4ade80; font-weight: 600; }
         .status-sold { color: #f87171; font-weight: 600; }
 
-        /* Star Rating - 10 Star System */
         .stars {
             color: #fbbf24;
             font-size: 1.6rem;
             letter-spacing: 2px;
         }
 
-        /* Detail Modal */
-        #detail-modal {
+        /* Modals */
+        #detail-modal, #help-modal, #selection-modal {
             display: none;
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.95);
-            z-index: 1100;
+            z-index: 1200;
             align-items: center;
             justify-content: center;
             padding: 15px;
         }
-        #detail-content {
+        #help-content, #detail-content, #modal-content {
             background: #1a1a1a;
-            padding: 25px;
+            padding: 30px;
             border-radius: 16px;
-            max-width: 420px;
+            max-width: 720px;
             width: 100%;
-            max-height: 90vh;
+            max-height: 85vh;
             overflow-y: auto;
             border: 1px solid #444;
         }
+
         .detail-header {
             text-align: center;
             margin-bottom: 20px;
@@ -227,30 +253,6 @@
             text-decoration: none;
         }
 
-        /* Selection Modal */
-        #selection-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.9);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-        #modal-content {
-            background: #1a1a1a;
-            padding: 25px;
-            border-radius: 12px;
-            max-width: 700px;
-            max-height: 85vh;
-            overflow-y: auto;
-            border: 1px solid #444;
-            width: 90%;
-        }
-        #modal-content h2 {
-            margin-top: 0;
-            color: #4ade80;
-        }
         .selection-list {
             list-style: none;
             padding: 0;
@@ -261,9 +263,6 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-        }
-        .item-info {
-            flex: 1;
         }
         .house-name {
             font-weight: bold;
@@ -298,6 +297,7 @@
 </head>
 <body>
     <header>
+        <button id="help-icon" onclick="showHelpModal()" title="How to Use This Page">❓</button>
         <h1>The Frag Vault</h1>
         <div id="total-display">Total Selected: $0</div>
     </header>
@@ -386,6 +386,44 @@
 
             <div style="text-align: center; margin-top: 30px;">
                 <button onclick="closeDetailModal()" class="close-btn" style="min-width: 140px;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="help-modal">
+        <div id="help-content">
+            <div style="text-align: right;">
+                <button onclick="closeHelpModal()" class="close-btn" style="min-width: 120px;">Close</button>
+            </div>
+            
+            <h2 style="margin-top: 10px; text-align: center; color: #4ade80;">How To Use This Webpage</h2>
+            
+            <p><strong>Welcome to The Frag Vault!</strong></p>
+            
+            <h3>Basic Navigation</h3>
+            <ul>
+                <li>Use the search bar to find fragrances quickly.</li>
+                <li>Tap the buttons to sort the list.</li>
+                <li>The Start Over button also clears selections</li>
+            </ul>
+
+            <h3>Selecting Items</h3>
+            <ul>
+                <li>Check the box next to available items.</li>
+                <li>Change quantity as needed.</li>
+                <li>Click the green <strong>Total</strong> button to review and copy your selection.</li>
+            </ul>
+
+            <h3>Viewing Details</h3>
+            <ul>
+                <li>Tap any row (not checkbox or quantity) to see full details, ratings, and notes.</li>
+                <li>These are my personal comments and ratings. Performance considers both silliage and hours in a scent bubble.</li>
+                <li>I do not consider the time a fragrance is a skin scent as performance.</li>
+            </ul>
+
+            <div style="text-align: center; margin-top: 40px; color: #666;">
+                <small>Happy Fragrance Hunting ✨</small>
             </div>
         </div>
     </div>
@@ -545,6 +583,14 @@
             document.getElementById('detail-modal').style.display = 'none';
         }
 
+        function showHelpModal() {
+            document.getElementById('help-modal').style.display = 'flex';
+        }
+
+        function closeHelpModal() {
+            document.getElementById('help-modal').style.display = 'none';
+        }
+
         function toggleSelectAll() {
             const selectAll = document.getElementById('select-all');
             const checkboxes = document.querySelectorAll('.row-select:not([disabled])');
@@ -662,8 +708,8 @@
             const totalText = document.getElementById('total-display').textContent;
             text += `${totalText}`;
 
-            const copyButton = event.currentTarget;
             navigator.clipboard.writeText(text.trim()).then(() => {
+                const copyButton = event.currentTarget;
                 const original = copyButton.textContent;
                 copyButton.textContent = '✅ Copied!';
                 setTimeout(() => copyButton.textContent = original, 2000);
