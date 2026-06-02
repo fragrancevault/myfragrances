@@ -1,6 +1,6 @@
 # My Fragrance Collection
 
-A beautiful, mobile-friendly fragrance tracking website built with HTML, CSS, and Google Sheets.
+A vibe-coded mobile-friendly fragrance tracking website built with HTML, CSS, and Google Sheets.
 
 ## Features
 
