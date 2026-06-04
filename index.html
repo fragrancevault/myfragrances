@@ -129,7 +129,7 @@
             overflow-y: auto;
         }
         table { 
-            min-width: 1450px; 
+            min-width: 1680px; 
             border-collapse: collapse; 
             background: #111; 
             width: 100%;
@@ -146,6 +146,17 @@
             top: 0; 
             z-index: 10;
             font-size: 14.5px;
+            text-align: left;
+        }
+
+        /* Column Widths & Alignment */
+        .name-col     { width: 120px; }   /* Narrower Name column */
+        .notes-col    { width: 280px; }
+        .comments-col { width: 260px; }
+
+        /* Center numeric/performance data */
+        .rating-col, .hours-col, .sillage-col, .sprays-col {
+            text-align: center;
         }
 
         .toast {
@@ -255,7 +266,7 @@
     </header>
     
     <div class="controls">
-        <input type="text" id="search" placeholder="Search House, Name, Perfumer, Notes..." style="flex:1; min-width:260px;" onkeyup="filterTable()">
+        <input type="text" id="search" placeholder="Search House, Name, Perfumer, Notes, Comments..." style="flex:1; min-width:260px;" onkeyup="filterTable()">
         <div id="genre-filters"></div>
         
         <select id="season-filter" onchange="filterTable()">
@@ -284,17 +295,18 @@
             <thead>
                 <tr>
                     <th onclick="sortTable(0)">House</th>
-                    <th onclick="sortTable(1)">Name</th>
-                    <th onclick="sortTable(2)">Rating</th>
-                    <th onclick="sortTable(3)">Hours</th>
-                    <th onclick="sortTable(4)">Silliage</th>
-                    <th onclick="sortTable(5)">Sprays</th>
+                    <th onclick="sortTable(1)" class="name-col">Name</th>
+                    <th onclick="sortTable(2)" class="rating-col">Rating</th>
+                    <th onclick="sortTable(3)" class="hours-col">Hours</th>
+                    <th onclick="sortTable(4)" class="sillage-col">Silliage</th>
+                    <th onclick="sortTable(5)" class="sprays-col">Sprays</th>
                     <th onclick="sortTable(6)">Genre</th>
                     <th onclick="sortTable(7)">Perfumer</th>
                     <th onclick="sortTable(8)">Parfumo</th>
                     <th onclick="sortTable(9)">Season</th>
                     <th onclick="sortTable(10)">ml</th>
-                    <th>Notes / Comments</th>
+                    <th class="notes-col">Notes</th>
+                    <th class="comments-col">Comments</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -357,6 +369,7 @@
                     <strong>Perfumer:</strong> ${cleanValue(fragrance.Perfumer)}
                 </div>
                 ${fragrance.Notes && fragrance.Notes !== 'N/A' ? `<div class="wear-stat"><strong>Notes:</strong> ${cleanValue(fragrance.Notes)}</div>` : ''}
+                ${fragrance.Comments && fragrance.Comments !== 'N/A' ? `<div class="wear-stat"><strong>Comments:</strong> ${cleanValue(fragrance.Comments)}</div>` : ''}
             `;
 
             html += `<div style="margin-top:20px; padding-top:14px; border-top:1px solid #444;">`;
@@ -470,17 +483,18 @@
                 const f = data[i];
                 html += `<tr data-index="${i}">` +
                     '<td>' + cleanValue(f.House) + '</td>' +
-                    '<td><strong>' + cleanValue(f.Name) + '</strong></td>' +
-                    '<td>' + cleanValue(f.Rating) + '</td>' +
-                    '<td>' + cleanValue(f['Hours of Performance']) + '</td>' +
-                    '<td>' + cleanValue(f.Silliage) + '</td>' +
-                    '<td>' + cleanValue(f.Sprays) + '</td>' +
+                    '<td class="name-col"><strong>' + cleanValue(f.Name) + '</strong></td>' +
+                    '<td class="rating-col">' + cleanValue(f.Rating) + '</td>' +
+                    '<td class="hours-col">' + cleanValue(f['Hours of Performance']) + '</td>' +
+                    '<td class="sillage-col">' + cleanValue(f.Silliage) + '</td>' +
+                    '<td class="sprays-col">' + cleanValue(f.Sprays) + '</td>' +
                     '<td>' + cleanValue(f.Genre) + '</td>' +
                     '<td>' + cleanValue(f.Perfumer) + '</td>' +
                     '<td>' + cleanValue(f['Parfumo Rating']) + '</td>' +
                     '<td>' + cleanValue(f.Seasons) + '</td>' +
                     '<td>' + cleanValue(f.Size) + '</td>' +
-                    '<td class="notes">' + cleanValue(f.Notes) + ' <strong>' + cleanValue(f.Comments) + '</strong></td>' +
+                    '<td class="notes-col">' + cleanValue(f.Notes) + '</td>' +
+                    '<td class="comments-col">' + cleanValue(f.Comments) + '</td>' +
                     '</tr>';
             }
             tbody.innerHTML = html;
@@ -578,7 +592,7 @@
             const rows = Array.from(tbody.querySelectorAll('tr'));
             if (rows.length === 0) return alert("No data to export!");
 
-            let csv = "House,Name,Rating,Hours,Silliage,Sprays,Genre,Perfumer,Parfumo,Season,ml,Notes/Comments\n";
+            let csv = "House,Name,Rating,Hours,Silliage,Sprays,Genre,Perfumer,Parfumo,Season,ml,Notes,Comments\n";
             rows.forEach(row => {
                 const cells = Array.from(row.cells).map(cell => `"${cell.textContent.trim().replace(/"/g, '""')}"`);
                 csv += cells.join(',') + '\n';
