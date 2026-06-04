@@ -1,4 +1,4 @@
-# My Fragrance Collection
+# The Frag Vault
 
 A vibe-coded mobile-friendly fragrance tracking website built with HTML, CSS, and Google Sheets.
 
@@ -8,7 +8,7 @@ A vibe-coded mobile-friendly fragrance tracking website built with HTML, CSS, an
 - Full collection table with search & filters
 - Top 10 Fragrances with detailed tap stats
 - Now Wearing log
-- Fully responsive (great on mobile)
+- Fully responsive (great on mobuile)
 
 ## Live Site
 [https://fragrancevault.github.io/myfragrances](https://fragrancevault.github.io/myfragrances)
@@ -26,8 +26,10 @@ A vibe-coded mobile-friendly fragrance tracking website built with HTML, CSS, an
 - `top10.html` → Top 10 page
 - `nowwearing.html` → Now Wearing log
 - `layers.html`
-- `randomizer.html`
+- `randomizer.html'
+- 'unratedrandomizer.html' -> rating = 0
 - `top.html`
+- 'sales.html- -> if you want to sling
 
 **Tip:** Search for `docs.google.com/spreadsheets` in each file and replace the URL with your own published CSV link.
 
