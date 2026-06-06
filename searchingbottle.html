@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <!-- 
     =============================================
-    MY FRAGRANCE COLLECTION - CUSTOMIZATION GUIDE
+    FRAGVAULT - SEARCHING FOR BOTTLES
     =============================================
 -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Top Fragrances - My Fragrance Collection</title>
+    <title>Searching For</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
         body { 
@@ -22,16 +22,20 @@
         header {
             background: linear-gradient(135deg, #1a1a1a, #0f0f0f);
             color: white;
-            padding: 1.8rem 1rem;
+            padding: 1.8rem 1rem 2.2rem;
             text-align: center;
             border-bottom: 1px solid #333;
             position: relative;
         }
-        h1 { margin: 0; font-size: 2.2rem; }
+        h1 { 
+            margin: 0; 
+            font-size: 2.0rem;
+            padding-top: 4px;
+        }
 
         .nav {
             position: absolute;
-            top: 20px;
+            top: 22px;
             left: 20px;
         }
         .hamburger {
@@ -48,17 +52,20 @@
             transition: 0.3s;
         }
 
-        .share-header-btn {
+        .header-button {
             position: absolute;
             bottom: 18px;
             right: 20px;
             background: #0066cc;
             color: white;
             border: none;
-            padding: 8px 16px;
+            padding: 7px 14px;
             border-radius: 20px;
-            font-size: 14px;
+            font-size: 13px;
             cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            white-space: nowrap;
         }
 
         .menu {
@@ -70,7 +77,7 @@
             border: 1px solid #333;
             border-radius: 8px;
             padding: 12px 0;
-            min-width: 180px;
+            min-width: 200px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
             z-index: 1000;
         }
@@ -79,6 +86,7 @@
             padding: 12px 20px;
             color: #e0e0e0;
             text-decoration: none;
+            font-size: 15px;
         }
         .menu a:hover {
             background: #0066cc;
@@ -87,14 +95,25 @@
         .menu.active { display: block; }
 
         .controls { 
-            padding: 16px 20px 12px; 
+            padding: 18px 20px 14px; 
             background: #111; 
             display: flex; 
             flex-wrap: wrap; 
-            gap: 12px; 
+            gap: 8px; 
             justify-content: center; 
             align-items: center;
             border-bottom: 1px solid #333;
+        }
+
+        input { 
+            padding: 10px 12px; 
+            font-size: 14px;
+            border-radius: 8px; 
+            background: #1f1f1f;
+            color: #e0e0e0;
+            border: 1px solid #444;
+            flex: 1;
+            min-width: 260px;
         }
 
         button { 
@@ -103,9 +122,14 @@
             border: none; 
             cursor: pointer;
             font-weight: bold;
-            padding: 10px 16px;
-            border-radius: 8px;
+            font-size: 13.5px;
+            padding: 9px 14px;
+            border-radius: 20px;
+            white-space: nowrap;
         }
+
+        .startover-btn { background: #d97706 !important; }
+        .export-btn { background: #15803d !important; }
 
         .table-wrapper { 
             padding: 0 20px 20px; 
@@ -114,14 +138,20 @@
             overflow-y: auto;
         }
         table { 
-            min-width: 1450px; 
+            min-width: 1200px;
             border-collapse: collapse; 
             background: #111; 
             width: 100%;
+            table-layout: fixed;
         }
         th, td { 
-            padding: 12px 10px; 
+            padding: 10px 8px; 
             border-bottom: 1px solid #333;
+            font-size: 14px;
+            vertical-align: top;
+            word-wrap: break-word;
+            word-break: break-word;
+            white-space: normal;
         }
         th { 
             background: #1a1a1a; 
@@ -129,8 +159,25 @@
             position: sticky; 
             top: 0; 
             z-index: 10;
+            font-size: 14.5px;
+            text-align: left;
         }
-        tr:hover { background: #1f2a3a; cursor: pointer; }
+
+        /* Column Widths */
+        .house-col { width: 120px; }
+        .name-col  { width: 180px; }
+        .genre-col { width: 80px; }
+        .notes-col { width: 220px; }
+        .link-col, .purchase-col { 
+            width: 90px; 
+            text-align: center; 
+        }
+
+        .icon-link {
+            font-size: 1.45rem;
+            text-decoration: none;
+        }
+        .icon-link:hover { color: #a5d6ff; }
 
         .toast {
             position: fixed;
@@ -142,13 +189,14 @@
             padding: 12px 24px;
             border-radius: 8px;
             font-weight: 600;
+            font-size: 14px;
             z-index: 3000;
             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
             display: none;
         }
 
         .genre-btn { 
-            padding: 8px 16px; 
+            padding: 8px 15px; 
             margin: 4px; 
             border: 2px solid #0066cc; 
             background: #1f1f1f; 
@@ -156,13 +204,13 @@
             border-radius: 30px; 
             cursor: pointer; 
             font-weight: 600;
+            font-size: 13.5px;
         }
         .genre-btn.active { 
             background: #0066cc; 
             color: white; 
         }
 
-        /* Compact Mobile Modal */
         .modal {
             display: none;
             position: fixed;
@@ -179,7 +227,7 @@
             border-radius: 16px;
             padding: 20px 18px;
             width: 100%;
-            max-width: 360px;
+            max-width: 380px;
             text-align: center;
             position: relative;
             box-shadow: 0 10px 30px rgba(0,0,0,0.6);
@@ -196,51 +244,39 @@
 
         .house { font-size: 1.1rem; color: #aaa; margin-bottom: 2px; }
         .name { font-size: 1.65rem; color: #60a5fa; margin: 4px 0 14px; font-weight: 600; }
-
-        .main-stats { 
-            font-size: 1.05rem; 
-            color: #ddd; 
-            margin: 12px 0; 
-            line-height: 1.4;
-        }
-        .perfume-info { 
-            font-size: 0.98rem; 
-            color: #bbb; 
-            margin: 12px 0 8px; 
-            line-height: 1.45;
-        }
-        .wear-stat { 
-            margin: 6px 0; 
-            font-size: 1.02rem; 
-            color: #ccc; 
-        }
     </style>
 </head>
 <body>
     <header>
-        <h1>Top Frags</h1>
+        <h1>Searching</h1>
         <div class="nav">
             <div class="hamburger" onclick="toggleMenu()">
-                <span></span>
-                <span></span>
-                <span></span>
+                <span></span><span></span><span></span>
             </div>
             <div class="menu" id="menu">
-                <a href="index.html">Home</a>
+                <a href="index.html"><strong>Home</strong></a>
                 <a href="nowwearing.html">Now Wearing</a>
-                <a href="top.html"><strong>The Best</strong></a>
+                <a href="top.html">The Best</a>
                 <a href="randomizer.html">Randomizer</a>
                 <a href="unratedrandomizer.html">Unrated Randomizer</a>
                 <a href="top10.html">My Top 10</a>
                 <a href="layers.html">Layers</a>
-                <a href="searchingbottle.html">Searching For</a>
+                <a href="searchingbottle.html"><strong>Searching For</strong></a>
             </div>
         </div>
-        <button onclick="shareCurrentView()" class="share-header-btn">Share</button>
+        
+        <a href="searchingsample.html" class="header-button">Sample</a>
     </header>
     
     <div class="controls">
+        <input type="text" id="search" placeholder="Search House, Name, Notes..." onkeyup="filterTable()">
         <div id="genre-filters"></div>
+        
+        <button onclick="sortTable(0)">House</button>
+        <button onclick="sortTable(1)">Name</button>
+        <button onclick="sortTable(2)">Genre</button>
+
+        <button onclick="startOver()" class="startover-btn">Start Over</button>
         <button onclick="exportToCSV()" class="export-btn">Export To CSV</button>
     </div>
 
@@ -248,24 +284,19 @@
         <table id="fragrance-table">
             <thead>
                 <tr>
-                    <th>House</th>
-                    <th>Name</th>
-                    <th>Rating</th>
-                    <th>Hours</th>
-                    <th>Silliage</th>
-                    <th>Genre</th>
-                    <th>Season</th>
-                    <th>ml</th>
-                    <th>Notes / Comments</th>
+                    <th onclick="sortTable(0)" class="house-col">House</th>
+                    <th onclick="sortTable(1)" class="name-col">Name</th>
+                    <th onclick="sortTable(2)" class="genre-col">Genre</th>
+                    <th class="notes-col">Notes</th>
+                    <th class="link-col">Link</th>
+                    <th class="purchase-col">Purchase</th>
                 </tr>
             </thead>
             <tbody></tbody>
         </table>
     </div>
 
-    <footer id="footer">
-        Loading top fragrances...
-    </footer>
+    <footer id="footer">Loading collection...</footer>
 
     <div id="toast" class="toast">✅ Link copied!</div>
 
@@ -279,60 +310,48 @@
 
     <script>
         let fragrances = [];
-        let nowWearingData = [];
-        let currentFilter = 'All';
+        let currentGenres = new Set();
+        let sortState = {};
 
         function cleanValue(val) {
             if (val === null || val === undefined || val === '' || val === '?') {
                 return 'N/A';
             }
-            return val;
+            return String(val).trim();
         }
 
-        function findWearStats(house, name) {
-            if (!house || !name || !nowWearingData.length) return null;
-            const h = house.toLowerCase().trim();
-            const n = name.toLowerCase().trim();
-            
-            const match = nowWearingData.find(row => 
-                String(row.Brand || row.House || '').toLowerCase().trim() === h &&
-                String(row.Name || '').toLowerCase().trim() === n
-            );
-            return match || null;
+        function isValidUrl(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;
+            }
         }
 
         function showModal(fragrance) {
-            const wear = findWearStats(fragrance.House, fragrance.Name);
-
             let html = `
                 <div class="house">${cleanValue(fragrance.House)}</div>
                 <div class="name">${cleanValue(fragrance.Name)}</div>
-                <div class="main-stats">
-                    <strong>Rating:</strong> ${cleanValue(fragrance.Rating)} &nbsp;|&nbsp; 
-                    <strong>Hours:</strong> ${cleanValue(fragrance['Hours of Performance'])} &nbsp;|&nbsp; 
-                    <strong>Sillage:</strong> ${cleanValue(fragrance.Silliage)}
+                <div style="margin:16px 0; font-size:1.05rem;">
+                    <strong>Genre:</strong> ${cleanValue(fragrance.Genre)}
                 </div>
-                <div class="perfume-info">
-                    <strong>Genre:</strong> ${cleanValue(fragrance.Genre)}<br>
-                    <strong>Season:</strong> ${cleanValue(fragrance.Seasons)}<br>
-                    <strong>Perfumer:</strong> ${cleanValue(fragrance.Perfumer)}
-                </div>
-                ${fragrance.Notes && fragrance.Notes !== 'N/A' ? `<div class="wear-stat"><strong>Notes:</strong> ${cleanValue(fragrance.Notes)}</div>` : ''}
             `;
 
-            html += `<div style="margin-top:20px; padding-top:14px; border-top:1px solid #444;">`;
-            
-            if (wear) {
-                html += `
-                    <div class="wear-stat"><strong>Date Worn:</strong> ${cleanValue(wear.Date)}</div>
-                    <div class="wear-stat"><strong>This Month:</strong> ${cleanValue(wear.Month)} wears</div>
-                    <div class="wear-stat"><strong>This Year:</strong> ${cleanValue(wear.Year)} wears</div>
-                `;
-            } else {
-                html += `<div class="wear-stat" style="color:#ffcc66;"><strong>Not yet worn</strong></div>`;
+            if (fragrance.Notes && fragrance.Notes !== 'N/A') {
+                html += `<div style="text-align:left; margin:18px 0; line-height:1.5;"><strong>Notes:</strong><br>${cleanValue(fragrance.Notes)}</div>`;
             }
-            
-            html += `</div>`;
+
+            if (fragrance.Link && isValidUrl(fragrance.Link)) {
+                html += `<div style="margin:12px 0;"><a href="${fragrance.Link}" target="_blank" class="icon-link">🔗 View Link</a></div>`;
+            }
+            if (fragrance.Purchase) {
+                if (isValidUrl(fragrance.Purchase)) {
+                    html += `<div style="margin:12px 0;"><a href="${fragrance.Purchase}" target="_blank" class="icon-link">🛒 Purchase</a></div>`;
+                } else {
+                    html += `<div style="margin:12px 0; color:#ccc;"><strong>Purchase:</strong> ${cleanValue(fragrance.Purchase)}</div>`;
+                }
+            }
 
             document.getElementById('modal-card').innerHTML = html;
             document.getElementById('modal').style.display = 'flex';
@@ -343,25 +362,17 @@
         }
 
         function updateUrl() {
+            const searchTerm = document.getElementById('search').value.trim();
             const params = new URLSearchParams();
-            if (currentFilter !== 'All') params.set('genre', currentFilter);
+            if (searchTerm) params.set('search', searchTerm);
             const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
             window.history.replaceState({}, '', newUrl);
         }
 
-        function shareCurrentView() {
-            updateUrl();
-            const fullUrl = window.location.href;
-            navigator.clipboard.writeText(fullUrl).then(() => {
-                const toast = document.getElementById('toast');
-                toast.style.display = 'block';
-                setTimeout(() => toast.style.display = 'none', 2200);
-            });
-        }
-
         async function loadCSV() {
             try {
-                const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=1371140242&single=true&output=csv";
+                // New Bottles CSV
+                const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=136278588&single=true&output=csv";
                 
                 const res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now());
                 const text = await res.text();
@@ -379,15 +390,17 @@
                                 return row;
                             });
                         
-                        console.log("✅ Loaded", fragrances.length, "fragrances for Top");
+                        console.log("✅ Loaded", fragrances.length, "bottles");
+                        renderTable(fragrances);
                         renderGenreButtons();
-                        
-                        const params = new URLSearchParams(window.location.search);
-                        const urlGenre = params.get('genre');
-                        if (urlGenre) currentFilter = urlGenre;
-                        
-                        showTopFragrances(currentFilter);
                         updateFooter();
+
+                        const params = new URLSearchParams(window.location.search);
+                        const urlSearch = params.get('search');
+                        if (urlSearch) {
+                            document.getElementById('search').value = urlSearch;
+                            filterTable();
+                        }
                     }
                 });
             } catch (e) {
@@ -396,101 +409,90 @@
             }
         }
 
-        async function loadNowWearing() {
-            try {
-                const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=775413918&single=true&output=csv";
-                const res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now());
-                const text = await res.text();
-
-                Papa.parse(text, {
-                    header: true,
-                    skipEmptyLines: true,
-                    complete: (result) => {
-                        nowWearingData = result.data
-                            .filter(row => row.Date && row.Name)
-                            .map(row => {
-                                Object.keys(row).forEach(key => {
-                                    if (typeof row[key] === 'string') row[key] = row[key].trim();
-                                });
-                                return row;
-                            });
-                    }
-                });
-            } catch (e) {
-                console.error("Now wearing load failed:", e);
-            }
-        }
-
-        function renderGenreButtons() {
-            const genres = ['All', ...new Set(fragrances.map(f => f.Genre).filter(Boolean))].sort();
-            const container = document.getElementById('genre-filters');
-            container.innerHTML = '';
-            
-            genres.forEach(g => {
-                const btn = document.createElement('button');
-                btn.className = 'genre-btn';
-                btn.textContent = g;
-                if (g === currentFilter) btn.classList.add('active');
-                
-                btn.onclick = () => {
-                    document.querySelectorAll('.genre-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    currentFilter = g;
-                    showTopFragrances(g);
-                    updateUrl();
-                };
-                container.appendChild(btn);
-            });
-        }
-
         function renderTable(data) {
             const tbody = document.querySelector('#fragrance-table tbody');
             let html = '';
             for (let i = 0; i < data.length; i++) {
                 const f = data[i];
+                const linkHTML = (f.Link && isValidUrl(f.Link)) 
+                    ? `<a href="${f.Link}" target="_blank" class="icon-link">🔗</a>` 
+                    : '—';
+                const purchaseHTML = (f.Purchase && isValidUrl(f.Purchase)) 
+                    ? `<a href="${f.Purchase}" target="_blank" class="icon-link">🛒</a>` 
+                    : cleanValue(f.Purchase || '—');
+
                 html += `<tr data-index="${i}">` +
-                    '<td>' + cleanValue(f.House) + '</td>' +
-                    '<td><strong>' + cleanValue(f.Name) + '</strong></td>' +
-                    '<td>' + cleanValue(f.Rating) + '</td>' +
-                    '<td>' + cleanValue(f['Hours of Performance']) + '</td>' +
-                    '<td>' + cleanValue(f.Silliage) + '</td>' +
-                    '<td>' + cleanValue(f.Genre) + '</td>' +
-                    '<td>' + cleanValue(f.Seasons) + '</td>' +
-                    '<td>' + cleanValue(f.Size) + '</td>' +
-                    '<td class="notes">' + cleanValue(f.Notes) + ' <strong>' + cleanValue(f.Comments) + '</strong></td>' +
+                    `<td class="house-col">${cleanValue(f.House)}</td>` +
+                    `<td class="name-col"><strong>${cleanValue(f.Name)}</strong></td>` +
+                    `<td class="genre-col">${cleanValue(f.Genre)}</td>` +
+                    `<td class="notes-col">${cleanValue(f.Notes)}</td>` +
+                    `<td class="link-col">${linkHTML}</td>` +
+                    `<td class="purchase-col">${purchaseHTML}</td>` +
                     '</tr>';
             }
             tbody.innerHTML = html;
 
-            // Add click listeners for modal
             document.querySelectorAll('#fragrance-table tbody tr').forEach(row => {
-                row.addEventListener('click', () => {
+                row.addEventListener('click', (e) => {
+                    if (e.target.tagName === 'A') return;
                     const index = parseInt(row.dataset.index);
                     showModal(data[index]);
                 });
             });
         }
 
-        function showTopFragrances(filter) {
-            let filtered = fragrances;
-
-            if (filter !== 'All') {
-                filtered = filtered.filter(f => f.Genre === filter);
-            }
-
-            const maxRating = filtered.length ? Math.max(...filtered.map(f => parseFloat(f.Rating) || 0)) : 0;
-            const threshold = Math.max(0, maxRating - 2);
-
-            const topData = filtered.filter(f => parseFloat(f.Rating) >= threshold)
-                                   .sort((a, b) => parseFloat(b.Rating) - parseFloat(a.Rating));
-
-            renderTable(topData);
+        function renderGenreButtons() {
+            const genres = [...new Set(fragrances.map(f => f.Genre).filter(Boolean))].sort();
+            const container = document.getElementById('genre-filters');
+            container.innerHTML = '<strong>Genres:</strong> ';
+            genres.forEach(g => {
+                const btn = document.createElement('button');
+                btn.className = 'genre-btn';
+                btn.textContent = g;
+                btn.onclick = () => {
+                    if (currentGenres.has(g)) currentGenres.delete(g);
+                    else currentGenres.add(g);
+                    btn.classList.toggle('active');
+                    filterTable();
+                };
+                container.appendChild(btn);
+            });
         }
 
-        function updateFooter() {
+        function filterTable() {
+            const term = document.getElementById('search').value.toLowerCase().trim();
+            
+            const filtered = fragrances.filter(f => {
+                let matchSearch = true;
+                if (term) {
+                    const searchableText = [f.House, f.Name, f.Notes || '']
+                        .filter(Boolean).join(' ').toLowerCase();
+                    matchSearch = searchableText.includes(term);
+                }
+                const matchGenre = currentGenres.size === 0 || currentGenres.has(f.Genre);
+                return matchSearch && matchGenre;
+            });
+            
+            renderTable(filtered);
+            updateFooter(filtered);
+            updateUrl();
+        }
+
+        function updateFooter(filteredData = null) {
+            const data = filteredData || fragrances;
             document.getElementById('footer').innerHTML = `
-                <strong>${fragrances.length}</strong> fragrances in collection
+                <strong>${data.length}</strong> bottles in view
             `;
+        }
+
+        function startOver() {
+            currentGenres.clear();
+            document.getElementById('search').value = '';
+            document.querySelectorAll('.genre-btn').forEach(btn => btn.classList.remove('active'));
+            sortState = {};
+            renderTable(fragrances);
+            updateFooter();
+            updateUrl();
         }
 
         function exportToCSV() {
@@ -498,7 +500,7 @@
             const rows = Array.from(tbody.querySelectorAll('tr'));
             if (rows.length === 0) return alert("No data to export!");
 
-            let csv = "House,Name,Rating,Hours,Silliage,Genre,Season,ml,Notes/Comments\n";
+            let csv = "House,Name,Genre,Notes,Link,Purchase\n";
             rows.forEach(row => {
                 const cells = Array.from(row.cells).map(cell => `"${cell.textContent.trim().replace(/"/g, '""')}"`);
                 csv += cells.join(',') + '\n';
@@ -507,8 +509,28 @@
             const blob = new Blob([csv], { type: 'text/csv' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = `Top_Fragrances_${new Date().toISOString().slice(0,10)}.csv`;
+            link.download = `SearchingBottles_${new Date().toISOString().slice(0,10)}.csv`;
             link.click();
+        }
+
+        function sortTable(colIndex) {
+            const tbody = document.querySelector('#fragrance-table tbody');
+            let rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            if (sortState[colIndex] === undefined) sortState[colIndex] = true;
+            else sortState[colIndex] = !sortState[colIndex];
+            const ascending = sortState[colIndex];
+
+            rows.sort((a, b) => {
+                let x = a.cells[colIndex].textContent.trim();
+                let y = b.cells[colIndex].textContent.trim();
+                if (!isNaN(parseFloat(x)) && !isNaN(parseFloat(y))) {
+                    return ascending ? parseFloat(x) - parseFloat(y) : parseFloat(y) - parseFloat(x);
+                }
+                return ascending ? x.localeCompare(y) : y.localeCompare(x);
+            });
+            
+            rows.forEach(row => tbody.appendChild(row));
         }
 
         function toggleMenu() {
@@ -521,7 +543,6 @@
             }
         });
 
-        // Modal background click to close
         const modal = document.getElementById('modal');
         modal.addEventListener('click', function(e) {
             if (e.target === modal) closeModal();
@@ -529,7 +550,6 @@
 
         window.onload = () => {
             loadCSV();
-            loadNowWearing();
         };
     </script>
 </body>
