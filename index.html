@@ -466,7 +466,8 @@
             const urlGenres = params.get('genres');
             if (urlGenres) {
                 urlGenres.split(',').forEach(g => {
-                    if (g.trim()) currentGenres.add(g.trim());
+                    const trimmed = g.trim();
+                    if (trimmed) currentGenres.add(trimmed);
                 });
             }
 
@@ -526,15 +527,18 @@
                         applyUrlParams();
                         toggleClearButton();
                         
-                        // Apply active genre buttons
+                        // Activate genre buttons
                         document.querySelectorAll('.genre-btn').forEach(btn => {
-                            if (currentGenres.has(btn.textContent)) btn.classList.add('active');
+                            if (currentGenres.has(btn.textContent.trim())) {
+                                btn.classList.add('active');
+                            }
                         });
+
+                        // Always filter first (this was the bug), then sort if needed
+                        filterTable();
 
                         if (currentSortCol !== null) {
                             sortTable(currentSortCol, true);
-                        } else {
-                            filterTable();
                         }
                     }
                 });
@@ -543,6 +547,8 @@
                 footer.innerHTML = `<strong style="color:#ff6666;">Error loading Google Sheet</strong><br><small>Check internet / publish settings</small>`;
             }
         }
+
+        // ... (loadNowWearing, showModal, renderTable, renderGenreButtons, filterTable, updateFooter, sortTable, startOver, exportToCSV, toggleMenu remain the same as previous version)
 
         async function loadNowWearing() {
             try {
