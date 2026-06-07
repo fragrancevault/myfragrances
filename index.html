@@ -330,7 +330,7 @@
         let fragrances = [];
         let nowWearingData = [];
         let currentGenres = new Set();
-        let sortState = {};
+        let sortState = {}; // colIndex -> ascending (true/false)
 
         const highFirst = [2, 3, 4, 8];
 
@@ -395,10 +395,35 @@
             document.getElementById('modal').style.display = 'none';
         }
 
-        function updateUrl() {
-            const searchTerm = document.getElementById('search').value.trim();
+        function getCurrentStateParams() {
             const params = new URLSearchParams();
+            
+            const searchTerm = document.getElementById('search').value.trim();
             if (searchTerm) params.set('search', searchTerm);
+            
+            if (currentGenres.size > 0) {
+                params.set('genres', Array.from(currentGenres).sort().join(','));
+            }
+            
+            const seasonFilter = document.getElementById('season-filter').value;
+            if (seasonFilter) params.set('season', seasonFilter);
+
+            // Sort state: e.g. "2:desc" or "1:asc"
+            const activeSorts = Object.keys(sortState)
+                .filter(col => sortState[col] !== undefined)
+                .map(col => {
+                    const dir = sortState[col] ? 'asc' : 'desc';
+                    return `\( {col}: \){dir}`;
+                });
+            if (activeSorts.length > 0) {
+                params.set('sort', activeSorts.join('|'));
+            }
+
+            return params;
+        }
+
+        function updateUrl() {
+            const params = getCurrentStateParams();
             const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
             window.history.replaceState({}, '', newUrl);
         }
@@ -411,6 +436,39 @@
                 toast.style.display = 'block';
                 setTimeout(() => toast.style.display = 'none', 2200);
             });
+        }
+
+        function applyUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            
+            // Search
+            const urlSearch = params.get('search');
+            if (urlSearch) {
+                document.getElementById('search').value = urlSearch;
+            }
+            
+            // Season
+            const urlSeason = params.get('season');
+            if (urlSeason) {
+                const select = document.getElementById('season-filter');
+                if ([...select.options].some(opt => opt.value === urlSeason)) {
+                    select.value = urlSeason;
+                }
+            }
+            
+            // Genres (will be applied after buttons are rendered)
+            const urlGenres = params.get('genres');
+            if (urlGenres) {
+                const genreList = urlGenres.split(',').map(g => g.trim()).filter(Boolean);
+                // We'll set these after renderGenreButtons()
+                window.pendingGenres = genreList;
+            }
+            
+            // Sort (apply after table is rendered)
+            const urlSort = params.get('sort');
+            if (urlSort) {
+                window.pendingSort = urlSort;
+            }
         }
 
         async function loadCSV() {
@@ -438,12 +496,10 @@
                         renderGenreButtons();
                         updateFooter();
 
-                        const params = new URLSearchParams(window.location.search);
-                        const urlSearch = params.get('search');
-                        if (urlSearch) {
-                            document.getElementById('search').value = urlSearch;
-                            filterTable();
-                        }
+                        applyUrlParams(); // Apply search/season/genres/sort from URL
+                        
+                        // Trigger initial filter (this will also apply genres and then sort)
+                        filterTable();
                     }
                 });
             } catch (e) {
@@ -506,6 +562,21 @@
                     showModal(data[index]);
                 });
             });
+
+            // Apply pending sort if any
+            if (window.pendingSort) {
+                const sortParts = window.pendingSort.split('|');
+                sortParts.forEach(part => {
+                    const [colStr, dir] = part.split(':');
+                    const colIndex = parseInt(colStr);
+                    if (!isNaN(colIndex)) {
+                        sortState[colIndex] = (dir === 'asc');
+                        // Trigger the visual sort on the current table
+                        sortTable(colIndex, true); // true = skip toggle
+                    }
+                });
+                delete window.pendingSort;
+            }
         }
 
         function renderGenreButtons() {
@@ -524,6 +595,20 @@
                 };
                 container.appendChild(btn);
             });
+
+            // Apply pending genres from URL
+            if (window.pendingGenres && window.pendingGenres.length > 0) {
+                const genreBtns = container.querySelectorAll('.genre-btn');
+                window.pendingGenres.forEach(g => {
+                    genreBtns.forEach(btn => {
+                        if (btn.textContent === g) {
+                            currentGenres.add(g);
+                            btn.classList.add('active');
+                        }
+                    });
+                });
+                delete window.pendingGenres;
+            }
         }
 
         function filterTable() {
@@ -606,14 +691,16 @@
             link.click();
         }
 
-        function sortTable(colIndex) {
+        function sortTable(colIndex, skipToggle = false) {
             const tbody = document.querySelector('#fragrance-table tbody');
             let rows = Array.from(tbody.querySelectorAll('tr'));
             
-            if (sortState[colIndex] === undefined) {
-                sortState[colIndex] = highFirst.includes(colIndex) ? false : true;
-            } else {
-                sortState[colIndex] = !sortState[colIndex];
+            if (!skipToggle) {
+                if (sortState[colIndex] === undefined) {
+                    sortState[colIndex] = highFirst.includes(colIndex) ? false : true;
+                } else {
+                    sortState[colIndex] = !sortState[colIndex];
+                }
             }
             const ascending = sortState[colIndex];
 
@@ -627,6 +714,7 @@
             });
             
             rows.forEach(row => tbody.appendChild(row));
+            updateUrl();
         }
 
         function toggleMenu() {
