@@ -11,43 +11,271 @@
     <title>FragVault</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: #0a0a0a; color: #e0e0e0; line-height: 1.5; }
-        header { background: linear-gradient(135deg, #1a1a1a, #0f0f0f); color: white; padding: 1.6rem 1rem; text-align: center; border-bottom: 1px solid #333; position: relative; }
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            margin: 0; 
+            background: #0a0a0a; 
+            color: #e0e0e0;
+            line-height: 1.5;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #1a1a1a, #0f0f0f);
+            color: white;
+            padding: 1.6rem 1rem;
+            text-align: center;
+            border-bottom: 1px solid #333;
+            position: relative;
+        }
         h1 { margin: 0; font-size: 2.0rem; }
-        .nav { position: absolute; top: 20px; left: 20px; }
-        .hamburger { display: flex; flex-direction: column; cursor: pointer; padding: 8px; }
-        .hamburger span { width: 28px; height: 3px; background: #60a5fa; margin: 4px 0; transition: 0.3s; }
-        .share-header-btn { position: absolute; bottom: 18px; right: 20px; background: #0066cc; color: white; border: none; padding: 7px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; }
-        .menu { display: none; position: absolute; top: 65px; left: 20px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 12px 0; min-width: 180px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 1000; }
-        .menu a { display: block; padding: 12px 20px; color: #e0e0e0; text-decoration: none; font-size: 15px; }
-        .menu a:hover { background: #0066cc; color: white; }
+
+        .nav {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+        .hamburger {
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            padding: 8px;
+        }
+        .hamburger span {
+            width: 28px;
+            height: 3px;
+            background: #60a5fa;
+            margin: 4px 0;
+            transition: 0.3s;
+        }
+
+        .share-header-btn {
+            position: absolute;
+            bottom: 18px;
+            right: 20px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 7px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .menu {
+            display: none;
+            position: absolute;
+            top: 65px;
+            left: 20px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 12px 0;
+            min-width: 180px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        .menu a {
+            display: block;
+            padding: 12px 20px;
+            color: #e0e0e0;
+            text-decoration: none;
+            font-size: 15px;
+        }
+        .menu a:hover {
+            background: #0066cc;
+            color: white;
+        }
         .menu.active { display: block; }
-        .controls { padding: 18px 20px 14px; background: #111; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; border-bottom: 1px solid #333; position: relative; }
-        .search-wrapper { position: relative; flex: 1; min-width: 260px; }
-        #search { width: 100%; padding: 10px 36px 10px 12px; font-size: 14px; border-radius: 8px; background: #1f1f1f; color: #e0e0e0; border: 1px solid #444; }
-        .clear-search { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #888; font-size: 18px; cursor: pointer; padding: 0; line-height: 1; }
-        .clear-search:hover { color: #e0e0e0; }
-        input, select { padding: 10px 12px; font-size: 14px; border-radius: 8px; background: #1f1f1f; color: #e0e0e0; border: 1px solid #444; }
-        button { background: #0066cc; color: white; border: none; cursor: pointer; font-weight: bold; font-size: 13.5px; padding: 9px 14px; border-radius: 20px; white-space: nowrap; }
+
+        .controls { 
+            padding: 18px 20px 14px; 
+            background: #111; 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 8px; 
+            justify-content: center; 
+            align-items: center;
+            border-bottom: 1px solid #333;
+        }
+
+        .search-container {
+            position: relative;
+            flex: 1;
+            min-width: 260px;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 10px 12px 10px 12px;
+            padding-right: 36px;
+            font-size: 14px;
+            border-radius: 8px; 
+            background: #1f1f1f;
+            color: #e0e0e0;
+            border: 1px solid #444;
+            box-sizing: border-box;
+        }
+
+        .clear-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 4px 6px;
+            line-height: 1;
+            display: none;
+        }
+
+        .clear-btn:hover {
+            color: #e0e0e0;
+        }
+
+        input, select { 
+            font-size: 14px;
+            border-radius: 8px; 
+            background: #1f1f1f;
+            color: #e0e0e0;
+            border: 1px solid #444;
+        }
+
+        button { 
+            background: #0066cc; 
+            color: white; 
+            border: none; 
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13.5px;
+            padding: 9px 14px;
+            border-radius: 20px;
+            white-space: nowrap;
+        }
+
         .startover-btn { background: #d97706 !important; }
         .export-btn { background: #15803d !important; }
-        .table-wrapper { padding: 0 20px 20px; overflow-x: auto; max-height: 75vh; overflow-y: auto; }
-        table { min-width: 1680px; border-collapse: collapse; background: #111; width: 100%; }
-        th, td { padding: 10px 8px; border-bottom: 1px solid #333; font-size: 14px; }
-        th { background: #1a1a1a; color: #fff; position: sticky; top: 0; z-index: 10; font-size: 14.5px; text-align: left; }
-        .name-col { width: 120px; } .notes-col { width: 280px; } .comments-col { width: 260px; }
-        .rating-col, .hours-col, .sillage-col, .sprays-col { text-align: center; }
-        .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #22c55e; color: white; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px; z-index: 3000; box-shadow: 0 4px 12px rgba(0,0,0,0.5); display: none; }
-        .genre-btn { padding: 8px 15px; margin: 4px; border: 2px solid #0066cc; background: #1f1f1f; color: #4da6ff; border-radius: 30px; cursor: pointer; font-weight: 600; font-size: 13.5px; }
-        .genre-btn.active { background: #0066cc; color: white; }
-        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.92); z-index: 2000; align-items: center; justify-content: center; padding: 15px; }
-        .modal-content { background: #1f2a3a; border: 2px solid #60a5fa; border-radius: 16px; padding: 20px 18px; width: 100%; max-width: 360px; text-align: center; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
-        .close-btn { position: absolute; top: 10px; right: 16px; font-size: 32px; color: #60a5fa; cursor: pointer; line-height: 1; }
+
+        .table-wrapper { 
+            padding: 0 20px 20px; 
+            overflow-x: auto; 
+            max-height: 75vh;
+            overflow-y: auto;
+        }
+        table { 
+            min-width: 1680px; 
+            border-collapse: collapse; 
+            background: #111; 
+            width: 100%;
+        }
+        th, td { 
+            padding: 10px 8px; 
+            border-bottom: 1px solid #333;
+            font-size: 14px;
+        }
+        th { 
+            background: #1a1a1a; 
+            color: #fff; 
+            position: sticky; 
+            top: 0; 
+            z-index: 10;
+            font-size: 14.5px;
+            text-align: left;
+        }
+
+        .name-col     { width: 120px; }
+        .notes-col    { width: 280px; }
+        .comments-col { width: 260px; }
+
+        .rating-col, .hours-col, .sillage-col, .sprays-col {
+            text-align: center;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #22c55e;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            z-index: 3000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            display: none;
+        }
+
+        .genre-btn { 
+            padding: 8px 15px; 
+            margin: 4px; 
+            border: 2px solid #0066cc; 
+            background: #1f1f1f; 
+            color: #4da6ff; 
+            border-radius: 30px; 
+            cursor: pointer; 
+            font-weight: 600;
+            font-size: 13.5px;
+        }
+        .genre-btn.active { 
+            background: #0066cc; 
+            color: white; 
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.92);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+        .modal-content {
+            background: #1f2a3a;
+            border: 2px solid #60a5fa;
+            border-radius: 16px;
+            padding: 20px 18px;
+            width: 100%;
+            max-width: 360px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        }
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 16px;
+            font-size: 32px;
+            color: #60a5fa;
+            cursor: pointer;
+            line-height: 1;
+        }
+
         .house { font-size: 1.1rem; color: #aaa; margin-bottom: 2px; }
         .name { font-size: 1.65rem; color: #60a5fa; margin: 4px 0 14px; font-weight: 600; }
-        .main-stats { font-size: 1.05rem; color: #ddd; margin: 12px 0; line-height: 1.4; }
-        .perfume-info { font-size: 0.98rem; color: #bbb; margin: 12px 0 8px; line-height: 1.45; }
-        .wear-stat { margin: 6px 0; font-size: 1.02rem; color: #ccc; }
+
+        .main-stats { 
+            font-size: 1.05rem; 
+            color: #ddd; 
+            margin: 12px 0; 
+            line-height: 1.4;
+        }
+        .perfume-info { 
+            font-size: 0.98rem; 
+            color: #bbb; 
+            margin: 12px 0 8px; 
+            line-height: 1.45;
+        }
+        .wear-stat { 
+            margin: 6px 0; 
+            font-size: 1.02rem; 
+            color: #ccc; 
+        }
     </style>
 </head>
 <body>
@@ -65,18 +293,16 @@
                 <a href="unratedrandomizer.html">Unrated Randomizer</a>
                 <a href="top10.html">My Top 10</a>
                 <a href="layers.html">Layers</a>
-                <a href="searchingbottle.html">Searching For</a>
             </div>
         </div>
         <button onclick="shareCurrentView()" class="share-header-btn">Share</button>
     </header>
     
     <div class="controls">
-        <div class="search-wrapper">
+        <div class="search-container">
             <input type="text" id="search" placeholder="Search House, Name, Perfumer, Notes, Comments..." onkeyup="filterTable()">
-            <button class="clear-search" onclick="clearSearch()" title="Clear search">×</button>
+            <button class="clear-btn" id="clear-search" onclick="clearSearch()" aria-label="Clear search">×</button>
         </div>
-        
         <div id="genre-filters"></div>
         
         <select id="season-filter" onchange="filterTable()">
@@ -138,7 +364,8 @@
         let fragrances = [];
         let nowWearingData = [];
         let currentGenres = new Set();
-        let currentSort = null;
+        let sortState = {};
+        let currentSortCol = null;
 
         const highFirst = [2, 3, 4, 8];
 
@@ -196,61 +423,88 @@
             document.getElementById('modal').style.display = 'none';
         }
 
-        function getCurrentStateParams() {
+        function updateUrl() {
             const params = new URLSearchParams();
             const searchTerm = document.getElementById('search').value.trim();
             if (searchTerm) params.set('search', searchTerm);
-            
-            if (currentGenres.size > 0) {
-                params.set('genres', Array.from(currentGenres).sort().join(','));
-            }
-            
+
             const season = document.getElementById('season-filter').value;
             if (season) params.set('season', season);
 
-            if (currentSort) {
-                params.set('sort', `\( {currentSort.col}: \){currentSort.asc ? 'asc' : 'desc'}`);
+            if (currentGenres.size > 0) {
+                params.set('genres', Array.from(currentGenres).join(','));
             }
 
-            return params;
-        }
+            if (currentSortCol !== null) {
+                params.set('sort', currentSortCol);
+                params.set('order', sortState[currentSortCol] ? 'asc' : 'desc');
+            }
 
-        function updateUrl() {
-            const params = getCurrentStateParams();
             const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
             window.history.replaceState({}, '', newUrl);
         }
 
         function shareCurrentView() {
             updateUrl();
-            navigator.clipboard.writeText(window.location.href).then(() => {
+            const fullUrl = window.location.href;
+            navigator.clipboard.writeText(fullUrl).then(() => {
                 const toast = document.getElementById('toast');
                 toast.style.display = 'block';
                 setTimeout(() => toast.style.display = 'none', 2200);
-            });
+            }).catch(() => alert('Link copied!'));
         }
 
         function applyUrlParams() {
             const params = new URLSearchParams(window.location.search);
+            
             const urlSearch = params.get('search');
             if (urlSearch) document.getElementById('search').value = urlSearch;
-            
+
             const urlSeason = params.get('season');
             if (urlSeason) document.getElementById('season-filter').value = urlSeason;
-            
+
             const urlGenres = params.get('genres');
-            if (urlGenres) window.pendingGenres = urlGenres.split(',').map(g => g.trim());
-            
+            if (urlGenres) {
+                urlGenres.split(',').forEach(g => {
+                    if (g.trim()) currentGenres.add(g.trim());
+                });
+            }
+
             const urlSort = params.get('sort');
-            if (urlSort) window.pendingSort = urlSort;
+            const urlOrder = params.get('order');
+            if (urlSort !== null) {
+                const col = parseInt(urlSort);
+                if (!isNaN(col)) {
+                    currentSortCol = col;
+                    sortState[col] = (urlOrder === 'asc');
+                }
+            }
+        }
+
+        function toggleClearButton() {
+            const searchInput = document.getElementById('search');
+            const clearBtn = document.getElementById('clear-search');
+            clearBtn.style.display = searchInput.value.length > 0 ? 'block' : 'none';
+        }
+
+        function clearSearch() {
+            const searchInput = document.getElementById('search');
+            searchInput.value = '';
+            toggleClearButton();
+            filterTable();
+            searchInput.focus();
         }
 
         async function loadCSV() {
+            const footer = document.getElementById('footer');
             try {
+                footer.innerHTML = 'Loading from Google Sheets...';
                 const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=1371140242&single=true&output=csv";
+                
                 const res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now());
+                if (!res.ok) throw new Error('Network error');
+                
                 const text = await res.text();
-
                 Papa.parse(text, {
                     header: true,
                     skipEmptyLines: true,
@@ -263,20 +517,30 @@
                                 });
                                 return row;
                             });
-
+                        
                         console.log("✅ Loaded", fragrances.length, "fragrances");
-
                         renderTable(fragrances);
                         renderGenreButtons();
                         updateFooter();
 
                         applyUrlParams();
-                        filterTable();  // applies everything after data + buttons ready
+                        toggleClearButton();
+                        
+                        // Apply active genre buttons
+                        document.querySelectorAll('.genre-btn').forEach(btn => {
+                            if (currentGenres.has(btn.textContent)) btn.classList.add('active');
+                        });
+
+                        if (currentSortCol !== null) {
+                            sortTable(currentSortCol, true);
+                        } else {
+                            filterTable();
+                        }
                     }
                 });
             } catch (e) {
                 console.error("Load error:", e);
-                document.getElementById('footer').innerHTML = `<strong style="color:#ff6666;">Error loading Google Sheet</strong>`;
+                footer.innerHTML = `<strong style="color:#ff6666;">Error loading Google Sheet</strong><br><small>Check internet / publish settings</small>`;
             }
         }
 
@@ -285,13 +549,11 @@
                 const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=775413918&single=true&output=csv";
                 const res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now());
                 const text = await res.text();
-
                 Papa.parse(text, {
                     header: true,
                     skipEmptyLines: true,
                     complete: (result) => {
-                        nowWearingData = result.data
-                            .filter(row => row.Date && row.Name)
+                        nowWearingData = result.data.filter(row => row.Date && row.Name)
                             .map(row => {
                                 Object.keys(row).forEach(key => {
                                     if (typeof row[key] === 'string') row[key] = row[key].trim();
@@ -334,23 +596,12 @@
                     showModal(data[index]);
                 });
             });
-
-            if (window.pendingSort) {
-                const [colStr, dir] = window.pendingSort.split(':');
-                const col = parseInt(colStr);
-                if (!isNaN(col)) {
-                    currentSort = { col: col, asc: dir === 'asc' };
-                    sortTable(col, true);
-                }
-                delete window.pendingSort;
-            }
         }
 
         function renderGenreButtons() {
             const genres = [...new Set(fragrances.map(f => f.Genre).filter(Boolean))].sort();
             const container = document.getElementById('genre-filters');
             container.innerHTML = '<strong>Genres:</strong> ';
-            
             genres.forEach(g => {
                 const btn = document.createElement('button');
                 btn.className = 'genre-btn';
@@ -363,31 +614,18 @@
                 };
                 container.appendChild(btn);
             });
-
-            if (window.pendingGenres) {
-                const buttons = container.querySelectorAll('.genre-btn');
-                window.pendingGenres.forEach(g => {
-                    buttons.forEach(btn => {
-                        if (btn.textContent === g) {
-                            currentGenres.add(g);
-                            btn.classList.add('active');
-                        }
-                    });
-                });
-                delete window.pendingGenres;
-            }
         }
 
         function filterTable() {
             const term = document.getElementById('search').value.toLowerCase().trim();
             const seasonFilter = document.getElementById('season-filter').value;
             
-            let filtered = fragrances.filter(f => {
+            const filtered = fragrances.filter(f => {
                 let matchSearch = true;
                 if (term) {
-                    const text = [f.House, f.Name, f.Perfumer, f.Notes, f.Comments]
+                    const searchableText = [f.House, f.Name, f.Perfumer, f.Notes, f.Comments]
                         .filter(Boolean).join(' ').toLowerCase();
-                    matchSearch = text.includes(term);
+                    matchSearch = searchableText.includes(term);
                 }
                 
                 let matchSeason = true;
@@ -406,6 +644,7 @@
             renderTable(filtered);
             updateFooter(filtered);
             updateUrl();
+            toggleClearButton();
         }
 
         function updateFooter(filteredData = null) {
@@ -421,15 +660,39 @@
                              document.getElementById('search').value.trim() !== "" ||
                              document.getElementById('season-filter').value !== "";
 
+            const label = isFiltered ? "filtered fragrances" : "fragrances";
+
             document.getElementById('footer').innerHTML = `
-                <strong>${total}</strong> ${isFiltered ? "filtered fragrances" : "fragrances"} • 
+                <strong>${total}</strong> ${label} • 
                 <strong>${totalML.toLocaleString()}</strong> ml total
             `;
         }
 
-        function clearSearch() {
-            document.getElementById('search').value = '';
-            filterTable();
+        function sortTable(colIndex, skipToggle = false) {
+            if (!skipToggle) {
+                if (sortState[colIndex] === undefined) {
+                    sortState[colIndex] = highFirst.includes(colIndex) ? false : true;
+                } else {
+                    sortState[colIndex] = !sortState[colIndex];
+                }
+            }
+            currentSortCol = colIndex;
+
+            const tbody = document.querySelector('#fragrance-table tbody');
+            let rows = Array.from(tbody.querySelectorAll('tr'));
+            const ascending = sortState[colIndex];
+
+            rows.sort((a, b) => {
+                let x = a.cells[colIndex].textContent.trim();
+                let y = b.cells[colIndex].textContent.trim();
+                if (!isNaN(parseFloat(x)) && !isNaN(parseFloat(y))) {
+                    return ascending ? parseFloat(x) - parseFloat(y) : parseFloat(y) - parseFloat(x);
+                }
+                return ascending ? x.localeCompare(y) : y.localeCompare(x);
+            });
+            
+            rows.forEach(row => tbody.appendChild(row));
+            updateUrl();
         }
 
         function startOver() {
@@ -437,10 +700,12 @@
             document.getElementById('search').value = '';
             document.getElementById('season-filter').value = '';
             document.querySelectorAll('.genre-btn').forEach(btn => btn.classList.remove('active'));
-            currentSort = null;
+            sortState = {};
+            currentSortCol = null;
             renderTable(fragrances);
             updateFooter();
             updateUrl();
+            toggleClearButton();
         }
 
         function exportToCSV() {
@@ -461,49 +726,28 @@
             link.click();
         }
 
-        function sortTable(colIndex, skipToggle = false) {
-            const tbody = document.querySelector('#fragrance-table tbody');
-            let rows = Array.from(tbody.querySelectorAll('tr'));
-            
-            if (!skipToggle) {
-                if (!currentSort || currentSort.col !== colIndex) {
-                    currentSort = { col: colIndex, asc: highFirst.includes(colIndex) ? false : true };
-                } else {
-                    currentSort.asc = !currentSort.asc;
-                }
-            }
-            
-            const ascending = currentSort ? currentSort.asc : true;
-
-            rows.sort((a, b) => {
-                let x = a.cells[colIndex].textContent.trim();
-                let y = b.cells[colIndex].textContent.trim();
-                if (!isNaN(parseFloat(x)) && !isNaN(parseFloat(y))) {
-                    return ascending ? parseFloat(x) - parseFloat(y) : parseFloat(y) - parseFloat(x);
-                }
-                return ascending ? x.localeCompare(y) : y.localeCompare(x);
-            });
-            
-            rows.forEach(row => tbody.appendChild(row));
-            updateUrl();
-        }
-
         function toggleMenu() {
             document.getElementById('menu').classList.toggle('active');
         }
 
-        document.addEventListener('click', e => {
-            if (!e.target.closest('.nav')) document.getElementById('menu').classList.remove('active');
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.nav')) {
+                document.getElementById('menu').classList.remove('active');
+            }
         });
 
         const modal = document.getElementById('modal');
-        modal.addEventListener('click', e => {
+        modal.addEventListener('click', function(e) {
             if (e.target === modal) closeModal();
         });
 
         window.onload = () => {
+            applyUrlParams();
             loadCSV();
             loadNowWearing();
+
+            const searchInput = document.getElementById('search');
+            searchInput.addEventListener('input', toggleClearButton);
         };
     </script>
 </body>
