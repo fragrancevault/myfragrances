@@ -29,62 +29,15 @@
         }
         h1 { margin: 0; font-size: 2.0rem; }
 
-        .nav {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-        }
-        .hamburger {
-            display: flex;
-            flex-direction: column;
-            cursor: pointer;
-            padding: 8px;
-        }
-        .hamburger span {
-            width: 28px;
-            height: 3px;
-            background: #60a5fa;
-            margin: 4px 0;
-            transition: 0.3s;
-        }
+        .nav { position: absolute; top: 20px; left: 20px; }
+        .hamburger { display: flex; flex-direction: column; cursor: pointer; padding: 8px; }
+        .hamburger span { width: 28px; height: 3px; background: #60a5fa; margin: 4px 0; transition: 0.3s; }
 
-        .share-header-btn {
-            position: absolute;
-            bottom: 18px;
-            right: 20px;
-            background: #0066cc;
-            color: white;
-            border: none;
-            padding: 7px 14px;
-            border-radius: 20px;
-            font-size: 13px;
-            cursor: pointer;
-        }
+        .share-header-btn { position: absolute; bottom: 18px; right: 20px; background: #0066cc; color: white; border: none; padding: 7px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; }
 
-        .menu {
-            display: none;
-            position: absolute;
-            top: 65px;
-            left: 20px;
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 12px 0;
-            min-width: 180px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-            z-index: 1000;
-        }
-        .menu a {
-            display: block;
-            padding: 12px 20px;
-            color: #e0e0e0;
-            text-decoration: none;
-            font-size: 15px;
-        }
-        .menu a:hover {
-            background: #0066cc;
-            color: white;
-        }
+        .menu { display: none; position: absolute; top: 65px; left: 20px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 12px 0; min-width: 180px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 1000; }
+        .menu a { display: block; padding: 12px 20px; color: #e0e0e0; text-decoration: none; font-size: 15px; }
+        .menu a:hover { background: #0066cc; color: white; }
         .menu.active { display: block; }
 
         .controls { 
@@ -103,7 +56,6 @@
             flex: 1;
             min-width: 260px;
         }
-
         .search-container input {
             width: 100%;
             padding: 10px 12px 10px 12px;
@@ -115,7 +67,6 @@
             border: 1px solid #444;
             box-sizing: border-box;
         }
-
         .clear-btn {
             position: absolute;
             right: 12px;
@@ -128,12 +79,8 @@
             cursor: pointer;
             padding: 4px 6px;
             line-height: 1;
-            display: none;
         }
-
-        .clear-btn:hover {
-            color: #e0e0e0;
-        }
+        .clear-btn:hover { color: #e0e0e0; }
 
         input, select { 
             font-size: 14px;
@@ -293,6 +240,7 @@
                 <a href="unratedrandomizer.html">Unrated Randomizer</a>
                 <a href="top10.html">My Top 10</a>
                 <a href="layers.html">Layers</a>
+                <a href="searchingbottle.html">Searching For</a>
             </div>
         </div>
         <button onclick="shareCurrentView()" class="share-header-btn">Share</button>
@@ -446,12 +394,11 @@
 
         function shareCurrentView() {
             updateUrl();
-            const fullUrl = window.location.href;
-            navigator.clipboard.writeText(fullUrl).then(() => {
+            navigator.clipboard.writeText(window.location.href).then(() => {
                 const toast = document.getElementById('toast');
                 toast.style.display = 'block';
                 setTimeout(() => toast.style.display = 'none', 2200);
-            }).catch(() => alert('Link copied!'));
+            });
         }
 
         function applyUrlParams() {
@@ -527,14 +474,13 @@
                         applyUrlParams();
                         toggleClearButton();
                         
-                        // Activate genre buttons
+                        // Activate genre buttons from URL
                         document.querySelectorAll('.genre-btn').forEach(btn => {
                             if (currentGenres.has(btn.textContent.trim())) {
                                 btn.classList.add('active');
                             }
                         });
 
-                        // Always filter first (this was the bug), then sort if needed
                         filterTable();
 
                         if (currentSortCol !== null) {
@@ -544,11 +490,9 @@
                 });
             } catch (e) {
                 console.error("Load error:", e);
-                footer.innerHTML = `<strong style="color:#ff6666;">Error loading Google Sheet</strong><br><small>Check internet / publish settings</small>`;
+                footer.innerHTML = `<strong style="color:#ff6666;">Error loading Google Sheet</strong>`;
             }
         }
-
-        // ... (loadNowWearing, showModal, renderTable, renderGenreButtons, filterTable, updateFooter, sortTable, startOver, exportToCSV, toggleMenu remain the same as previous version)
 
         async function loadNowWearing() {
             try {
@@ -559,7 +503,8 @@
                     header: true,
                     skipEmptyLines: true,
                     complete: (result) => {
-                        nowWearingData = result.data.filter(row => row.Date && row.Name)
+                        nowWearingData = result.data
+                            .filter(row => row.Date && row.Name)
                             .map(row => {
                                 Object.keys(row).forEach(key => {
                                     if (typeof row[key] === 'string') row[key] = row[key].trim();
@@ -748,7 +693,6 @@
         });
 
         window.onload = () => {
-            applyUrlParams();
             loadCSV();
             loadNowWearing();
 
