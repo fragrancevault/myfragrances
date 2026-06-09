@@ -114,7 +114,7 @@
             overflow-y: auto;
         }
         table { 
-            min-width: 1450px; 
+            min-width: 1950px; 
             border-collapse: collapse; 
             background: #111; 
             width: 100%;
@@ -129,8 +129,28 @@
             position: sticky; 
             top: 0; 
             z-index: 10;
+            text-align: left;
+        }
+        th.center { 
+            text-align: center; 
         }
         tr:hover { background: #1f2a3a; cursor: pointer; }
+
+        .notes-col { width: 280px; }
+        .comments-col { width: 260px; }
+        .link-col { width: 65px; text-align: center; }
+
+        .link-icon {
+            font-size: 1.45rem;
+            color: #60a5fa;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            text-decoration: none;
+        }
+        .link-icon:hover {
+            transform: scale(1.35);
+            color: #3b82f6;
+        }
 
         .toast {
             position: fixed;
@@ -162,7 +182,6 @@
             color: white; 
         }
 
-        /* Compact Mobile Modal */
         .modal {
             display: none;
             position: fixed;
@@ -179,7 +198,7 @@
             border-radius: 16px;
             padding: 20px 18px;
             width: 100%;
-            max-width: 360px;
+            max-width: 440px;
             text-align: center;
             position: relative;
             box-shadow: 0 10px 30px rgba(0,0,0,0.6);
@@ -213,6 +232,28 @@
             margin: 6px 0; 
             font-size: 1.02rem; 
             color: #ccc; 
+        }
+        .modal-link {
+            margin-top: 20px;
+            padding: 13px 24px;
+            background: #1e3a8a;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+        .modal-link:hover {
+            background: #2563eb;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #444;
+            margin: 18px 0;
+            width: 100%;
         }
     </style>
 </head>
@@ -256,7 +297,9 @@
                     <th>Genre</th>
                     <th>Season</th>
                     <th>ml</th>
-                    <th>Notes / Comments</th>
+                    <th class="notes-col">Notes</th>
+                    <th class="comments-col">Comments</th>
+                    <th class="link-col">Link</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -269,7 +312,6 @@
 
     <div id="toast" class="toast">✅ Link copied!</div>
 
-    <!-- Popup Modal -->
     <div id="modal" class="modal">
         <div class="modal-content" onclick="event.stopImmediatePropagation()">
             <span class="close-btn" onclick="closeModal()">×</span>
@@ -303,7 +345,6 @@
 
         function showModal(fragrance) {
             const wear = findWearStats(fragrance.House, fragrance.Name);
-
             let html = `
                 <div class="house">${cleanValue(fragrance.House)}</div>
                 <div class="name">${cleanValue(fragrance.Name)}</div>
@@ -315,24 +356,41 @@
                 <div class="perfume-info">
                     <strong>Genre:</strong> ${cleanValue(fragrance.Genre)}<br>
                     <strong>Season:</strong> ${cleanValue(fragrance.Seasons)}<br>
-                    <strong>Perfumer:</strong> ${cleanValue(fragrance.Perfumer)}
+                    <strong>Perfumer:</strong> ${cleanValue(fragrance.Perfumer)}<br>
+                    <strong>Parfumo:</strong> ${cleanValue(fragrance['Parfumo Rating'])}<br>
+                    <strong>Sprays:</strong> ${cleanValue(fragrance.Sprays)}<br>
+                    <strong>Size:</strong> ${cleanValue(fragrance.Size)} ml
                 </div>
-                ${fragrance.Notes && fragrance.Notes !== 'N/A' ? `<div class="wear-stat"><strong>Notes:</strong> ${cleanValue(fragrance.Notes)}</div>` : ''}
             `;
 
-            html += `<div style="margin-top:20px; padding-top:14px; border-top:1px solid #444;">`;
-            
+            if (fragrance.Notes && fragrance.Notes !== 'N/A' && fragrance.Notes.trim() !== '') {
+                html += `<hr>`;
+                html += `<div class="wear-stat"><strong>Notes:</strong> ${cleanValue(fragrance.Notes)}</div>`;
+            }
+
+            if (fragrance.Comments && fragrance.Comments !== 'N/A' && fragrance.Comments.trim() !== '') {
+                html += `<hr>`;
+                html += `<div class="wear-stat"><strong>Comments:</strong> ${cleanValue(fragrance.Comments)}</div>`;
+            }
+
             if (wear) {
-                html += `
+                html += `<div style="margin-top:20px; padding-top:14px; border-top:1px solid #444;">
                     <div class="wear-stat"><strong>Date Worn:</strong> ${cleanValue(wear.Date)}</div>
                     <div class="wear-stat"><strong>This Month:</strong> ${cleanValue(wear.Month)} wears</div>
                     <div class="wear-stat"><strong>This Year:</strong> ${cleanValue(wear.Year)} wears</div>
-                `;
+                </div>`;
             } else {
-                html += `<div class="wear-stat" style="color:#ffcc66;"><strong>Not yet worn</strong></div>`;
+                html += `<div style="margin-top:20px; padding-top:14px; border-top:1px solid #444; color:#ffcc66; text-align:center;">
+                    <strong>Not yet worn</strong>
+                </div>`;
             }
-            
-            html += `</div>`;
+
+            if (fragrance.Link && fragrance.Link.trim() !== '' && fragrance.Link !== 'N/A') {
+                html += `
+                    <a href="${fragrance.Link}" target="_blank" class="modal-link">
+                        🔗 Fragrance Hub
+                    </a>`;
+            }
 
             document.getElementById('modal-card').innerHTML = html;
             document.getElementById('modal').style.display = 'flex';
@@ -448,23 +506,29 @@
             let html = '';
             for (let i = 0; i < data.length; i++) {
                 const f = data[i];
+                const linkHtml = (f.Link && f.Link.trim() !== '' && f.Link !== 'N/A') 
+                    ? `<a href="${f.Link}" target="_blank" class="link-icon" title="Fragrance Hub">🔗</a>` 
+                    : '—';
+                
                 html += `<tr data-index="${i}">` +
-                    '<td>' + cleanValue(f.House) + '</td>' +
-                    '<td><strong>' + cleanValue(f.Name) + '</strong></td>' +
-                    '<td>' + cleanValue(f.Rating) + '</td>' +
-                    '<td>' + cleanValue(f['Hours of Performance']) + '</td>' +
-                    '<td>' + cleanValue(f.Silliage) + '</td>' +
-                    '<td>' + cleanValue(f.Genre) + '</td>' +
-                    '<td>' + cleanValue(f.Seasons) + '</td>' +
-                    '<td>' + cleanValue(f.Size) + '</td>' +
-                    '<td class="notes">' + cleanValue(f.Notes) + ' <strong>' + cleanValue(f.Comments) + '</strong></td>' +
+                    `<td>${cleanValue(f.House)}</td>` +
+                    `<td><strong>${cleanValue(f.Name)}</strong></td>` +
+                    `<td>${cleanValue(f.Rating)}</td>` +
+                    `<td>${cleanValue(f['Hours of Performance'])}</td>` +
+                    `<td>${cleanValue(f.Silliage)}</td>` +
+                    `<td>${cleanValue(f.Genre)}</td>` +
+                    `<td>${cleanValue(f.Seasons)}</td>` +
+                    `<td>${cleanValue(f.Size)}</td>` +
+                    `<td class="notes-col">${cleanValue(f.Notes)}</td>` +
+                    `<td class="comments-col">${cleanValue(f.Comments)}</td>` +
+                    `<td class="link-col">${linkHtml}</td>` +
                     '</tr>';
             }
             tbody.innerHTML = html;
 
-            // Add click listeners for modal
             document.querySelectorAll('#fragrance-table tbody tr').forEach(row => {
-                row.addEventListener('click', () => {
+                row.addEventListener('click', (e) => {
+                    if (e.target.tagName === 'A') return;
                     const index = parseInt(row.dataset.index);
                     showModal(data[index]);
                 });
@@ -498,7 +562,7 @@
             const rows = Array.from(tbody.querySelectorAll('tr'));
             if (rows.length === 0) return alert("No data to export!");
 
-            let csv = "House,Name,Rating,Hours,Silliage,Genre,Season,ml,Notes/Comments\n";
+            let csv = "House,Name,Rating,Hours,Silliage,Genre,Season,ml,Notes,Comments,Link\n";
             rows.forEach(row => {
                 const cells = Array.from(row.cells).map(cell => `"${cell.textContent.trim().replace(/"/g, '""')}"`);
                 csv += cells.join(',') + '\n';
@@ -521,7 +585,6 @@
             }
         });
 
-        // Modal background click to close
         const modal = document.getElementById('modal');
         modal.addEventListener('click', function(e) {
             if (e.target === modal) closeModal();

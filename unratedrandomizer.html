@@ -68,14 +68,24 @@
             border-radius: 16px;
             padding: 25px 20px;
             text-align: center;
-            min-height: 500px;
+            min-height: 520px;
             display: flex;
             flex-direction: column;
         }
 
         .card-title { font-size: 1.35rem; color: #60a5fa; margin-bottom: 12px; font-weight: 600; }
         .house { font-size: 1.25rem; color: #aaa; }
-        .name { font-size: 2.1rem; color: #60a5fa; margin: 8px 0 16px; }
+        .name { 
+            font-size: 2.1rem; 
+            color: #60a5fa; 
+            margin: 8px 0 16px; 
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .name:hover {
+            text-decoration: underline;
+            color: #3b82f6;
+        }
 
         .main-stats { 
             font-size: 1.1rem; 
@@ -135,7 +145,7 @@
                 <a href="top10.html">My Top 10</a>
                 <a href="layers.html">Layers</a>
                 <a href="searchingbottle.html">Searching For</a>
-  </div>
+            </div>
         </div>
     </header>
 
@@ -273,16 +283,13 @@
             let baseList = [];
 
             if (key === 'all') {
-                // All unrated fragrances
                 baseList = fragrances.filter(row => isUnrated(row.Rating));
             } else {
-                // Genre-specific unrated fragrances
                 baseList = fragrances.filter(row => 
                     row.Genre === key && isUnrated(row.Rating)
                 );
             }
 
-            // Apply season filter
             return baseList.filter(row => matchesSeason(row, currentSeasonFilter));
         }
 
@@ -309,6 +316,7 @@
             if (!card) return;
 
             const wear = findWearStats(fragrance.House, fragrance.Name);
+            const hasLink = fragrance.Link && fragrance.Link.trim() !== '' && fragrance.Link !== 'N/A';
 
             let wearHTML = '';
             if (wear) {
@@ -325,10 +333,14 @@
                 `;
             }
 
+            const nameHTML = hasLink 
+                ? `<a href="\( {fragrance.Link}" target="_blank" class="name"> \){cleanValue(fragrance.Name)}</a>`
+                : `<div class="name">${cleanValue(fragrance.Name)}</div>`;
+
             card.innerHTML = `
                 <div class="card-title">${key === 'all' ? 'All Fragrances' : key}</div>
                 <div class="house">${cleanValue(fragrance.House)}</div>
-                <div class="name">${cleanValue(fragrance.Name)}</div>
+                ${nameHTML}
                 
                 <div class="main-stats">
                     <strong>Rating:</strong> ${cleanValue(fragrance.Rating)} &nbsp;|&nbsp; 
