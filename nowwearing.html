@@ -41,7 +41,38 @@
         .menu a:hover { background: #0066cc; color: white; }
         .menu.active { display: block; }
 
-        /* Compact Mobile Modal */
+        .table-wrapper { 
+            padding: 20px; 
+            overflow-x: auto; 
+            padding-bottom: 80px;
+        }
+        table { 
+            min-width: 1200px; 
+            border-collapse: collapse; 
+            background: #111; 
+            width: 100%;
+        }
+        th, td { 
+            padding: 12px 10px; 
+            border-bottom: 1px solid #333;
+        }
+        th { 
+            background: #1a1a1a; 
+            color: #fff; 
+            position: sticky; 
+            top: 0; 
+            z-index: 10;
+            text-align: left;
+        }
+        tr { cursor: pointer; transition: all 0.2s; }
+        tr:hover { background: #1f2a3a; }
+
+        .date { text-align: center; font-weight: bold; white-space: nowrap; }
+        .rating { text-align: center; color: #ffd700; font-weight: bold; }
+        .sprays { text-align: center; }
+        .notes { max-width: 450px; white-space: normal; }
+
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -58,7 +89,7 @@
             border-radius: 16px;
             padding: 20px 18px;
             width: 100%;
-            max-width: 360px;
+            max-width: 440px;
             text-align: center;
             position: relative;
             box-shadow: 0 10px 30px rgba(0,0,0,0.6);
@@ -93,35 +124,28 @@
             font-size: 1.02rem; 
             color: #ccc; 
         }
-
-        .table-wrapper { 
-            padding: 20px; 
-            overflow-x: auto; 
-            padding-bottom: 80px;
+        .modal-link {
+            margin-top: 20px;
+            padding: 13px 24px;
+            background: #1e3a8a;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.05rem;
         }
-        table { 
-            min-width: 1000px; 
-            border-collapse: collapse; 
-            background: #111; 
+        .modal-link:hover {
+            background: #2563eb;
+        }
+        hr {
+            border: none;
+            border-top: 1px solid #444;
+            margin: 18px 0;
             width: 100%;
         }
-        th, td { 
-            padding: 12px 10px; 
-            border-bottom: 1px solid #333;
-        }
-        th { 
-            background: #1a1a1a; 
-            color: #fff; 
-            position: sticky; 
-            top: 0; 
-            z-index: 10;
-        }
-        tr { cursor: pointer; transition: all 0.2s; }
-        tr:hover { background: #1f2a3a; }
-
-        .date { text-align: center; font-weight: bold; white-space: nowrap; }
-        .rating { text-align: center; color: #ffd700; font-weight: bold; }
-        .notes { max-width: 500px; white-space: normal; }
     </style>
 </head>
 <body>
@@ -153,7 +177,8 @@
                     <th>Name</th>
                     <th>Rating</th>
                     <th>Usage</th>
-                    <th>Notes</th>
+                    <th class="sprays">Sprays</th>
+                    <th class="notes">Notes</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -164,7 +189,6 @@
         Loading recent wears...
     </footer>
 
-    <!-- Popup Modal -->
     <div id="modal" class="modal">
         <div class="modal-content" onclick="event.stopImmediatePropagation()">
             <span class="close-btn" onclick="closeModal()">×</span>
@@ -258,7 +282,8 @@
                     <td>${cleanValue(row.Brand)}</td>
                     <td><strong>${cleanValue(row.Name)}</strong></td>
                     <td class="rating">${cleanValue(row.Rating)}</td>
-                    <td class="notes">${cleanValue(row.Usage)}</td>
+                    <td>${cleanValue(row.Usage)}</td>
+                    <td class="sprays">${cleanValue(row.Sprays)}</td>
                     <td class="notes">${cleanValue(row.Notes)}</td>
                 </tr>
             `).join('');
@@ -288,21 +313,33 @@
                     <div class="perfume-info">
                         <strong>Genre:</strong> ${cleanValue(frag.Genre)}<br>
                         <strong>Season:</strong> ${cleanValue(frag.Seasons)}<br>
+                        <strong>Sprays:</strong> ${cleanValue(wear.Sprays)}<br>
                         <strong>Perfumer:</strong> ${cleanValue(frag.Perfumer)}
                     </div>
-                    ${frag.Notes && frag.Notes !== 'N/A' ? `<div class="wear-stat"><strong>Notes:</strong> ${cleanValue(frag.Notes)}</div>` : ''}
                 `;
             } else {
-                html += `<div style="color:#ffcc66; margin:12px 0; font-size:0.95rem;">Fragrance details not found in main collection</div>`;
+                html += `
+                    <div class="perfume-info">
+                        <strong>Sprays:</strong> ${cleanValue(wear.Sprays)}
+                    </div>
+                `;
             }
 
             html += `
+                <hr>
                 <div style="margin-top:20px; padding-top:14px; border-top:1px solid #444;">
                     <div class="wear-stat"><strong>Date Worn:</strong> ${cleanValue(wear.Date)}</div>
                     <div class="wear-stat"><strong>This Month:</strong> ${cleanValue(wear.Month)} wears</div>
                     <div class="wear-stat"><strong>This Year:</strong> ${cleanValue(wear.Year)} wears</div>
                 </div>
             `;
+
+            if (frag && frag.Link && frag.Link.trim() !== '' && frag.Link !== 'N/A') {
+                html += `
+                    <a href="${frag.Link}" target="_blank" class="modal-link">
+                        🔗 Fragrance Hub
+                    </a>`;
+            }
 
             document.getElementById('modal-card').innerHTML = html;
             document.getElementById('modal').style.display = 'flex';
