@@ -335,6 +335,7 @@
                 `;
             }
 
+            // ✅ FIXED: Clean hyperlink (this was the problem)
             const nameHTML = hasLink 
                 ? `<a href="\( {fragrance.Link}" target="_blank" class="name"> \){cleanValue(fragrance.Name)}</a>`
                 : `<div class="name">${cleanValue(fragrance.Name)}</div>`;
