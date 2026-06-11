@@ -22,7 +22,7 @@
         header {
             background: linear-gradient(135deg, #1a1a1a, #0f0f0f);
             color: white;
-            padding: 1.6rem 1rem 1.6rem 65px; /* Adjusted for smaller icon */
+            padding: 1.6rem 1rem 1.6rem 65px;
             text-align: center;
             border-bottom: 1px solid #333;
             position: relative;
@@ -39,7 +39,6 @@
             color: #4ade80;
         }
 
-        /* Help Icon - Smaller & Subtler */
         #help-icon {
             position: absolute;
             left: 22px;
@@ -47,7 +46,7 @@
             transform: translateY(-50%);
             background: none;
             border: none;
-            font-size: 1.35rem; /* Roughly half the previous size */
+            font-size: 1.35rem;
             cursor: pointer;
             color: #60a5fa;
             padding: 6px;
@@ -158,7 +157,6 @@
             font-size: 14.5px;
         }
 
-        /* Column widths */
         th:nth-child(1), td:nth-child(1) { width: 20px; max-width: 20px; text-align: center; }
         th:nth-child(2), td:nth-child(2) { width: 30px; max-width: 30px; text-align: center; }
         th:nth-child(3), td:nth-child(3) { width: 100px; }
@@ -559,17 +557,24 @@
             if (!s) return;
 
             document.getElementById('modal-house').textContent = cleanValue(s.House);
-            document.getElementById('modal-name').textContent = cleanValue(s.Name);
-            document.getElementById('modal-perfumer').textContent = cleanValue(s.Perfumer);
+
+            const hasLink = s.Link && s.Link.trim() !== '' && s.Link !== 'N/A';
+            const nameContainer = document.getElementById('modal-name');
             
+            if (hasLink) {
+                nameContainer.innerHTML = '<a href="' + s.Link + '" target="_blank" style="color:#60a5fa; text-decoration:none; cursor:pointer;">' + cleanValue(s.Name) + '</a>';
+            } else {
+                nameContainer.textContent = cleanValue(s.Name);
+            }
+
+            document.getElementById('modal-perfumer').textContent = cleanValue(s.Perfumer);
             document.getElementById('modal-performance').innerHTML = createStarRating(s.Performance);
             document.getElementById('modal-rating').innerHTML = createStarRating(s.Rating);
-            
             document.getElementById('modal-notes').textContent = cleanValue(s.Notes);
             document.getElementById('modal-comments').textContent = cleanValue(s.Comment || s.Comments);
             
             const linkEl = document.getElementById('modal-link');
-            if (s.Link && s.Link.trim() !== '' && s.Link !== 'N/A') {
+            if (hasLink) {
                 linkEl.href = s.Link;
                 linkEl.style.display = 'inline';
             } else {
@@ -627,7 +632,6 @@
             });
             renderTable(filtered);
             updateFooter(filtered);
-            updateUrl();
         }
 
         function clearSearch() {
@@ -649,7 +653,6 @@
             renderTable(sales);
             sortTable(2, true);
             updateFooter();
-            updateUrl();
         }
 
         function showSelectionModal() {
@@ -758,13 +761,6 @@
             
             rows.forEach(row => tbody.appendChild(row));
             updateTotal();
-        }
-
-        function updateUrl() {
-            const searchTerm = document.getElementById('search').value.trim();
-            const params = new URLSearchParams();
-            if (searchTerm) params.set('search', searchTerm);
-            window.history.replaceState({}, '', window.location.pathname + (params.toString() ? '?' + params.toString() : ''));
         }
 
         window.onload = loadCSV;
