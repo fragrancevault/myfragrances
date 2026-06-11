@@ -263,36 +263,46 @@
 
         function showModal(fragrance) {
             const wear = findWearStats(fragrance.House, fragrance.Name);
+            const hasLink = fragrance.Link && fragrance.Link.trim() !== '' && fragrance.Link !== 'N/A';
 
-            let html = `
-                <div class="house">${cleanValue(fragrance.House)}</div>
-                <div class="name">${cleanValue(fragrance.Name)}</div>
-                <div class="main-stats">
-                    <strong>Rating:</strong> ${cleanValue(fragrance.Rating)} &nbsp;|&nbsp; 
-                    <strong>Hours:</strong> ${cleanValue(fragrance['Hours of Performance'])} &nbsp;|&nbsp; 
-                    <strong>Sillage:</strong> ${cleanValue(fragrance.Silliage)}
-                </div>
-                <div class="perfume-info">
-                    <strong>Genre:</strong> ${cleanValue(fragrance.Genre)}<br>
-                    <strong>Season:</strong> ${cleanValue(fragrance.Seasons)}<br>
-                    <strong>Perfumer:</strong> ${cleanValue(fragrance.Perfumer)}
-                </div>
-                ${fragrance.Notes && fragrance.Notes !== 'N/A' ? `<div class="wear-stat"><strong>Notes:</strong> ${cleanValue(fragrance.Notes)}</div>` : ''}
-            `;
+            let html = 
+                '<div class="house">' + cleanValue(fragrance.House) + '</div>';
 
-            html += `<div style="margin-top:20px; padding-top:14px; border-top:1px solid #444;">`;
+            // ✅ Name is now clickable if Link exists
+            if (hasLink) {
+                html += '<a href="' + fragrance.Link + '" target="_blank" class="name" style="display:block; text-decoration:none;">' + cleanValue(fragrance.Name) + '</a>';
+            } else {
+                html += '<div class="name">' + cleanValue(fragrance.Name) + '</div>';
+            }
+
+            html += 
+                '<div class="main-stats">' +
+                    '<strong>Rating:</strong> ' + cleanValue(fragrance.Rating) + ' &nbsp;|&nbsp; ' +
+                    '<strong>Hours:</strong> ' + cleanValue(fragrance['Hours of Performance']) + ' &nbsp;|&nbsp; ' +
+                    '<strong>Sillage:</strong> ' + cleanValue(fragrance.Silliage) +
+                '</div>' +
+                '<div class="perfume-info">' +
+                    '<strong>Genre:</strong> ' + cleanValue(fragrance.Genre) + '<br>' +
+                    '<strong>Season:</strong> ' + cleanValue(fragrance.Seasons) + '<br>' +
+                    '<strong>Perfumer:</strong> ' + cleanValue(fragrance.Perfumer) +
+                '</div>';
+
+            if (fragrance.Notes && fragrance.Notes !== 'N/A') {
+                html += '<div class="wear-stat"><strong>Notes:</strong> ' + cleanValue(fragrance.Notes) + '</div>';
+            }
+
+            html += '<div style="margin-top:20px; padding-top:14px; border-top:1px solid #444;">';
             
             if (wear) {
-                html += `
-                    <div class="wear-stat"><strong>Date Worn:</strong> ${cleanValue(wear.Date)}</div>
-                    <div class="wear-stat"><strong>This Month:</strong> ${cleanValue(wear.Month)} wears</div>
-                    <div class="wear-stat"><strong>This Year:</strong> ${cleanValue(wear.Year)} wears</div>
-                `;
+                html += 
+                    '<div class="wear-stat"><strong>Date Worn:</strong> ' + cleanValue(wear.Date) + '</div>' +
+                    '<div class="wear-stat"><strong>This Month:</strong> ' + cleanValue(wear.Month) + ' wears</div>' +
+                    '<div class="wear-stat"><strong>This Year:</strong> ' + cleanValue(wear.Year) + ' wears</div>';
             } else {
-                html += `<div class="wear-stat" style="color:#ffcc66;"><strong>Not yet worn</strong></div>`;
+                html += '<div class="wear-stat" style="color:#ffcc66;"><strong>Not yet worn</strong></div>';
             }
             
-            html += `</div>`;
+            html += '</div>';
 
             document.getElementById('modal-card').innerHTML = html;
             document.getElementById('modal').style.display = 'flex';

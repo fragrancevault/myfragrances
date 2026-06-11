@@ -320,44 +320,37 @@
 
             let wearHTML = '';
             if (wear) {
-                wearHTML = `
-                    <hr class="separator">
-                    <div class="wear-stat"><strong>Date Worn:</strong> ${cleanValue(wear.Date)}</div>
-                    <div class="wear-stat"><strong>This Month:</strong> ${cleanValue(wear.Month)} wears</div>
-                    <div class="wear-stat"><strong>This Year:</strong> ${cleanValue(wear.Year)} wears</div>
-                `;
+                wearHTML = '<hr class="separator">' +
+                    '<div class="wear-stat"><strong>Date Worn:</strong> ' + cleanValue(wear.Date) + '</div>' +
+                    '<div class="wear-stat"><strong>This Month:</strong> ' + cleanValue(wear.Month) + ' wears</div>' +
+                    '<div class="wear-stat"><strong>This Year:</strong> ' + cleanValue(wear.Year) + ' wears</div>';
             } else {
-                wearHTML = `
-                    <hr class="separator">
-                    <div class="wear-stat" style="color:#ffcc66;"><strong>Not yet worn</strong></div>
-                `;
+                wearHTML = '<hr class="separator">' +
+                    '<div class="wear-stat" style="color:#ffcc66;"><strong>Not yet worn</strong></div>';
             }
 
-            const nameHTML = hasLink 
-                ? `<a href="\( {fragrance.Link}" target="_blank" class="name"> \){cleanValue(fragrance.Name)}</a>`
-                : `<div class="name">${cleanValue(fragrance.Name)}</div>`;
+            let nameHTML = '';
+            if (hasLink) {
+                nameHTML = '<a href="' + fragrance.Link + '" target="_blank" class="name">' + cleanValue(fragrance.Name) + '</a>';
+            } else {
+                nameHTML = '<div class="name">' + cleanValue(fragrance.Name) + '</div>';
+            }
 
-            card.innerHTML = `
-                <div class="card-title">${key === 'all' ? 'All Fragrances' : key}</div>
-                <div class="house">${cleanValue(fragrance.House)}</div>
-                ${nameHTML}
-                
-                <div class="main-stats">
-                    <strong>Rating:</strong> ${cleanValue(fragrance.Rating)} &nbsp;|&nbsp; 
-                    <strong>Hours:</strong> ${cleanValue(fragrance['Hours of Performance'])} &nbsp;|&nbsp; 
-                    <strong>Sillage:</strong> ${cleanValue(fragrance.Silliage)}
-                </div>
-                
-                ${fragrance.Genre ? `<div class="perfume-info"><strong>Genre:</strong> ${cleanValue(fragrance.Genre)}</div>` : ''}
-                ${fragrance.Seasons ? `<div class="perfume-info"><strong>Season:</strong> ${cleanValue(fragrance.Seasons)}</div>` : ''}
-                ${fragrance.Perfumer ? `<div class="perfume-info"><strong>Perfumer:</strong> ${cleanValue(fragrance.Perfumer)}</div>` : ''}
-                
-                ${fragrance.Notes && fragrance.Notes !== 'N/A' ? `<div class="wear-stat"><strong>Notes:</strong> ${cleanValue(fragrance.Notes)}</div>` : ''}
-                
-                ${wearHTML}
-                
-                <div class="count">🎲 ${count} qualifying</div>
-            `;
+            card.innerHTML = 
+                '<div class="card-title">' + (key === 'all' ? 'All Fragrances' : key) + '</div>' +
+                '<div class="house">' + cleanValue(fragrance.House) + '</div>' +
+                nameHTML +
+                '<div class="main-stats">' +
+                    '<strong>Rating:</strong> ' + cleanValue(fragrance.Rating) + ' &nbsp;|&nbsp; ' +
+                    '<strong>Hours:</strong> ' + cleanValue(fragrance['Hours of Performance']) + ' &nbsp;|&nbsp; ' +
+                    '<strong>Sillage:</strong> ' + cleanValue(fragrance.Silliage) +
+                '</div>' +
+                (fragrance.Genre ? '<div class="perfume-info"><strong>Genre:</strong> ' + cleanValue(fragrance.Genre) + '</div>' : '') +
+                (fragrance.Seasons ? '<div class="perfume-info"><strong>Season:</strong> ' + cleanValue(fragrance.Seasons) + '</div>' : '') +
+                (fragrance.Perfumer ? '<div class="perfume-info"><strong>Perfumer:</strong> ' + cleanValue(fragrance.Perfumer) + '</div>' : '') +
+                (fragrance.Notes && fragrance.Notes !== 'N/A' ? '<div class="wear-stat"><strong>Notes:</strong> ' + cleanValue(fragrance.Notes) + '</div>' : '') +
+                wearHTML +
+                '<div class="count">🎲 ' + count + ' qualifying</div>';
         }
 
         function randomizeAll() {
@@ -369,10 +362,9 @@
                 if (filtered.length === 0) {
                     const card = document.getElementById(`card-${key.replace(/\s+/g, '-')}`);
                     if (card) {
-                        card.innerHTML = `
-                            <div class="card-title">${key === 'all' ? 'All Fragrances' : key}</div>
-                            <p style="color:#ffcc66;">No matching unrated fragrances</p>
-                        `;
+                        card.innerHTML = 
+                            '<div class="card-title">' + (key === 'all' ? 'All Fragrances' : key) + '</div>' +
+                            '<p style="color:#ffcc66;">No matching unrated fragrances</p>';
                     }
                     return;
                 }

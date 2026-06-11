@@ -297,32 +297,36 @@
             const index = parseInt(rowElement.dataset.index);
             const wear = currentData[index];
             const frag = findFragrance(wear.Brand || wear.House, wear.Name);
+            const hasLink = frag && frag.Link && frag.Link.trim() !== '' && frag.Link !== 'N/A';
 
-            let html = `
-                <div class="house">${cleanValue(wear.Brand)}</div>
-                <div class="name">${cleanValue(wear.Name)}</div>
-            `;
+            let html = 
+                '<div class="house">' + cleanValue(wear.Brand) + '</div>';
+
+            // ✅ Name is now clickable if Link exists
+            if (hasLink) {
+                html += '<a href="' + frag.Link + '" target="_blank" class="name" style="display:block; text-decoration:none;">' + cleanValue(wear.Name) + '</a>';
+            } else {
+                html += '<div class="name">' + cleanValue(wear.Name) + '</div>';
+            }
 
             if (frag) {
-                html += `
-                    <div class="main-stats">
-                        <strong>Rating:</strong> ${cleanValue(frag.Rating)} &nbsp;|&nbsp; 
-                        <strong>Hours:</strong> ${cleanValue(frag['Hours of Performance'])} &nbsp;|&nbsp; 
-                        <strong>Sillage:</strong> ${cleanValue(frag.Silliage)}
-                    </div>
-                    <div class="perfume-info">
-                        <strong>Genre:</strong> ${cleanValue(frag.Genre)}<br>
-                        <strong>Season:</strong> ${cleanValue(frag.Seasons)}<br>
-                        <strong>Sprays:</strong> ${cleanValue(wear.Sprays)}<br>
-                        <strong>Perfumer:</strong> ${cleanValue(frag.Perfumer)}
-                    </div>
-                `;
+                html += 
+                    '<div class="main-stats">' +
+                        '<strong>Rating:</strong> ' + cleanValue(frag.Rating) + ' &nbsp;|&nbsp; ' +
+                        '<strong>Hours:</strong> ' + cleanValue(frag['Hours of Performance']) + ' &nbsp;|&nbsp; ' +
+                        '<strong>Sillage:</strong> ' + cleanValue(frag.Silliage) +
+                    '</div>' +
+                    '<div class="perfume-info">' +
+                        '<strong>Genre:</strong> ' + cleanValue(frag.Genre) + '<br>' +
+                        '<strong>Season:</strong> ' + cleanValue(frag.Seasons) + '<br>' +
+                        '<strong>Sprays:</strong> ' + cleanValue(wear.Sprays) + '<br>' +
+                        '<strong>Perfumer:</strong> ' + cleanValue(frag.Perfumer) +
+                    '</div>';
             } else {
-                html += `
-                    <div class="perfume-info">
-                        <strong>Sprays:</strong> ${cleanValue(wear.Sprays)}
-                    </div>
-                `;
+                html += 
+                    '<div class="perfume-info">' +
+                        '<strong>Sprays:</strong> ' + cleanValue(wear.Sprays) +
+                    '</div>';
             }
 
             html += `
@@ -333,13 +337,6 @@
                     <div class="wear-stat"><strong>This Year:</strong> ${cleanValue(wear.Year)} wears</div>
                 </div>
             `;
-
-            if (frag && frag.Link && frag.Link.trim() !== '' && frag.Link !== 'N/A') {
-                html += `
-                    <a href="${frag.Link}" target="_blank" class="modal-link">
-                        🔗 Fragrance Hub
-                    </a>`;
-            }
 
             document.getElementById('modal-card').innerHTML = html;
             document.getElementById('modal').style.display = 'flex';
