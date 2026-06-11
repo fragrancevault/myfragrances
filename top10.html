@@ -47,6 +47,29 @@
             margin: 4px 0;
             transition: 0.3s;
         }
+
+        .header-buttons {
+            position: absolute;
+            bottom: 18px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: flex-end;
+        }
+
+        .copy-header-btn { 
+            background: #0066cc; 
+            color: white; 
+            border: none; 
+            padding: 7px 12px; 
+            border-radius: 20px; 
+            font-size: 13px; 
+            cursor: pointer;
+            white-space: nowrap;
+            min-width: 68px;
+        }
+
         .menu {
             display: none;
             position: absolute;
@@ -181,6 +204,21 @@
             margin-left: auto;
             margin-right: auto;
         }
+
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #22c55e;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            z-index: 3000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -202,6 +240,10 @@
                 <a href="layers.html">Layers</a>
                 <a href="searchingbottle.html">Searching For</a>
             </div>
+        </div>
+        
+        <div class="header-buttons">
+            <button onclick="copyCurrentView()" class="copy-header-btn">Copy</button>
         </div>
     </header>
     
@@ -228,6 +270,8 @@
             <div id="modal-card"></div>
         </div>
     </div>
+
+    <div id="toast" class="toast">✅ Copied!</div>
 
     <script>
         let top10Data = [];
@@ -268,7 +312,6 @@
             let html = 
                 '<div class="house">' + cleanValue(fragrance.House) + '</div>';
 
-            // ✅ Name is now clickable if Link exists
             if (hasLink) {
                 html += '<a href="' + fragrance.Link + '" target="_blank" class="name" style="display:block; text-decoration:none;">' + cleanValue(fragrance.Name) + '</a>';
             } else {
@@ -310,6 +353,37 @@
 
         function closeModal() {
             document.getElementById('modal').style.display = 'none';
+        }
+
+        function copyCurrentView() {
+            const tbody = document.querySelector('#fragrance-table tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            if (rows.length === 0) {
+                showToast('No fragrances to copy!');
+                return;
+            }
+
+            let text = 'House - Name - Rating\n\n';
+            rows.forEach(row => {
+                const house = row.cells[0].textContent.trim();
+                const name = row.cells[1].textContent.trim();
+                const rating = row.cells[2].textContent.trim();
+                text += `${house} - ${name} - ${rating}\n\n`;
+            });
+
+            navigator.clipboard.writeText(text.trim()).then(() => {
+                showToast(`✅ Copied ${rows.length} fragrances!`);
+            }).catch(() => {
+                showToast('❌ Failed to copy');
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 2200);
         }
 
         async function loadData() {
