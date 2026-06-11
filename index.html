@@ -33,7 +33,27 @@
         .hamburger { display: flex; flex-direction: column; cursor: pointer; padding: 8px; }
         .hamburger span { width: 28px; height: 3px; background: #60a5fa; margin: 4px 0; transition: 0.3s; }
 
-        .share-header-btn { position: absolute; bottom: 18px; right: 20px; background: #0066cc; color: white; border: none; padding: 7px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; }
+        .header-buttons {
+            position: absolute;
+            bottom: 18px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: flex-end;
+        }
+
+        .share-header-btn, .copy-header-btn { 
+            background: #0066cc; 
+            color: white; 
+            border: none; 
+            padding: 7px 12px; 
+            border-radius: 20px; 
+            font-size: 13px; 
+            cursor: pointer;
+            white-space: nowrap;
+            min-width: 68px;
+        }
 
         .menu { display: none; position: absolute; top: 65px; left: 20px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 12px 0; min-width: 180px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 1000; }
         .menu a { display: block; padding: 12px 20px; color: #e0e0e0; text-decoration: none; font-size: 15px; }
@@ -278,7 +298,11 @@
                 <a href="searchingbottle.html">Searching For</a>
             </div>
         </div>
-        <button onclick="shareCurrentView()" class="share-header-btn">Share</button>
+        
+        <div class="header-buttons">
+            <button onclick="copyCurrentView()" class="copy-header-btn">Copy</button>
+            <button onclick="shareCurrentView()" class="share-header-btn">Share</button>
+        </div>
     </header>
     
     <div class="controls">
@@ -388,19 +412,16 @@
                 </div>
             `;
 
-            // Notes with conditional divider
             if (fragrance.Notes && fragrance.Notes !== 'N/A' && fragrance.Notes.trim() !== '') {
                 html += `<hr>`;
                 html += `<div class="wear-stat"><strong>Notes:</strong> ${cleanValue(fragrance.Notes)}</div>`;
             }
 
-            // Comments with conditional divider
             if (fragrance.Comments && fragrance.Comments !== 'N/A' && fragrance.Comments.trim() !== '') {
                 html += `<hr>`;
                 html += `<div class="wear-stat"><strong>Comments:</strong> ${cleanValue(fragrance.Comments)}</div>`;
             }
 
-            // Wear stats
             if (wear) {
                 html += `<div style="margin-top:20px; padding-top:14px; border-top:1px solid #444;">
                     <div class="wear-stat"><strong>Date Worn:</strong> ${cleanValue(wear.Date)}</div>
@@ -413,7 +434,6 @@
                 </div>`;
             }
 
-            // Link button - now "Fragrance Hub"
             if (fragrance.Link && fragrance.Link.trim() !== '' && fragrance.Link !== 'N/A') {
                 html += `
                     <a href="${fragrance.Link}" target="_blank" class="modal-link">
@@ -454,9 +474,41 @@
             updateUrl();
             navigator.clipboard.writeText(window.location.href).then(() => {
                 const toast = document.getElementById('toast');
+                toast.textContent = '✅ Link copied!';
                 toast.style.display = 'block';
                 setTimeout(() => toast.style.display = 'none', 2200);
             });
+        }
+
+        function copyCurrentView() {
+            const tbody = document.querySelector('#fragrance-table tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            if (rows.length === 0) {
+                showToast('No fragrances to copy!');
+                return;
+            }
+
+            let text = 'House - Name - Rating\n\n';
+            rows.forEach(row => {
+                const house = row.cells[0].textContent.trim();
+                const name = row.cells[1].textContent.trim();
+                const rating = row.cells[2].textContent.trim();
+                text += `${house} - ${name} - ${rating}\n\n`;
+            });
+
+            navigator.clipboard.writeText(text.trim()).then(() => {
+                showToast(`✅ Copied ${rows.length} fragrances!`);
+            }).catch(() => {
+                showToast('❌ Failed to copy');
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 2200);
         }
 
         function applyUrlParams() {

@@ -48,17 +48,26 @@
             transition: 0.3s;
         }
 
-        .share-header-btn {
+        .header-buttons {
             position: absolute;
             bottom: 18px;
             right: 20px;
-            background: #0066cc;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: flex-end;
+        }
+
+        .share-header-btn, .copy-header-btn { 
+            background: #0066cc; 
+            color: white; 
+            border: none; 
+            padding: 7px 12px; 
+            border-radius: 20px; 
+            font-size: 13px; 
             cursor: pointer;
+            white-space: nowrap;
+            min-width: 68px;
         }
 
         .menu {
@@ -277,7 +286,11 @@
                 <a href="searchingbottle.html">Searching For</a>
             </div>
         </div>
-        <button onclick="shareCurrentView()" class="share-header-btn">Share</button>
+        
+        <div class="header-buttons">
+            <button onclick="copyCurrentView()" class="copy-header-btn">Copy</button>
+            <button onclick="shareCurrentView()" class="share-header-btn">Share</button>
+        </div>
     </header>
     
     <div class="controls">
@@ -415,6 +428,37 @@
                 toast.style.display = 'block';
                 setTimeout(() => toast.style.display = 'none', 2200);
             });
+        }
+
+        function copyCurrentView() {
+            const tbody = document.querySelector('#fragrance-table tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            if (rows.length === 0) {
+                showToast('No fragrances to copy!');
+                return;
+            }
+
+            let text = 'House - Name - Rating\n\n';
+            rows.forEach(row => {
+                const house = row.cells[0].textContent.trim();
+                const name = row.cells[1].textContent.trim();
+                const rating = row.cells[2].textContent.trim();
+                text += `${house} - ${name} - ${rating}\n\n`;
+            });
+
+            navigator.clipboard.writeText(text.trim()).then(() => {
+                showToast(`✅ Copied ${rows.length} top fragrances!`);
+            }).catch(() => {
+                showToast('❌ Failed to copy');
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 2200);
         }
 
         async function loadCSV() {
