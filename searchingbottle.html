@@ -52,20 +52,28 @@
             transition: 0.3s;
         }
 
-        .header-button {
+        .header-buttons {
             position: absolute;
             bottom: 18px;
             right: 20px;
-            background: #0066cc;
-            color: white;
-            border: none;
-            padding: 7px 14px;
-            border-radius: 20px;
-            font-size: 13px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: flex-end;
+        }
+
+        .copy-header-btn, .header-button { 
+            background: #0066cc; 
+            color: white; 
+            border: none; 
+            padding: 6px 10px; 
+            border-radius: 20px; 
+            font-size: 12.5px; 
             cursor: pointer;
+            white-space: nowrap;
+            min-width: 58px;           /* Very narrow now */
             text-decoration: none;
             display: inline-block;
-            white-space: nowrap;
         }
 
         .menu {
@@ -265,7 +273,10 @@
             </div>
         </div>
         
-        <a href="searchingsample.html" class="header-button">Sample</a>
+        <div class="header-buttons">
+            <button onclick="copyCurrentView()" class="copy-header-btn">Copy</button>
+            <a href="searchingsample.html" class="header-button">Sample</a>
+        </div>
     </header>
     
     <div class="controls">
@@ -298,7 +309,7 @@
 
     <footer id="footer">Loading collection...</footer>
 
-    <div id="toast" class="toast">✅ Link copied!</div>
+    <div id="toast" class="toast">✅ Copied!</div>
 
     <!-- Popup Modal -->
     <div id="modal" class="modal">
@@ -327,6 +338,36 @@
             } catch (_) {
                 return false;
             }
+        }
+
+        function copyCurrentView() {
+            const tbody = document.querySelector('#fragrance-table tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            if (rows.length === 0) {
+                showToast('No fragrances to copy!');
+                return;
+            }
+
+            let text = 'House - Name\n\n';
+            rows.forEach(row => {
+                const house = row.cells[0].textContent.trim();
+                const name = row.cells[1].textContent.trim();
+                text += `${house} - ${name}\n\n`;
+            });
+
+            navigator.clipboard.writeText(text.trim()).then(() => {
+                showToast(`✅ Copied ${rows.length} bottles!`);
+            }).catch(() => {
+                showToast('❌ Failed to copy');
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 2200);
         }
 
         function showModal(fragrance) {
@@ -371,7 +412,6 @@
 
         async function loadCSV() {
             try {
-                // New Bottles CSV
                 const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=136278588&single=true&output=csv";
                 
                 const res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now());
