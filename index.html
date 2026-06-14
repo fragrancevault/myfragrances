@@ -552,7 +552,7 @@
             searchInput.focus();
         }
 
-                        async function loadCSV() {
+                                async function loadCSV() {
             const footer = document.getElementById('footer');
             try {
                 footer.innerHTML = 'Loading from Google Sheets...';
@@ -597,6 +597,18 @@
                             }
                         });
 
+                        filterTable();
+
+                        if (currentSortCol !== null) {
+                            sortTable(currentSortCol, true);
+                        }
+                    }
+                });
+            } catch (e) {
+                console.error("Load error:", e);
+                footer.innerHTML = '<strong style="color:#ff6666;">Error loading Google Sheet</strong>';
+            }
+        }
                         filterTable();
 
                         if (currentSortCol !== null) {
