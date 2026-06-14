@@ -8,7 +8,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Top Fragrances - My Fragrance Collection</title>
+    <title>FragVault</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
         body { 
@@ -22,31 +22,16 @@
         header {
             background: linear-gradient(135deg, #1a1a1a, #0f0f0f);
             color: white;
-            padding: 1.8rem 1rem;
+            padding: 1.6rem 1rem;
             text-align: center;
             border-bottom: 1px solid #333;
             position: relative;
         }
-        h1 { margin: 0; font-size: 2.2rem; }
+        h1 { margin: 0; font-size: 2.0rem; }
 
-        .nav {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-        }
-        .hamburger {
-            display: flex;
-            flex-direction: column;
-            cursor: pointer;
-            padding: 8px;
-        }
-        .hamburger span {
-            width: 28px;
-            height: 3px;
-            background: #60a5fa;
-            margin: 4px 0;
-            transition: 0.3s;
-        }
+        .nav { position: absolute; top: 20px; left: 20px; }
+        .hamburger { display: flex; flex-direction: column; cursor: pointer; padding: 8px; }
+        .hamburger span { width: 28px; height: 3px; background: #60a5fa; margin: 4px 0; transition: 0.3s; }
 
         .header-buttons {
             position: absolute;
@@ -70,40 +55,59 @@
             min-width: 68px;
         }
 
-        .menu {
-            display: none;
-            position: absolute;
-            top: 65px;
-            left: 20px;
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 12px 0;
-            min-width: 180px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-            z-index: 1000;
-        }
-        .menu a {
-            display: block;
-            padding: 12px 20px;
-            color: #e0e0e0;
-            text-decoration: none;
-        }
-        .menu a:hover {
-            background: #0066cc;
-            color: white;
-        }
+        .menu { display: none; position: absolute; top: 65px; left: 20px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 12px 0; min-width: 180px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 1000; }
+        .menu a { display: block; padding: 12px 20px; color: #e0e0e0; text-decoration: none; font-size: 15px; }
+        .menu a:hover { background: #0066cc; color: white; }
         .menu.active { display: block; }
 
         .controls { 
-            padding: 16px 20px 12px; 
+            padding: 18px 20px 14px; 
             background: #111; 
             display: flex; 
             flex-wrap: wrap; 
-            gap: 12px; 
+            gap: 8px; 
             justify-content: center; 
             align-items: center;
             border-bottom: 1px solid #333;
+        }
+
+        .search-container {
+            position: relative;
+            flex: 1;
+            min-width: 260px;
+        }
+        .search-container input {
+            width: 100%;
+            padding: 10px 12px 10px 12px;
+            padding-right: 36px;
+            font-size: 14px;
+            border-radius: 8px; 
+            background: #1f1f1f;
+            color: #e0e0e0;
+            border: 1px solid #444;
+            box-sizing: border-box;
+        }
+        .clear-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 4px 6px;
+            line-height: 1;
+        }
+        .clear-btn:hover { color: #e0e0e0; }
+
+        input, select { 
+            font-size: 14px;
+            border-radius: 8px; 
+            background: #1f1f1f;
+            color: #e0e0e0;
+            border: 1px solid #444;
         }
 
         button { 
@@ -112,9 +116,14 @@
             border: none; 
             cursor: pointer;
             font-weight: bold;
-            padding: 10px 16px;
-            border-radius: 8px;
+            font-size: 13.5px;
+            padding: 9px 14px;
+            border-radius: 20px;
+            white-space: nowrap;
         }
+
+        .startover-btn { background: #d97706 !important; }
+        .export-btn { background: #15803d !important; }
 
         .table-wrapper { 
             padding: 0 20px 20px; 
@@ -123,14 +132,15 @@
             overflow-y: auto;
         }
         table { 
-            min-width: 1950px; 
+            min-width: 1920px; 
             border-collapse: collapse; 
             background: #111; 
             width: 100%;
         }
         th, td { 
-            padding: 12px 10px; 
+            padding: 10px 8px; 
             border-bottom: 1px solid #333;
+            font-size: 14px;
         }
         th { 
             background: #1a1a1a; 
@@ -138,16 +148,18 @@
             position: sticky; 
             top: 0; 
             z-index: 10;
+            font-size: 14.5px;
             text-align: left;
         }
-        th.center { 
-            text-align: center; 
-        }
-        tr:hover { background: #1f2a3a; cursor: pointer; }
 
-        .notes-col { width: 280px; }
+        .name-col     { width: 130px; }
+        .notes-col    { width: 280px; }
         .comments-col { width: 260px; }
-        .link-col { width: 65px; text-align: center; }
+        .link-col     { width: 65px; text-align: center; }
+
+        .rating-col, .hours-col, .sillage-col, .sprays-col {
+            text-align: center;
+        }
 
         .link-icon {
             font-size: 1.45rem;
@@ -171,13 +183,14 @@
             padding: 12px 24px;
             border-radius: 8px;
             font-weight: 600;
+            font-size: 14px;
             z-index: 3000;
             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
             display: none;
         }
 
         .genre-btn { 
-            padding: 8px 16px; 
+            padding: 8px 15px; 
             margin: 4px; 
             border: 2px solid #0066cc; 
             background: #1f1f1f; 
@@ -185,6 +198,7 @@
             border-radius: 30px; 
             cursor: pointer; 
             font-weight: 600;
+            font-size: 13.5px;
         }
         .genre-btn.active { 
             background: #0066cc; 
@@ -268,17 +282,15 @@
 </head>
 <body>
     <header>
-        <h1>Top Frags</h1>
+        <h1>FragVault</h1>
         <div class="nav">
             <div class="hamburger" onclick="toggleMenu()">
-                <span></span>
-                <span></span>
-                <span></span>
+                <span></span><span></span><span></span>
             </div>
             <div class="menu" id="menu">
-                <a href="index.html">Home</a>
+                <a href="index.html"><strong>Home</strong></a>
                 <a href="nowwearing.html">Now Wearing</a>
-                <a href="top.html"><strong>The Best</strong></a>
+                <a href="top.html">The Best</a>
                 <a href="randomizer.html">Randomizer</a>
                 <a href="unratedrandomizer.html">Unrated Randomizer</a>
                 <a href="top10.html">My Top 10</a>
@@ -294,7 +306,30 @@
     </header>
     
     <div class="controls">
+        <div class="search-container">
+            <input type="text" id="search" placeholder="Search House, Name, Perfumer, Notes, Comments..." onkeyup="filterTable()">
+            <button class="clear-btn" id="clear-search" onclick="clearSearch()" aria-label="Clear search">×</button>
+        </div>
         <div id="genre-filters"></div>
+        
+        <select id="season-filter" onchange="filterTable()">
+            <option value="">All Seasons</option>
+            <option value="Hot">Hot</option>
+            <option value="Cold">Cold</option>
+            <option value="Any">Any</option>
+            <option value="HotAny">Hot + Any</option>
+            <option value="ColdAny">Cold + Any</option>
+        </select>
+        
+        <button onclick="sortTable(0)">House</button>
+        <button onclick="sortTable(1)">Name</button>
+        <button onclick="sortTable(2)">Rating</button>
+        <button onclick="sortTable(3)">Hours</button>
+        <button onclick="sortTable(4)">Silliage</button>
+        <button onclick="sortTable(8)">Parfumo</button>
+        <button onclick="sortTable(7)">Perfumer</button>
+
+        <button onclick="startOver()" class="startover-btn">Start Over</button>
         <button onclick="exportToCSV()" class="export-btn">Export To CSV</button>
     </div>
 
@@ -302,26 +337,27 @@
         <table id="fragrance-table">
             <thead>
                 <tr>
-                    <th>House</th>
-                    <th>Name</th>
-                    <th>Rating</th>
-                    <th>Hours</th>
-                    <th>Silliage</th>
-                    <th>Genre</th>
-                    <th>Season</th>
-                    <th>ml</th>
+                    <th onclick="sortTable(0)">House</th>
+                    <th onclick="sortTable(1)" class="name-col">Name</th>
+                    <th onclick="sortTable(2)" class="rating-col">Rating</th>
+                    <th onclick="sortTable(3)" class="hours-col">Hours</th>
+                    <th onclick="sortTable(4)" class="sillage-col">Silliage</th>
+                    <th onclick="sortTable(5)" class="sprays-col">Sprays</th>
+                    <th onclick="sortTable(6)">Genre</th>
+                    <th onclick="sortTable(7)">Perfumer</th>
+                    <th onclick="sortTable(8)">Parfumo</th>
+                    <th onclick="sortTable(9)">Season</th>
+                    <th onclick="sortTable(10)">ml</th>
                     <th class="notes-col">Notes</th>
                     <th class="comments-col">Comments</th>
-                    <th class="link-col">Link</th>
+                    <th class="link-col" onclick="sortTable(13)">🔗</th>
                 </tr>
             </thead>
             <tbody></tbody>
         </table>
     </div>
 
-    <footer id="footer">
-        Loading top fragrances...
-    </footer>
+    <footer id="footer">Loading collection...</footer>
 
     <div id="toast" class="toast">✅ Link copied!</div>
 
@@ -335,12 +371,14 @@
     <script>
         let fragrances = [];
         let nowWearingData = [];
-        let currentFilter = 'All';
+        let currentGenres = new Set();
+        let sortState = {};
+        let currentSortCol = null;
+
+        const highFirst = [2, 3, 4, 8];
 
         function cleanValue(val) {
-            if (val === null || val === undefined || val === '' || val === '?') {
-                return 'N/A';
-            }
+            if (val === null || val === undefined || val === '' || val === '?') return 'N/A';
             return val;
         }
 
@@ -348,12 +386,10 @@
             if (!house || !name || !nowWearingData.length) return null;
             const h = house.toLowerCase().trim();
             const n = name.toLowerCase().trim();
-            
-            const match = nowWearingData.find(row => 
+            return nowWearingData.find(row => 
                 String(row.Brand || row.House || '').toLowerCase().trim() === h &&
                 String(row.Name || '').toLowerCase().trim() === n
-            );
-            return match || null;
+            ) || null;
         }
 
         function showModal(fragrance) {
@@ -363,7 +399,7 @@
             let html = 
                 '<div class="house">' + cleanValue(fragrance.House) + '</div>';
 
-            // ✅ Name is now clickable if a Link exists
+            // ✅ Name is now clickable if Link exists
             if (hasLink) {
                 html += '<a href="' + fragrance.Link + '" target="_blank" class="name" style="display:block; text-decoration:none;">' + cleanValue(fragrance.Name) + '</a>';
             } else {
@@ -414,16 +450,30 @@
 
         function updateUrl() {
             const params = new URLSearchParams();
-            if (currentFilter !== 'All') params.set('genre', currentFilter);
+            const searchTerm = document.getElementById('search').value.trim();
+            if (searchTerm) params.set('search', searchTerm);
+
+            const season = document.getElementById('season-filter').value;
+            if (season) params.set('season', season);
+
+            if (currentGenres.size > 0) {
+                params.set('genres', Array.from(currentGenres).join(','));
+            }
+
+            if (currentSortCol !== null) {
+                params.set('sort', currentSortCol);
+                params.set('order', sortState[currentSortCol] ? 'asc' : 'desc');
+            }
+
             const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
             window.history.replaceState({}, '', newUrl);
         }
 
         function shareCurrentView() {
             updateUrl();
-            const fullUrl = window.location.href;
-            navigator.clipboard.writeText(fullUrl).then(() => {
+            navigator.clipboard.writeText(window.location.href).then(() => {
                 const toast = document.getElementById('toast');
+                toast.textContent = '✅ Link copied!';
                 toast.style.display = 'block';
                 setTimeout(() => toast.style.display = 'none', 2200);
             });
@@ -447,7 +497,7 @@
             });
 
             navigator.clipboard.writeText(text.trim()).then(() => {
-                showToast('✅ Copied ' + rows.length + ' top fragrances!');
+                showToast('✅ Copied ' + rows.length + ' fragrances!');
             }).catch(() => {
                 showToast('❌ Failed to copy');
             });
@@ -460,13 +510,58 @@
             setTimeout(() => toast.style.display = 'none', 2200);
         }
 
+        function applyUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            
+            const urlSearch = params.get('search');
+            if (urlSearch) document.getElementById('search').value = urlSearch;
+
+            const urlSeason = params.get('season');
+            if (urlSeason) document.getElementById('season-filter').value = urlSeason;
+
+            const urlGenres = params.get('genres');
+            if (urlGenres) {
+                urlGenres.split(',').forEach(g => {
+                    const trimmed = g.trim();
+                    if (trimmed) currentGenres.add(trimmed);
+                });
+            }
+
+            const urlSort = params.get('sort');
+            const urlOrder = params.get('order');
+            if (urlSort !== null) {
+                const col = parseInt(urlSort);
+                if (!isNaN(col)) {
+                    currentSortCol = col;
+                    sortState[col] = (urlOrder === 'asc');
+                }
+            }
+        }
+
+        function toggleClearButton() {
+            const searchInput = document.getElementById('search');
+            const clearBtn = document.getElementById('clear-search');
+            clearBtn.style.display = searchInput.value.length > 0 ? 'block' : 'none';
+        }
+
+        function clearSearch() {
+            const searchInput = document.getElementById('search');
+            searchInput.value = '';
+            toggleClearButton();
+            filterTable();
+            searchInput.focus();
+        }
+
         async function loadCSV() {
+            const footer = document.getElementById('footer');
             try {
+                footer.innerHTML = 'Loading from Google Sheets...';
                 const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=1371140242&single=true&output=csv";
                 
                 const res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now());
+                if (!res.ok) throw new Error('Network error');
+                
                 const text = await res.text();
-
                 Papa.parse(text, {
                     header: true,
                     skipEmptyLines: true,
@@ -480,20 +575,30 @@
                                 return row;
                             });
                         
-                        console.log("✅ Loaded", fragrances.length, "fragrances for Top");
+                        console.log("✅ Loaded", fragrances.length, "fragrances");
+                        renderTable(fragrances);
                         renderGenreButtons();
-                        
-                        const params = new URLSearchParams(window.location.search);
-                        const urlGenre = params.get('genre');
-                        if (urlGenre) currentFilter = urlGenre;
-                        
-                        showTopFragrances(currentFilter);
                         updateFooter();
+
+                        applyUrlParams();
+                        toggleClearButton();
+                        
+                        document.querySelectorAll('.genre-btn').forEach(btn => {
+                            if (currentGenres.has(btn.textContent.trim())) {
+                                btn.classList.add('active');
+                            }
+                        });
+
+                        filterTable();
+
+                        if (currentSortCol !== null) {
+                            sortTable(currentSortCol, true);
+                        }
                     }
                 });
             } catch (e) {
                 console.error("Load error:", e);
-                document.getElementById('footer').innerHTML = `<strong style="color:#ff6666;">Error loading Google Sheet</strong>`;
+                footer.innerHTML = '<strong style="color:#ff6666;">Error loading Google Sheet</strong>';
             }
         }
 
@@ -502,7 +607,6 @@
                 const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=775413918&single=true&output=csv";
                 const res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now());
                 const text = await res.text();
-
                 Papa.parse(text, {
                     header: true,
                     skipEmptyLines: true,
@@ -522,44 +626,25 @@
             }
         }
 
-        function renderGenreButtons() {
-            const genres = ['All', ...new Set(fragrances.map(f => f.Genre).filter(Boolean))].sort();
-            const container = document.getElementById('genre-filters');
-            container.innerHTML = '';
-            
-            genres.forEach(g => {
-                const btn = document.createElement('button');
-                btn.className = 'genre-btn';
-                btn.textContent = g;
-                if (g === currentFilter) btn.classList.add('active');
-                
-                btn.onclick = () => {
-                    document.querySelectorAll('.genre-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    currentFilter = g;
-                    showTopFragrances(g);
-                    updateUrl();
-                };
-                container.appendChild(btn);
-            });
-        }
-
         function renderTable(data) {
             const tbody = document.querySelector('#fragrance-table tbody');
             let html = '';
             for (let i = 0; i < data.length; i++) {
                 const f = data[i];
                 const linkHtml = (f.Link && f.Link.trim() !== '' && f.Link !== 'N/A') 
-                    ? '<a href="' + f.Link + '" target="_blank" class="link-icon" title="Fragrance Hub">🔗</a>' 
+                    ? '<a href="' + f.Link + '" target="_blank" class="link-icon" title="Open Fragrance Hub">🔗</a>' 
                     : '—';
                 
                 html += '<tr data-index="' + i + '">' +
                     '<td>' + cleanValue(f.House) + '</td>' +
-                    '<td><strong>' + cleanValue(f.Name) + '</strong></td>' +
-                    '<td>' + cleanValue(f.Rating) + '</td>' +
-                    '<td>' + cleanValue(f['Hours of Performance']) + '</td>' +
-                    '<td>' + cleanValue(f.Silliage) + '</td>' +
+                    '<td class="name-col"><strong>' + cleanValue(f.Name) + '</strong></td>' +
+                    '<td class="rating-col">' + cleanValue(f.Rating) + '</td>' +
+                    '<td class="hours-col">' + cleanValue(f['Hours of Performance']) + '</td>' +
+                    '<td class="sillage-col">' + cleanValue(f.Silliage) + '</td>' +
+                    '<td class="sprays-col">' + cleanValue(f.Sprays) + '</td>' +
                     '<td>' + cleanValue(f.Genre) + '</td>' +
+                    '<td>' + cleanValue(f.Perfumer) + '</td>' +
+                    '<td>' + cleanValue(f['Parfumo Rating']) + '</td>' +
                     '<td>' + cleanValue(f.Seasons) + '</td>' +
                     '<td>' + cleanValue(f.Size) + '</td>' +
                     '<td class="notes-col">' + cleanValue(f.Notes) + '</td>' +
@@ -578,25 +663,113 @@
             });
         }
 
-        function showTopFragrances(filter) {
-            let filtered = fragrances;
-
-            if (filter !== 'All') {
-                filtered = filtered.filter(f => f.Genre === filter);
-            }
-
-            const maxRating = filtered.length ? Math.max(...filtered.map(f => parseFloat(f.Rating) || 0)) : 0;
-            const threshold = Math.max(0, maxRating - 2);
-
-            const topData = filtered.filter(f => parseFloat(f.Rating) >= threshold)
-                                   .sort((a, b) => parseFloat(b.Rating) - parseFloat(a.Rating));
-
-            renderTable(topData);
+        function renderGenreButtons() {
+            const genres = [...new Set(fragrances.map(f => f.Genre).filter(Boolean))].sort();
+            const container = document.getElementById('genre-filters');
+            container.innerHTML = '<strong>Genres:</strong> ';
+            genres.forEach(g => {
+                const btn = document.createElement('button');
+                btn.className = 'genre-btn';
+                btn.textContent = g;
+                btn.onclick = () => {
+                    if (currentGenres.has(g)) currentGenres.delete(g);
+                    else currentGenres.add(g);
+                    btn.classList.toggle('active');
+                    filterTable();
+                };
+                container.appendChild(btn);
+            });
         }
 
-        function updateFooter() {
+        function filterTable() {
+            const term = document.getElementById('search').value.toLowerCase().trim();
+            const seasonFilter = document.getElementById('season-filter').value;
+            
+            const filtered = fragrances.filter(f => {
+                let matchSearch = true;
+                if (term) {
+                    const searchableText = [f.House, f.Name, f.Perfumer, f.Notes, f.Comments, f.Link || '']
+                        .filter(Boolean).join(' ').toLowerCase();
+                    matchSearch = searchableText.includes(term);
+                }
+                
+                let matchSeason = true;
+                if (seasonFilter) {
+                    if (seasonFilter === "Hot") matchSeason = f.Seasons === "Hot";
+                    else if (seasonFilter === "Cold") matchSeason = f.Seasons === "Cold";
+                    else if (seasonFilter === "Any") matchSeason = f.Seasons === "Any";
+                    else if (seasonFilter === "HotAny") matchSeason = (f.Seasons === "Hot" || f.Seasons === "Any");
+                    else if (seasonFilter === "ColdAny") matchSeason = (f.Seasons === "Cold" || f.Seasons === "Any");
+                }
+                
+                const matchGenre = currentGenres.size === 0 || currentGenres.has(f.Genre);
+                return matchSearch && matchSeason && matchGenre;
+            });
+            
+            renderTable(filtered);
+            updateFooter(filtered);
+            updateUrl();
+            toggleClearButton();
+        }
+
+        function updateFooter(filteredData = null) {
+            const data = filteredData || fragrances;
+            const total = data.length;
+            let totalML = 0;
+            data.forEach(f => {
+                const size = parseFloat(f.Size);
+                if (!isNaN(size)) totalML += size;
+            });
+
+            const isFiltered = currentGenres.size > 0 || 
+                             document.getElementById('search').value.trim() !== "" ||
+                             document.getElementById('season-filter').value !== "";
+
+            const label = isFiltered ? "filtered fragrances" : "fragrances";
+
             document.getElementById('footer').innerHTML = 
-                '<strong>' + fragrances.length + '</strong> fragrances in collection';
+                '<strong>' + total + '</strong> ' + label + ' • ' +
+                '<strong>' + totalML.toLocaleString() + '</strong> ml total';
+        }
+
+        function sortTable(colIndex, skipToggle = false) {
+            if (!skipToggle) {
+                if (sortState[colIndex] === undefined) {
+                    sortState[colIndex] = highFirst.includes(colIndex) ? false : true;
+                } else {
+                    sortState[colIndex] = !sortState[colIndex];
+                }
+            }
+            currentSortCol = colIndex;
+
+            const tbody = document.querySelector('#fragrance-table tbody');
+            let rows = Array.from(tbody.querySelectorAll('tr'));
+            const ascending = sortState[colIndex];
+
+            rows.sort((a, b) => {
+                let x = a.cells[colIndex].textContent.trim();
+                let y = b.cells[colIndex].textContent.trim();
+                if (!isNaN(parseFloat(x)) && !isNaN(parseFloat(y))) {
+                    return ascending ? parseFloat(x) - parseFloat(y) : parseFloat(y) - parseFloat(x);
+                }
+                return ascending ? x.localeCompare(y) : y.localeCompare(x);
+            });
+            
+            rows.forEach(row => tbody.appendChild(row));
+            updateUrl();
+        }
+
+        function startOver() {
+            currentGenres.clear();
+            document.getElementById('search').value = '';
+            document.getElementById('season-filter').value = '';
+            document.querySelectorAll('.genre-btn').forEach(btn => btn.classList.remove('active'));
+            sortState = {};
+            currentSortCol = null;
+            renderTable(fragrances);
+            updateFooter();
+            updateUrl();
+            toggleClearButton();
         }
 
         function exportToCSV() {
@@ -604,7 +777,7 @@
             const rows = Array.from(tbody.querySelectorAll('tr'));
             if (rows.length === 0) return alert("No data to export!");
 
-            let csv = "House,Name,Rating,Hours,Silliage,Genre,Season,ml,Notes,Comments,Link\n";
+            let csv = "House,Name,Rating,Hours,Silliage,Sprays,Genre,Perfumer,Parfumo,Season,ml,Notes,Comments,Link\n";
             rows.forEach(row => {
                 const cells = Array.from(row.cells).map(cell => '"' + cell.textContent.trim().replace(/"/g, '""') + '"');
                 csv += cells.join(',') + '\n';
@@ -613,7 +786,7 @@
             const blob = new Blob([csv], { type: 'text/csv' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = 'Top_Fragrances_' + new Date().toISOString().slice(0,10) + '.csv';
+            link.download = 'Fragrance_Collection_' + new Date().toISOString().slice(0,10) + '.csv';
             link.click();
         }
 
@@ -635,6 +808,9 @@
         window.onload = () => {
             loadCSV();
             loadNowWearing();
+
+            const searchInput = document.getElementById('search');
+            searchInput.addEventListener('input', toggleClearButton);
         };
     </script>
 </body>
