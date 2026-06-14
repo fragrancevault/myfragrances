@@ -552,14 +552,14 @@
             searchInput.focus();
         }
 
-                async function loadCSV() {
+                        async function loadCSV() {
             const footer = document.getElementById('footer');
             try {
                 footer.innerHTML = 'Loading from Google Sheets...';
                 
-                const baseUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=0&single=true&output=csv";
+                const baseUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=1371140242&single=true&output=csv";
                 
-                // 5-minute cache instead of every second
+                // 5-minute cache
                 const cacheTime = Math.floor(Date.now() / 300000);
                 const url = baseUrl + (baseUrl.includes('?') ? '&' : '?') + 't=' + cacheTime;
 
@@ -571,8 +571,8 @@
                 Papa.parse(text, {
                     header: true,
                     skipEmptyLines: true,
-                    worker: true,      // ← Major speed boost
-                    fastMode: true,    // ← Faster for your data
+                    worker: true,
+                    fastMode: true,
                     complete: (result) => {
                         fragrances = result.data
                             .filter(row => row.Name && row.Name.trim())
@@ -609,38 +609,6 @@
                 footer.innerHTML = '<strong style="color:#ff6666;">Error loading Google Sheet</strong>';
             }
         }
-
-        async function loadNowWearing() {
-            try {
-                const baseUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=775413918&single=true&output=csv";
-                
-                const cacheTime = Math.floor(Date.now() / 300000);
-                const url = baseUrl + (baseUrl.includes('?') ? '&' : '?') + 't=' + cacheTime;
-
-                const res = await fetch(url);
-                const text = await res.text();
-
-                Papa.parse(text, {
-                    header: true,
-                    skipEmptyLines: true,
-                    worker: true,
-                    fastMode: true,
-                    complete: (result) => {
-                        nowWearingData = result.data
-                            .filter(row => row.Date && row.Name)
-                            .map(row => {
-                                Object.keys(row).forEach(key => {
-                                    if (typeof row[key] === 'string') row[key] = row[key].trim();
-                                });
-                                return row;
-                            });
-                    }
-                });
-            } catch (e) {
-                console.error("Now wearing load failed:", e);
-            }
-        }
-
         function renderTable(data) {
             const tbody = document.querySelector('#fragrance-table tbody');
             let html = '';
