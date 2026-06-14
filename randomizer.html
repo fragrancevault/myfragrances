@@ -193,7 +193,7 @@
 
         async function loadCSV() {
             try {
-                const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=0&single=true&output=csv";
+                const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=1371140242&single=true&output=csv";
                 const res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now());
                 const text = await res.text();
 
