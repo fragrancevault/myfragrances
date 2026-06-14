@@ -191,7 +191,7 @@
             return match || null;
         }
 
-        async function loadCSV() {
+               async function loadCSV() {
             try {
                 const baseUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=0&single=true&output=csv";
                 
@@ -208,10 +208,7 @@
                     fastMode: true,
                     complete: (result) => {
                         fragrances = result.data
-                            .filter(row => {
-                                const rating = parseFloat(row['yourRating']) || 0;
-                                return row.Name && row.Name.trim() && rating === 0;
-                            })
+                            .filter(row => row.Name && row.Name.trim())
                             .map(row => {
                                 Object.keys(row).forEach(key => {
                                     if (typeof row[key] === 'string') row[key] = row[key].trim();
@@ -219,14 +216,48 @@
                                 return row;
                             });
 
-                        console.log(`✅ Loaded ${fragrances.length} unrated fragrances`);
-                        renderUnratedTable();
-                        updateFooter();
+                        calculateGenreMaxRatings();
+                        loadNowWearingCSV();
                     }
                 });
             } catch (e) {
-                console.error("Load error:", e);
-                document.getElementById('footer').innerHTML = `<strong style="color:#ff6666;">Error loading unrated data</strong>`;
+                console.error("Main load failed:", e);
+            }
+        }
+
+        async function loadNowWearingCSV() {
+            try {
+                const baseUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=775413918&single=true&output=csv";
+                
+                const cacheTime = Math.floor(Date.now() / 300000);
+                const url = baseUrl + (baseUrl.includes('?') ? '&' : '?') + 't=' + cacheTime;
+
+                const res = await fetch(url);
+                const text = await res.text();
+
+                Papa.parse(text, {
+                    header: true,
+                    skipEmptyLines: true,
+                    worker: true,
+                    fastMode: true,
+                    complete: (result) => {
+                        nowWearingData = result.data
+                            .filter(row => row.Date && row.Name)
+                            .map(row => {
+                                Object.keys(row).forEach(key => {
+                                    if (typeof row[key] === 'string') row[key] = row[key].trim();
+                                });
+                                return row;
+                            });
+
+                        createAllCards();
+                        randomizeAll();
+                    }
+                });
+            } catch (e) {
+                console.error("Now Wearing load failed:", e);
+                createAllCards();
+                randomizeAll();
             }
         }
 
