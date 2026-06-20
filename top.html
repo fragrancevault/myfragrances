@@ -134,20 +134,22 @@
         }
 
         .table-wrapper { 
-            padding: 0 20px 20px; 
+            padding: 0 12px 20px; 
             overflow-x: auto; 
             max-height: 75vh;
             overflow-y: auto;
         }
         table { 
-            min-width: 1950px; 
+            table-layout: fixed;
+            width: 100%;
+            min-width: 520px;
             border-collapse: collapse; 
             background: #111; 
-            width: 100%;
         }
         th, td { 
-            padding: 12px 10px; 
+            padding: 12px 8px; 
             border-bottom: 1px solid #333;
+            vertical-align: top;
         }
         th { 
             background: #1a1a1a; 
@@ -157,25 +159,17 @@
             z-index: 10;
             text-align: left;
         }
-        th.center { 
-            text-align: center; 
-        }
         tr:hover { background: #1f2a3a; cursor: pointer; }
 
-        .notes-col { width: 280px; }
-        .comments-col { width: 260px; }
-        .link-col { width: 65px; text-align: center; }
+        /* Narrow columns with word wrap */
+        th:nth-child(1), td:nth-child(1) { width: 28%; }   /* House */
+        th:nth-child(2), td:nth-child(2) { width: 52%; }   /* Name - allows wrap */
+        th:nth-child(3), td:nth-child(3) { width: 20%; }   /* Rating */
 
-        .link-icon {
-            font-size: 1.45rem;
-            color: #60a5fa;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-            text-decoration: none;
-        }
-        .link-icon:hover {
-            transform: scale(1.35);
-            color: #3b82f6;
+        td:nth-child(2) {
+            white-space: normal;
+            word-break: break-word;
+            line-height: 1.35;
         }
 
         .toast {
@@ -238,49 +232,6 @@
             cursor: pointer;
             line-height: 1;
         }
-
-        .house { font-size: 1.1rem; color: #aaa; margin-bottom: 2px; }
-        .name { font-size: 1.65rem; color: #60a5fa; margin: 4px 0 14px; font-weight: 600; }
-
-        .main-stats { 
-            font-size: 1.05rem; 
-            color: #ddd; 
-            margin: 12px 0; 
-            line-height: 1.4;
-        }
-        .perfume-info { 
-            font-size: 0.98rem; 
-            color: #bbb; 
-            margin: 12px 0 8px; 
-            line-height: 1.45;
-        }
-        .wear-stat { 
-            margin: 6px 0; 
-            font-size: 1.02rem; 
-            color: #ccc; 
-        }
-        .modal-link {
-            margin-top: 20px;
-            padding: 13px 24px;
-            background: #1e3a8a;
-            border-radius: 8px;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            color: white;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1.05rem;
-        }
-        .modal-link:hover {
-            background: #2563eb;
-        }
-        hr {
-            border: none;
-            border-top: 1px solid #444;
-            margin: 18px 0;
-            width: 100%;
-        }
     </style>
 </head>
 <body>
@@ -311,7 +262,6 @@
     </header>
     
     <div class="controls">
-        <!-- Season dropdown above genre filters, centered -->
         <div class="season-controls">
             <select id="season-filter" onchange="applyFilters()">
                 <option value="Everything">🌍 Show Me Any Season</option>
@@ -334,14 +284,6 @@
                     <th>House</th>
                     <th>Name</th>
                     <th>Rating</th>
-                    <th>Hours</th>
-                    <th>Silliage</th>
-                    <th>Genre</th>
-                    <th>Season</th>
-                    <th>ml</th>
-                    <th class="notes-col">Notes</th>
-                    <th class="comments-col">Comments</th>
-                    <th class="link-col">Link</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -393,7 +335,6 @@
             let html = 
                 '<div class="house">' + cleanValue(fragrance.House) + '</div>';
 
-            // ✅ Name is now clickable if a Link exists
             if (hasLink) {
                 html += '<a href="' + fragrance.Link + '" target="_blank" class="name" style="display:block; text-decoration:none;">' + cleanValue(fragrance.Name) + '</a>';
             } else {
@@ -590,29 +531,16 @@
             let html = '';
             for (let i = 0; i < data.length; i++) {
                 const f = data[i];
-                const linkHtml = (f.Link && f.Link.trim() !== '' && f.Link !== 'N/A') 
-                    ? '<a href="' + f.Link + '" target="_blank" class="link-icon" title="Fragrance Hub">🔗</a>' 
-                    : '—';
-                
                 html += '<tr data-index="' + i + '">' +
                     '<td>' + cleanValue(f.House) + '</td>' +
-                    '<td><strong>' + cleanValue(f.Name) + '</strong></td>' +
+                    '<td>' + cleanValue(f.Name) + '</td>' +
                     '<td>' + cleanValue(f.Rating) + '</td>' +
-                    '<td>' + cleanValue(f['Hours of Performance']) + '</td>' +
-                    '<td>' + cleanValue(f.Silliage) + '</td>' +
-                    '<td>' + cleanValue(f.Genre) + '</td>' +
-                    '<td>' + cleanValue(f.Seasons) + '</td>' +
-                    '<td>' + cleanValue(f.Size) + '</td>' +
-                    '<td class="notes-col">' + cleanValue(f.Notes) + '</td>' +
-                    '<td class="comments-col">' + cleanValue(f.Comments) + '</td>' +
-                    '<td class="link-col">' + linkHtml + '</td>' +
                     '</tr>';
             }
             tbody.innerHTML = html;
 
             document.querySelectorAll('#fragrance-table tbody tr').forEach(row => {
                 row.addEventListener('click', (e) => {
-                    if (e.target.tagName === 'A') return;
                     const index = parseInt(row.dataset.index);
                     showModal(data[index]);
                 });
@@ -624,15 +552,12 @@
             
             let filtered = fragrances;
 
-            // Genre filter
             if (currentFilter !== 'All') {
                 filtered = filtered.filter(f => f.Genre === currentFilter);
             }
 
-            // Season filter
             filtered = filtered.filter(row => matchesSeason(row, currentSeasonFilter));
 
-            // Top logic (within current filters)
             const maxRating = filtered.length ? Math.max(...filtered.map(f => parseFloat(f.Rating) || 0)) : 0;
             const threshold = Math.max(0, maxRating - 2);
 
@@ -652,7 +577,7 @@
             const rows = Array.from(tbody.querySelectorAll('tr'));
             if (rows.length === 0) return alert("No data to export!");
 
-            let csv = "House,Name,Rating,Hours,Silliage,Genre,Season,ml,Notes,Comments,Link\n";
+            let csv = "House,Name,Rating\n";
             rows.forEach(row => {
                 const cells = Array.from(row.cells).map(cell => '"' + cell.textContent.trim().replace(/"/g, '""') + '"');
                 csv += cells.join(',') + '\n';
