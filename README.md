@@ -1,6 +1,6 @@
 # The Frag Vault
 
-A vibe-coded mobile-friendly fragrance tracking website built with HTML, CSS, and Google Sheets.
+A vibe-coded mobile-friendly fragrance tracking website built with HTML, CSS, and Google Sheets written so that you can Fork and reuse it. I advise using Grok to tune it in for your own use.
 
 ## Features
 
@@ -8,7 +8,9 @@ A vibe-coded mobile-friendly fragrance tracking website built with HTML, CSS, an
 - Full collection table with search & filters
 - Top 10 Fragrances with detailed tap stats
 - Now Wearing log
-- Fully responsive (great on mobuile)
+- Fully responsive (made for mobile)
+- Tap the row for more stats
+- In the pop-up, tap the name for a link to Fragrantica
 
 ## Live Site
 [https://fragrancevault.github.io/myfragrances](https://fragrancevault.github.io/myfragrances)
