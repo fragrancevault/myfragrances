@@ -106,6 +106,23 @@
             border-bottom: 1px solid #333;
         }
 
+        .season-controls {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+
+        select {
+            padding: 12px 20px;
+            font-size: 1.1rem;
+            background: #1f2a3a;
+            color: #e0e0e0;
+            border: 2px solid #60a5fa;
+            border-radius: 50px;
+            cursor: pointer;
+        }
+
         button { 
             background: #0066cc; 
             color: white; 
@@ -294,6 +311,18 @@
     </header>
     
     <div class="controls">
+        <!-- Season dropdown above genre filters, centered -->
+        <div class="season-controls">
+            <select id="season-filter" onchange="applyFilters()">
+                <option value="Everything">🌍 Show Me Any Season</option>
+                <option value="Any">🌡️ Any Season Only</option>
+                <option value="Hot">☀️ Hot</option>
+                <option value="Cold">❄️ Cold</option>
+                <option value="Hot+Any">☀️ Hot + Any</option>
+                <option value="Cold+Any">❄️ Cold + Any</option>
+            </select>
+        </div>
+        
         <div id="genre-filters"></div>
         <button onclick="exportToCSV()" class="export-btn">Export To CSV</button>
     </div>
@@ -336,6 +365,7 @@
         let fragrances = [];
         let nowWearingData = [];
         let currentFilter = 'All';
+        let currentSeasonFilter = 'Everything';
 
         function cleanValue(val) {
             if (val === null || val === undefined || val === '' || val === '?') {
@@ -460,6 +490,17 @@
             setTimeout(() => toast.style.display = 'none', 2200);
         }
 
+        function matchesSeason(row, filter) {
+            if (filter === 'Everything') return true;
+            const seasons = (row.Seasons || '').toLowerCase();
+            if (filter === 'Any') return seasons.includes('any');
+            if (filter === 'Hot') return seasons.includes('hot');
+            if (filter === 'Cold') return seasons.includes('cold');
+            if (filter === 'Hot+Any') return seasons.includes('hot') || seasons.includes('any');
+            if (filter === 'Cold+Any') return seasons.includes('cold') || seasons.includes('any');
+            return true;
+        }
+
         async function loadCSV() {
             try {
                 const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=1371140242&single=true&output=csv";
@@ -487,7 +528,7 @@
                         const urlGenre = params.get('genre');
                         if (urlGenre) currentFilter = urlGenre;
                         
-                        showTopFragrances(currentFilter);
+                        applyFilters();
                         updateFooter();
                     }
                 });
@@ -537,7 +578,7 @@
                     document.querySelectorAll('.genre-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     currentFilter = g;
-                    showTopFragrances(g);
+                    applyFilters();
                     updateUrl();
                 };
                 container.appendChild(btn);
@@ -578,13 +619,20 @@
             });
         }
 
-        function showTopFragrances(filter) {
+        function applyFilters() {
+            currentSeasonFilter = document.getElementById('season-filter').value;
+            
             let filtered = fragrances;
 
-            if (filter !== 'All') {
-                filtered = filtered.filter(f => f.Genre === filter);
+            // Genre filter
+            if (currentFilter !== 'All') {
+                filtered = filtered.filter(f => f.Genre === currentFilter);
             }
 
+            // Season filter
+            filtered = filtered.filter(row => matchesSeason(row, currentSeasonFilter));
+
+            // Top logic (within current filters)
             const maxRating = filtered.length ? Math.max(...filtered.map(f => parseFloat(f.Rating) || 0)) : 0;
             const threshold = Math.max(0, maxRating - 2);
 
