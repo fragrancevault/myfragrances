@@ -102,7 +102,7 @@
             overflow-y: auto;
         }
         table { 
-            min-width: 1050px; 
+            min-width: 850px; 
             border-collapse: collapse; 
             background: #111; 
             width: 100%;
@@ -125,17 +125,16 @@
         }
         tr:hover { background: #1f2a3a; }
 
-        .link-cell a {
-            color: #60a5fa;
-            text-decoration: underline;
-        }
-        .link-cell a:hover {
-            color: #93c5fd;
-        }
+        /* Fixed pixel widths */
+        th:nth-child(1), td:nth-child(1) { width: 80px; }   /* House */
+        th:nth-child(2), td:nth-child(2) { width: 150px; }   /* Name */
+        th:nth-child(3), td:nth-child(3) { width: 35px; }    /* Rating */
+        th:nth-child(4), td:nth-child(4) { width: 65px; }    /* Usage */
 
         .notes { 
-            min-width: 420px; 
+            min-width: 340px; 
             white-space: normal !important; 
+            word-break: break-word;
         }
 
         .name-cell {
@@ -195,16 +194,6 @@
             color: #ccc; 
         }
 
-        .separator {
-            border: 0;
-            height: 1px;
-            background: #444;
-            margin: 18px 0;
-            width: 80%;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
         .toast {
             position: fixed;
             bottom: 80px;
@@ -256,7 +245,6 @@
                     <th>Rating</th>
                     <th>Usage</th>
                     <th>Notes</th>
-                    <th>Link</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -470,18 +458,12 @@
             for (let i = 0; i < top10Data.length; i++) {
                 const f = top10Data[i];
                 
-                const link = cleanValue(f.Link || f.URL || f['Link'] || f['URL'] || '');
-                const linkHtml = (link && link !== 'N/A' && link.startsWith('http')) 
-                    ? `<a href="${link}" target="_blank" rel="noopener">🔗 Link</a>` 
-                    : 'N/A';
-                
                 html += `<tr data-index="${i}">` +
                     '<td>' + cleanValue(f.House) + '</td>' +
                     '<td class="name-cell">' + cleanValue(f.Name) + '</td>' +
                     '<td>' + cleanValue(f.Rating) + '</td>' +
                     '<td>' + cleanValue(f.Usage || f['Hours of Performance'] || f.Hours) + '</td>' +
                     '<td class="notes">' + cleanValue(f.Notes) + '</td>' +
-                    '<td class="link-cell">' + linkHtml + '</td>' +
                     '</tr>';
             }
             tbody.innerHTML = html;

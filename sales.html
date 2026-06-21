@@ -284,7 +284,7 @@
     <div id="toast" class="toast">✅ Copied!</div>
 
     <!-- Detail Modal, Help Modal, Selection Modal (unchanged) -->
-    <!-- Paste your original modal HTML here if needed, or keep as-is from previous version -->
+    <!-- Paste your original modal HTML here if needed -->
 
     <script>
         let sales = [];
@@ -359,11 +359,15 @@
             setTimeout(() => toast.style.display = 'none', 2200);
         }
 
-        /* === REST OF YOUR ORIGINAL SCRIPT (unchanged) === */
         async function loadCSV() {
+            const footer = document.getElementById('footer');
             try {
+                footer.innerHTML = 'Loading sales...';
                 const salesUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=1452885969&single=true&output=csv";
+                
                 const res = await fetch(salesUrl + (salesUrl.includes('?') ? '&' : '?') + 't=' + Date.now());
+                if (!res.ok) throw new Error('Network error');
+                
                 const text = await res.text();
 
                 Papa.parse(text, {
@@ -386,6 +390,7 @@
                 });
             } catch (e) {
                 console.error("Load error:", e);
+                footer.innerHTML = `<strong style="color:#ff6666;">Error loading Google Sheet</strong>`;
             }
         }
 
@@ -427,7 +432,7 @@
             updateTotal();
         }
 
-        /* (Add the rest of your original functions: showDetailModal, toggleSelectAll, etc. if they were cut off) */
+        /* Keep all your other functions (showDetailModal, toggleSelectAll, startOver, etc.) as they were */
 
         window.onload = loadCSV;
     </script>
