@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- THE FRAG VAULT - SALES PAGE (JSON VERSION) -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -7,31 +6,20 @@
     <title>The Frag Vault</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: #0a0a0a; color: #e0e0e0; line-height: 1.5; }
-        header { background: linear-gradient(135deg, #1a1a1a, #0f0f0f); color: white; padding: 1.6rem 1rem 1.6rem 65px; text-align: center; border-bottom: 1px solid #333; position: relative; }
-        h1 { margin: 0; font-size: 2.0rem; }
-        #total-display { margin-top: 10px; font-size: 1.35rem; font-weight: bold; color: #4ade80; }
-        #help-icon { position: absolute; left: 22px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 1.35rem; cursor: pointer; color: #60a5fa; }
-        .controls { padding: 18px 20px 14px; background: #111; border-bottom: 1px solid #333; }
-        .control-row { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; align-items: center; margin-bottom: 12px; }
-        .refresh-btn, .startover-btn, .export-btn { padding: 9px 14px; font-size: 13px; border-radius: 20px; min-width: 85px; }
-        .refresh-btn { background: #d97706; }
-        .startover-btn { background: #d97706 !important; }
-        .export-btn { background: #15803d !important; }
-        .search-row { margin-bottom: 12px; position: relative; max-width: 600px; width: 100%; margin-left: auto; margin-right: auto; }
-        #search { padding: 10px 40px 10px 12px; font-size: 14px; border-radius: 8px; background: #1f1f1f; color: #e0e0e0; border: 1px solid #444; width: 100%; }
-        .table-wrapper { padding: 0 20px 20px; overflow-x: auto; max-height: 75vh; overflow-y: auto; }
-        table { min-width: 1250px; border-collapse: collapse; background: #111; width: 100%; table-layout: fixed; }
-        th, td { padding: 10px 8px; border-bottom: 1px solid #333; font-size: 14px; vertical-align: top; text-align: left; }
-        th { background: #1a1a1a; color: #fff; position: sticky; top: 0; z-index: 10; }
-        tr { cursor: pointer; }
-        tr:hover { background: #1f1f1f; }
-        /* Add your other styles (modals, etc.) here from original */
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: #0a0a0a; color: #e0e0e0; }
+        header { background: linear-gradient(135deg, #1a1a1a, #0f0f0f); padding: 1.6rem 1rem; text-align: center; }
+        .controls { padding: 15px; background: #111; }
+        .control-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 10px; }
+        button { padding: 8px 12px; font-size: 13px; border-radius: 20px; }
+        .refresh-btn { background: #d97706; color: white; }
+        .startover-btn { background: #d97706; color: white; }
+        .export-btn { background: #15803d; color: white; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 8px; border-bottom: 1px solid #333; text-align: left; }
     </style>
 </head>
 <body>
     <header>
-        <button id="help-icon" onclick="showHelpModal()" title="How to Use This Page">❓</button>
         <h1>The Frag Vault</h1>
         <div id="total-display">Total Selected: $0</div>
     </header>
@@ -42,43 +30,31 @@
             <button onclick="startOver()" class="startover-btn">Start Over</button>
             <button onclick="showSelectionModal()" class="export-btn">Total</button>
         </div>
-        <!-- Your other control rows (search, sort buttons) -->
+        <div class="control-row">
+            <input type="text" id="search" placeholder="Search..." style="width:100%;padding:10px;" onkeyup="filterTable()">
+        </div>
     </div>
 
-    <div class="table-wrapper">
+    <div style="padding:0 10px;">
         <table id="sales-table">
             <thead>
                 <tr>
-                    <th><input type="checkbox" id="select-all" onchange="toggleSelectAll()"></th>
-                    <th>Qty</th>
-                    <th onclick="sortTable(2)">House</th>
-                    <th onclick="sortTable(3)">Name</th>
-                    <th onclick="sortTable(4)">5ml</th>
-                    <th onclick="sortTable(5)">Status</th>
-                    <th>Link</th>
-                    <th>Genre</th>
-                    <th>Attribute</th>
-                    <th>Perfumer</th>
+                    <th>House</th>
+                    <th>Name</th>
+                    <th>5ml</th>
+                    <th>Status</th>
                 </tr>
             </thead>
             <tbody></tbody>
         </table>
     </div>
 
-    <!-- Paste your original modals here (detail-modal, help-modal, selection-modal) -->
-
     <script>
         let sales = [];
-        let sortState = {};
 
-        // === PASTE ALL YOUR ORIGINAL FUNCTIONS HERE FROM THE WORKING VERSION ===
-        // (cleanValue, formatPrice, isAvailable, createStarRating, updateTotal, renderTable, showDetailModal, etc.)
-
-        // NEW JSON FUNCTIONS
         async function fetchJSON() {
             try {
-                const res = await fetch(`data/sales.json?t=${Date.now()}`);
-                if (!res.ok) throw new Error('File not found');
+                const res = await fetch('data/sales.json?t=' + Date.now());
                 return await res.json();
             } catch (e) {
                 console.error(e);
@@ -88,34 +64,53 @@
 
         async function refreshData() {
             const btn = document.getElementById('refreshBtn');
-            btn.disabled = true;
-            btn.textContent = '🔄 Refreshing...';
+            btn.textContent = 'Loading...';
             sales = await fetchJSON();
-            if (sales.length > 0) {
-                renderTable(sales);
-                sortTable(2, true);
-                updateFooter();
-                showToast('✅ Refreshed!');
-            } else {
-                showToast('❌ Load failed');
-            }
-            btn.disabled = false;
+            renderTable();
             btn.textContent = '🔄 Refresh';
         }
 
-        function showToast(message) {
-            const toast = document.createElement('div');
-            toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#22c55e;color:white;padding:12px 24px;border-radius:8px;z-index:3000;';
-            toast.textContent = message;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 2200);
+        function renderTable() {
+            const tbody = document.querySelector('#sales-table tbody');
+            tbody.innerHTML = '';
+            sales.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.House || ''}</td>
+                    <td>${item.Name || ''}</td>
+                    <td>${item['5ml'] || ''}</td>
+                    <td>${item.Status || ''}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function filterTable() {
+            const term = document.getElementById('search').value.toLowerCase();
+            const filtered = sales.filter(item => 
+                (item.House || '').toLowerCase().includes(term) || (item.Name || '').toLowerCase().includes(term)
+            );
+            const tbody = document.querySelector('#sales-table tbody');
+            tbody.innerHTML = '';
+            filtered.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>\( {item.House}</td><td> \){item.Name}</td><td>\( {item['5ml']}</td><td> \){item.Status}</td>`;
+                tbody.appendChild(row);
+            });
+        }
+
+        function startOver() {
+            document.getElementById('search').value = '';
+            renderTable();
+        }
+
+        function showSelectionModal() {
+            alert('Total: $0');
         }
 
         window.onload = async () => {
             sales = await fetchJSON();
-            renderTable(sales);
-            sortTable(2, true);
-            updateFooter();
+            renderTable();
         };
     </script>
 </body>
