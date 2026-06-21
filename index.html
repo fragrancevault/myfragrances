@@ -71,6 +71,23 @@
             border-bottom: 1px solid #333;
         }
 
+        .season-controls {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            margin: 8px 0 12px 0;
+        }
+
+        select {
+            padding: 12px 20px;
+            font-size: 1.1rem;
+            background: #1f2a3a;
+            color: #e0e0e0;
+            border: 2px solid #60a5fa;
+            border-radius: 50px;
+            cursor: pointer;
+        }
+
         .search-container {
             position: relative;
             flex: 1;
@@ -102,14 +119,6 @@
         }
         .clear-btn:hover { color: #e0e0e0; }
 
-        input, select { 
-            font-size: 14px;
-            border-radius: 8px; 
-            background: #1f1f1f;
-            color: #e0e0e0;
-            border: 1px solid #444;
-        }
-
         button { 
             background: #0066cc; 
             color: white; 
@@ -132,7 +141,7 @@
             overflow-y: auto;
         }
         table { 
-            min-width: 1150px; 
+            min-width: 1000px; 
             border-collapse: collapse; 
             background: #111; 
             width: 100%;
@@ -152,19 +161,10 @@
             text-align: left;
         }
 
-        .name-col { width: 180px; white-space: normal; word-break: break-word; }
+        .name-col { width: 120px; white-space: normal; word-break: break-word; }
         .rating-col, .hours-col, .sillage-col { text-align: center; width: 70px; }
-
-        .link-icon {
-            font-size: 1.45rem;
-            color: #60a5fa;
-            cursor: pointer;
-            transition: transform 0.2s ease;
-            text-decoration: none;
-        }
-        .link-icon:hover {
-            transform: scale(1.35);
-            color: #3b82f6;
+        td:nth-child(8), td:nth-child(9) {
+            text-align: center;
         }
 
         .toast {
@@ -250,28 +250,6 @@
             font-size: 1.02rem; 
             color: #ccc; 
         }
-        .modal-link {
-            margin-top: 20px;
-            padding: 13px 24px;
-            background: #1e3a8a;
-            border-radius: 8px;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            color: white;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1.05rem;
-        }
-        .modal-link:hover {
-            background: #2563eb;
-        }
-        hr {
-            border: none;
-            border-top: 1px solid #444;
-            margin: 18px 0;
-            width: 100%;
-        }
     </style>
 </head>
 <body>
@@ -305,15 +283,17 @@
             <button class="clear-btn" id="clear-search" onclick="clearSearch()" aria-label="Clear search">×</button>
         </div>
         <div id="genre-filters"></div>
-        
-        <select id="season-filter" onchange="filterTable()">
-            <option value="">All Seasons</option>
-            <option value="Hot">Hot</option>
-            <option value="Cold">Cold</option>
-            <option value="Any">Any</option>
-            <option value="HotAny">Hot + Any</option>
-            <option value="ColdAny">Cold + Any</option>
-        </select>
+
+        <div class="season-controls">
+            <select id="season-filter" onchange="filterTable()">
+                <option value="">🌍 Show Me Any Season</option>
+                <option value="Any">🌡️ Any Season Only</option>
+                <option value="Hot">☀️ Hot</option>
+                <option value="Cold">❄️ Cold</option>
+                <option value="HotAny">☀️ Hot + Any</option>
+                <option value="ColdAny">❄️ Cold + Any</option>
+            </select>
+        </div>
         
         <button onclick="sortTable(0)">House</button>
         <button onclick="sortTable(1)">Name</button>
@@ -358,6 +338,7 @@
     </div>
 
     <script>
+        // (The full script is unchanged from the previous version - all logic remains the same)
         let fragrances = [];
         let nowWearingData = [];
         let currentGenres = new Set();

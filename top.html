@@ -100,7 +100,7 @@
             background: #111; 
             display: flex; 
             flex-wrap: wrap; 
-            gap: 12px; 
+            gap: 10px; 
             justify-content: center; 
             align-items: center;
             border-bottom: 1px solid #333;
@@ -129,9 +129,20 @@
             border: none; 
             cursor: pointer;
             font-weight: bold;
-            padding: 10px 16px;
+            padding: 9px 14px;
             border-radius: 8px;
+            font-size: 13.5px;
+            white-space: nowrap;
         }
+
+        .startover-btn { background: #d97706 !important; }
+        .top10-btn { background: #7c3aed !important; }
+        .top10-btn.active { 
+            background: transparent !important; 
+            border: 2px solid #7c3aed; 
+            color: #7c3aed; 
+        }
+        .export-btn { background: #15803d !important; }
 
         .table-wrapper { 
             padding: 0 12px 20px; 
@@ -142,7 +153,7 @@
         table { 
             table-layout: fixed;
             width: 100%;
-            min-width: 520px;
+            min-width: 450px;
             border-collapse: collapse; 
             background: #111; 
         }
@@ -162,9 +173,9 @@
         tr:hover { background: #1f2a3a; cursor: pointer; }
 
         /* Narrow columns with word wrap */
-        th:nth-child(1), td:nth-child(1) { width: 28%; }   /* House */
-        th:nth-child(2), td:nth-child(2) { width: 52%; }   /* Name - allows wrap */
-        th:nth-child(3), td:nth-child(3) { width: 20%; }   /* Rating */
+        th:nth-child(1), td:nth-child(1) { width: 30%; }   /* House */
+        th:nth-child(2), td:nth-child(2) { width: 40%; }   /* Name - allows wrap */
+        th:nth-child(3), td:nth-child(3) { width: 30%; }   /* Rating */
 
         td:nth-child(2) {
             white-space: normal;
@@ -274,6 +285,9 @@
         </div>
         
         <div id="genre-filters"></div>
+
+        <button onclick="startOver()" class="startover-btn">Start Over</button>
+        <button onclick="showTop10()" id="top10-btn" class="top10-btn">Top 10</button>
         <button onclick="exportToCSV()" class="export-btn">Export To CSV</button>
     </div>
 
@@ -308,6 +322,7 @@
         let nowWearingData = [];
         let currentFilter = 'All';
         let currentSeasonFilter = 'Everything';
+        let isTop10Active = false;
 
         function cleanValue(val) {
             if (val === null || val === undefined || val === '' || val === '?') {
@@ -470,7 +485,6 @@
                         if (urlGenre) currentFilter = urlGenre;
                         
                         applyFilters();
-                        updateFooter();
                     }
                 });
             } catch (e) {
@@ -548,6 +562,9 @@
         }
 
         function applyFilters() {
+            isTop10Active = false;
+            document.getElementById('top10-btn').classList.remove('active');
+            
             currentSeasonFilter = document.getElementById('season-filter').value;
             
             let filtered = fragrances;
@@ -565,11 +582,72 @@
                                    .sort((a, b) => parseFloat(b.Rating) - parseFloat(a.Rating));
 
             renderTable(topData);
+            updateFooter(topData);
         }
 
-        function updateFooter() {
+        function showTop10() {
+            const btn = document.getElementById('top10-btn');
+            isTop10Active = !isTop10Active;
+            btn.classList.toggle('active', isTop10Active);
+
+            currentSeasonFilter = document.getElementById('season-filter').value;
+            
+            let filtered = fragrances;
+
+            if (currentFilter !== 'All') {
+                filtered = filtered.filter(f => f.Genre === currentFilter);
+            }
+
+            filtered = filtered.filter(row => matchesSeason(row, currentSeasonFilter));
+
+            if (filtered.length === 0) {
+                renderTable([]);
+                updateFooter([]);
+                return;
+            }
+
+            // Sort by rating descending
+            filtered.sort((a, b) => parseFloat(b.Rating || 0) - parseFloat(a.Rating || 0));
+
+            const top10 = filtered.slice(0, 10);
+            if (top10.length < 10) {
+                renderTable(filtered);
+                updateFooter(filtered);
+                return;
+            }
+
+            const tenthRating = parseFloat(top10[9].Rating || 0);
+            const topExpanded = filtered.filter(f => parseFloat(f.Rating || 0) >= tenthRating);
+
+            renderTable(topExpanded);
+            updateFooter(topExpanded);
+        }
+
+        function updateFooter(filteredData = null) {
+            const data = filteredData || fragrances;
+            const total = data.length;
+            let totalML = 0;
+            data.forEach(f => {
+                const size = parseFloat(f.Size);
+                if (!isNaN(size)) totalML += size;
+            });
+
+            const label = total === fragrances.length ? "fragrances" : "top fragrances";
+
             document.getElementById('footer').innerHTML = 
-                '<strong>' + fragrances.length + '</strong> fragrances in collection';
+                '<strong>' + total + '</strong> ' + label + ' • ' +
+                '<strong>' + totalML.toLocaleString() + '</strong> ml total';
+        }
+
+        function startOver() {
+            currentFilter = 'All';
+            document.getElementById('season-filter').value = 'Everything';
+            document.querySelectorAll('.genre-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('top10-btn').classList.remove('active');
+            isTop10Active = false;
+            
+            applyFilters();
+            updateUrl();
         }
 
         function exportToCSV() {
