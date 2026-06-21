@@ -1,54 +1,82 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>CSV to JSON Saver</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <style>
-        body { font-family: sans-serif; padding: 20px; background: #111; color: #ddd; }
-        textarea { width: 100%; height: 300px; }
-        button { padding: 12px 24px; margin: 10px; background: #15803d; color: white; border: none; border-radius: 8px; font-size: 1.1em; }
-    </style>
-</head>
-<body>
-    <h1>CSV → JSON Saver</h1>
-    <p>Paste CSV content below, choose filename, click Save</p>
-    
-    <textarea id="csvInput" placeholder="Paste CSV text here..."></textarea><br>
-    
-    <input id="filename" value="sales.json" placeholder="filename.json"><br><br>
-    
-    <button onclick="convertAndDownload()">Save JSON File</button>
-
-    <script>
-        function convertAndDownload() {
-            const csv = document.getElementById('csvInput').value.trim();
-            const filename = document.getElementById('filename').value || 'data.json';
-
-            Papa.parse(csv, {
-                header: true,
-                skipEmptyLines: true,
-                complete: (result) => {
-                    const data = result.data.map(row => {
-                        Object.keys(row).forEach(key => {
-                            if (typeof row[key] === 'string') row[key] = row[key].trim();
-                        });
-                        return row;
-                    });
-
-                    const jsonStr = JSON.stringify(data, null, 2);
-                    const blob = new Blob([jsonStr], { type: 'application/json' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = filename;
-                    a.click();
-                    URL.revokeObjectURL(url);
-                    
-                    alert('✅ Saved ' + filename + ' (' + data.length + ' rows)');
-                }
-            });
-        }
-    </script>
-</body>
-</html>
+[
+  {
+    "House": "Creed",
+    "Name": "Absolu Aventus",
+    "Rating": "10",
+    "Usage": "Any Season",
+    "Notes": "The king of masculinity. Its a perfect balance of the smokey pineapple and the earthy birch tar. I have tried a few batches and they all smell the same and perform the same. Absolu Aventus is the benchmark 10 of masculine fragrances in my collection.",
+    "Link": "https://www.fragrantica.com/perfume/Creed/Absolu-Aventus-106624.html"
+  },
+  {
+    "House": "GymnTonic",
+    "Name": "Bone Daddy",
+    "Rating": "10",
+    "Usage": "Any Season",
+    "Notes": "I received a free sample of this with some supplements. I had not worn cologne in 20 years before applying this sample. Wearing it lit the lightbulb of the infatuation with smelling great. 2 sprays of this freshie results in 12 hours of heavy projection. This stuff was expensive so I immediately started ordering decants to try and figure out what it was because I didn't believe that it was an original. With over 500 fragrances now, I firmly believe that it is an original and to me it smells like a mix of Prada L'Homme L'eau and LV Imagination. This is the Benchmark 10 of freshies in my collection.",
+    "Link": "https://stores.gymntonic.com/bone-daddy-cologne-formerly-activ-8-3ml-spray-bottle-pheromone-infused-1-seller-at-gymntonic-com/"
+  },
+  {
+    "House": "Prada",
+    "Name": "L'Homme L'eau (PUIG)",
+    "Rating": "9.5",
+    "Usage": "Any Season",
+    "Notes": "Powder is my favorite note. I quickly fell in love with the note after I received a decant of this. When searching for a bottle, I learned that the PUIG bottles that were made in Spain were better. Luckily, I was able to secure a full 100ml PUIG bottle for $100. While I think that the iris in Dior Homme Intense is better, the performance on this fragrance is hard to beat. That is why this fragrance lands in my Top 10.",
+    "Link": "https://www.fragrantica.com/perfume/Prada/Prada-L-Homme-L-Eau-46400.html"
+  },
+  {
+    "House": "MDCI",
+    "Name": "Invasion Barbare",
+    "Rating": "9.5",
+    "Usage": "Any Season",
+    "Notes": "This powdery, modern fougere is my favorite, most likely because it contains powder. while powder might be my favorite note, fougeres are my favorite genre. I love the old school, heavy masculine fragrances.",
+    "Link": "https://www.fragrantica.com/perfume/MDCI-Parfums/Invasion-Barbare-5937.html"
+  },
+  {
+    "House": "Creed",
+    "Name": "Royal Oud",
+    "Rating": "9.5",
+    "Usage": "Any Season",
+    "Notes": "My signature scent. I was immediately captivated upon first sniff. It's an all seasons Wood that brings freshness and masculinity to those that wear it. It enhances my persona and makes me feel great wearing it. That is the definition of a Signature Scent. I came across hundreds of fragrances before I learned what this term actually meant.",
+    "Link": "https://www.fragrantica.com/perfume/Creed/Royal-Oud-12317.html"
+  },
+  {
+    "House": "Tom Ford",
+    "Name": "Oud Wood Intense",
+    "Rating": "9.5",
+    "Usage": "Fall & Winter",
+    "Notes": "The most masculine in the woody genre. It makes me feel like a lumberjack wearing it.",
+    "Link": "https://www.fragrantica.com/perfume/Tom-Ford/Oud-Wood-Intense-46767.html"
+  },
+  {
+    "House": "Chanel",
+    "Name": "BDC L'xclusiv",
+    "Rating": "9.5",
+    "Usage": "Fall & Winter",
+    "Notes": "I can't exclude a blue from my Top 10. The fragrance kicks off smelling like Dior Sauvage Elixir for the first hour, and that is not a bad thing. It lasts all day and is powdery and fresh. Wearing it in the heat brings out a lot of patchouli so its best worn in the cool weather.",
+    "Link": "https://www.fragrantica.com/perfume/Chanel/Bleu-de-Chanel-L-Exclusif-113429.html"
+  },
+  {
+    "House": "Arabian Oud",
+    "Name": "Sultani",
+    "Rating": "9",
+    "Usage": "Sping & Summer",
+    "Notes": "When I first started in on fragrances, this was my first love. I wasn't sure what musk was at that point, but to me, this smelled like a super masculine freshie. I know now that this is a musk bomb and the performance is second to none in the freshie game.",
+    "Link": "https://www.fragrantica.com/perfume/Arabian-Oud/Sultani-65420.html"
+  },
+  {
+    "House": "Polysnifferous",
+    "Name": "Green Polish Intense",
+    "Rating": "9.25",
+    "Usage": "Any Season",
+    "Notes": "I could not leave Polysnifferous off of this list. Noah creates perfume for the people. They are inexpensive and some of the best fragrances on the market. I was originally drawn to him via Brackish Man, and while excellent, it was difficult to pick out ny favorite. This top spot could easily be replaced by Brackish Man, Old Man Brackish, or Aventish. They contain high quality ingredients, and are blended to perfection. Polish is the most hyper-mascukine fragrance I own. it will make your chest hairs grow chest hairs.",
+    "Link": "https://polysnifferous.com/products/polish-green-intense"
+  },
+  {
+    "House": "Creed",
+    "Name": "Bois de Portugal",
+    "Rating": "9.25",
+    "Usage": "Any Season",
+    "Notes": "There are so many excellent fougeres in my collection that it is hard to select my favorite. While Invasion Barbare is included in this genre, it is a modern take. BdP is a classical take on the genre and with an impressive 8 hour performance, it is going to be hard to beat.",
+    "Link": "https://www.fragrantica.com/perfume/Creed/Bois-du-Portugal-3805.html"
+  }
+]

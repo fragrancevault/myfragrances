@@ -1,54 +1,394 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>CSV to JSON Saver</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <style>
-        body { font-family: sans-serif; padding: 20px; background: #111; color: #ddd; }
-        textarea { width: 100%; height: 300px; }
-        button { padding: 12px 24px; margin: 10px; background: #15803d; color: white; border: none; border-radius: 8px; font-size: 1.1em; }
-    </style>
-</head>
-<body>
-    <h1>CSV → JSON Saver</h1>
-    <p>Paste CSV content below, choose filename, click Save</p>
-    
-    <textarea id="csvInput" placeholder="Paste CSV text here..."></textarea><br>
-    
-    <input id="filename" value="sales.json" placeholder="filename.json"><br><br>
-    
-    <button onclick="convertAndDownload()">Save JSON File</button>
-
-    <script>
-        function convertAndDownload() {
-            const csv = document.getElementById('csvInput').value.trim();
-            const filename = document.getElementById('filename').value || 'data.json';
-
-            Papa.parse(csv, {
-                header: true,
-                skipEmptyLines: true,
-                complete: (result) => {
-                    const data = result.data.map(row => {
-                        Object.keys(row).forEach(key => {
-                            if (typeof row[key] === 'string') row[key] = row[key].trim();
-                        });
-                        return row;
-                    });
-
-                    const jsonStr = JSON.stringify(data, null, 2);
-                    const blob = new Blob([jsonStr], { type: 'application/json' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = filename;
-                    a.click();
-                    URL.revokeObjectURL(url);
-                    
-                    alert('✅ Saved ' + filename + ' (' + data.length + ' rows)');
-                }
-            });
-        }
-    </script>
-</body>
-</html>
+[
+  {
+    "House": "AAM",
+    "Name": "Kaaf",
+    "Genre": "Spice",
+    "Notes": "test",
+    "Link": "https://www.fragrantica.com/perfume/Ahmed-Al-Maghribi/Kaaf-102460.html",
+    "Purchase": "Amazon"
+  },
+  {
+    "House": "AAM",
+    "Name": "Marj",
+    "Genre": "Spice",
+    "Notes": "",
+    "Link": "https://www.fragrantica.com/perfume/Ahmed-Al-Maghribi/Marj-104339.html",
+    "Purchase": "https://www.fragrancenet.com/fragrances/ahmed-al-maghribi/ahmed-al-maghribi-marj/eau-de-parfum?mv_pc=gawus_pla_m_x_20379311721_473982&utm_source=google_us&cfc=1&utm_medium=cpc&utm_campaign=x&gad_source=1&gad_campaignid=20388879298&gbraid=0AAAAAD9EdlhsJG2CyizNXrma3kMes3R0N&gclid=Cj0KCQjwio_RBhDMARIsAJPveNMcmYvTZCmX19puIfhkaN41mRK2tv02VeLWJMu-VHgidEUTNK7lVTEaAtoqEALw_wcB#473982"
+  },
+  {
+    "House": "AAM",
+    "Name": "Royal Wood",
+    "Genre": "Spice",
+    "Notes": "",
+    "Link": "https://www.fragrantica.com/perfume/Ahmed-Al-Maghribi/Royal-Wood-124605.html",
+    "Purchase": ""
+  },
+  {
+    "House": "AAM",
+    "Name": "Saif",
+    "Genre": "Spice",
+    "Notes": "",
+    "Link": "https://www.fragrantica.com/perfume/Ahmed-Al-Maghribi/Saif-99966.html",
+    "Purchase": ""
+  },
+  {
+    "House": "AAM",
+    "Name": "Summer Oud",
+    "Genre": "Spice",
+    "Notes": "",
+    "Link": "https://www.fragrantica.com/perfume/Ahmed-Al-Maghribi/Summer-Oud-99965.html",
+    "Purchase": ""
+  },
+  {
+    "House": "AllBottlesUSA",
+    "Name": "10ml Decants",
+    "Genre": "",
+    "Notes": "",
+    "Link": "https://allbottlesusa.com/collections/10ml-glass-bottles-1?srsltid=AfmBOorzgoqiu3w-ImyfzY0LeHm3t3UL4eYz2l8JW-BVyF8e6tGituuq",
+    "Purchase": "https://allbottlesusa.com/collections/10ml-glass-bottles-1?srsltid=AfmBOorzgoqiu3w-ImyfzY0LeHm3t3UL4eYz2l8JW-BVyF8e6tGituuq"
+  },
+  {
+    "House": "Arabian Oud",
+    "Name": "Arabian Cologne Blue",
+    "Genre": "Fougere",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Aramis",
+    "Name": "New West",
+    "Genre": "Fougere",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Azzaro",
+    "Name": "Chrome Azure",
+    "Genre": "Fresh",
+    "Notes": "",
+    "Link": "https://www.fragrantica.com/perfume/Azzaro/Chrome-Azure-92239.html",
+    "Purchase": ""
+  },
+  {
+    "House": "Barrister & Mann",
+    "Name": "Seville (fougere shave soap)",
+    "Genre": "Fougere",
+    "Notes": "",
+    "Link": "",
+    "Purchase": "https://www.barristerandmann.com/products/seville-eau-de-toilette-50-ml?_pos=5&_sid=701fb0cb8&_ss=r"
+  },
+  {
+    "House": "Barrister & Mann",
+    "Name": "Waves(aquatic shave soap)",
+    "Genre": "Blue",
+    "Notes": "",
+    "Link": "",
+    "Purchase": "https://www.barristerandmann.com/products/waves-eau-de-toilette-50-ml?_pos=6&_psq=Waves&_ss=e&_v=1.0"
+  },
+  {
+    "House": "Boucheron",
+    "Name": "Singulier",
+    "Genre": "Fougere",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Calvin Klein",
+    "Name": "Obsession (vintage splash)",
+    "Genre": "Fresh",
+    "Notes": "If they're marked Calvin Klein Cosmetics, they're vintage / If they say Unilever, they're between 1998-2005. / If they're Coty, then 2006 and onwards.",
+    "Link": "",
+    "Purchase": "https://enchanteperfumes.com/products/obsession-shopify?_pos=1&_psq=Obsession&_ss=e&_v=1.0&variant=44345218007176"
+  },
+  {
+    "House": "Carolina Herrera",
+    "Name": "CH Men Sport",
+    "Genre": "Fresh",
+    "Notes": "",
+    "Link": "https://www.fragrantica.com/perfume/Carolina-Herrera/CH-Men-Sport-15633.html",
+    "Purchase": ""
+  },
+  {
+    "House": "Cirrus",
+    "Name": "Laundry Day",
+    "Genre": "Fresh",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Clandestine Laboratories",
+    "Name": "Vince",
+    "Genre": "Fougere",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Dapper Daddy",
+    "Name": "Saffron Oud",
+    "Genre": "Fresh",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "DUA",
+    "Name": "Bet On Green",
+    "Genre": "Fougere",
+    "Notes": "",
+    "Link": "",
+    "Purchase": "https://theduabrand.com/products/bet-on-green"
+  },
+  {
+    "House": "DUA",
+    "Name": "Celsius (Dior Fahrenheit)",
+    "Genre": "Fougere",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "DUA",
+    "Name": "Cùir de Russia",
+    "Genre": "Spice",
+    "Notes": "",
+    "Link": "",
+    "Purchase": "https://theduabrand.com/products/cuir-de-russie"
+  },
+  {
+    "House": "DUA",
+    "Name": "Man Card VIP",
+    "Genre": "Fougere",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "DUA",
+    "Name": "Triumphant",
+    "Genre": "Fougere",
+    "Notes": "",
+    "Link": "",
+    "Purchase": "https://theduabrand.com/products/triumphant"
+  },
+  {
+    "House": "DUA",
+    "Name": "Intense Homme (2008 Pour Homme)",
+    "Genre": "Fresh",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Eight and Bob",
+    "Name": "Original",
+    "Genre": "Fougere",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Folkwinds",
+    "Name": "Midwinter Storm 10ml",
+    "Genre": "Oud",
+    "Notes": "",
+    "Link": "https://www.parfumo.com/Perfumes/folkwinds/midwinter-storm",
+    "Purchase": "https://www.reddit.com/r/fragranceswap/comments/1ttgq9e/wts_giant_fragrance_lot_with_bottles_and_decants/"
+  },
+  {
+    "House": "FOMO",
+    "Name": "A Fraghead's Asylum",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "FOMO",
+    "Name": "Fraglover's Tea",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Giorgio Armani",
+    "Name": "AdG Profundo",
+    "Genre": "Blue",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Lattafa",
+    "Name": "Vintage Radio",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Loewe",
+    "Name": "Esencia pour Homme",
+    "Genre": "Fougere",
+    "Notes": "research vintage",
+    "Link": "",
+    "Purchase": "https://www.fragrantica.com/perfume/Loewe/Esencia-pour-Homme-6291.html"
+  },
+  {
+    "House": "Mauboussin",
+    "Name": "Homme",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Montagne",
+    "Name": "Meant To Be Seen",
+    "Genre": "Fresh",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Montagne",
+    "Name": "Spirit (Byredo Mohahave Ghost)",
+    "Genre": "Fresh",
+    "Notes": "",
+    "Link": "",
+    "Purchase": "https://www.montagneparfums.com/fragrance/mojave-spirit-inspired-by-byredo-mojave-ghost-edp"
+  },
+  {
+    "House": "Montblanc",
+    "Name": "Explorer Extreme",
+    "Genre": "Fougere",
+    "Notes": "",
+    "Link": "",
+    "Purchase": "https://www.aurafragrance.com/products/mont-blanc-explorer-extreme-for-men-parfum?_pos=1&_sid=741b90fb3&_ss=r&variant=42760737685567"
+  },
+  {
+    "House": "Paco Rabanne",
+    "Name": "Pour Homme",
+    "Genre": "Fougere",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Paris Corner",
+    "Name": "Coconut Lagoon",
+    "Genre": "Citrus",
+    "Notes": "",
+    "Link": "https://www.fragrantica.com/perfume/PARIS-CORNER/Coconut-Lagoon-101955.html",
+    "Purchase": ""
+  },
+  {
+    "House": "Penhaligon",
+    "Name": "Sartorial",
+    "Genre": "Fougere",
+    "Notes": "",
+    "Link": "https://www.fragrantica.com/perfume/Penhaligon-s/Sartorial-10559.html",
+    "Purchase": ""
+  },
+  {
+    "House": "Polysnifferous",
+    "Name": "Aventish Dawn Intense",
+    "Genre": "Fresh",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Polysnifferous",
+    "Name": "Aventish Dusk",
+    "Genre": "Fresh",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Polysnifferous",
+    "Name": "Aventish Orange Dawn",
+    "Genre": "Fresh",
+    "Notes": "Noah Favorite",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Polysnifferous",
+    "Name": "Aventish Pink",
+    "Genre": "Feminine",
+    "Notes": "",
+    "Link": "https://polysnifferous.com/products/aventish-pink",
+    "Purchase": "https://polysnifferous.com/products/aventish-pink"
+  },
+  {
+    "House": "Polysnifferous",
+    "Name": "Uberman Brackish",
+    "Genre": "Fougere",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Prada",
+    "Name": "Paradigme",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Salvatore Ferragamo",
+    "Name": "Acqua Essenziale Blu",
+    "Genre": "Blue",
+    "Notes": "",
+    "Link": "https://www.fragrantica.com/perfume/Salvatore-Ferragamo/Acqua-Essenziale-Blu-24788.html",
+    "Purchase": ""
+  },
+  {
+    "House": "Tom Ford",
+    "Name": "Boeu de Jour (Private Label black bottle)",
+    "Genre": "Fougere",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Vintage Top 10",
+    "Name": "Vintage Top 25",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Xerjoff",
+    "Name": "40 Knots",
+    "Genre": "Blue",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Xerjoff",
+    "Name": "Mefisto Gentleman",
+    "Genre": "Fresh",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Zingari Man",
+    "Name": "Discovery Set",
+    "Genre": "",
+    "Notes": "",
+    "Link": "https://www.zingariman.com/products/fragrance-discovery-set",
+    "Purchase": ""
+  }
+]

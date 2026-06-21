@@ -1,54 +1,826 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>CSV to JSON Saver</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <style>
-        body { font-family: sans-serif; padding: 20px; background: #111; color: #ddd; }
-        textarea { width: 100%; height: 300px; }
-        button { padding: 12px 24px; margin: 10px; background: #15803d; color: white; border: none; border-radius: 8px; font-size: 1.1em; }
-    </style>
-</head>
-<body>
-    <h1>CSV → JSON Saver</h1>
-    <p>Paste CSV content below, choose filename, click Save</p>
-    
-    <textarea id="csvInput" placeholder="Paste CSV text here..."></textarea><br>
-    
-    <input id="filename" value="sales.json" placeholder="filename.json"><br><br>
-    
-    <button onclick="convertAndDownload()">Save JSON File</button>
-
-    <script>
-        function convertAndDownload() {
-            const csv = document.getElementById('csvInput').value.trim();
-            const filename = document.getElementById('filename').value || 'data.json';
-
-            Papa.parse(csv, {
-                header: true,
-                skipEmptyLines: true,
-                complete: (result) => {
-                    const data = result.data.map(row => {
-                        Object.keys(row).forEach(key => {
-                            if (typeof row[key] === 'string') row[key] = row[key].trim();
-                        });
-                        return row;
-                    });
-
-                    const jsonStr = JSON.stringify(data, null, 2);
-                    const blob = new Blob([jsonStr], { type: 'application/json' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = filename;
-                    a.click();
-                    URL.revokeObjectURL(url);
-                    
-                    alert('✅ Saved ' + filename + ' (' + data.length + ' rows)');
-                }
-            });
-        }
-    </script>
-</body>
-</html>
+[
+  {
+    "House": "Aaron Terence Hughes",
+    "Name": "Icon",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Aaron Terence Hughes",
+    "Name": "Legend Plus",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Akro",
+    "Name": "Smoke",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Alexandria",
+    "Name": "Black Panther",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Alexandria",
+    "Name": "Isola D’Santorini",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Alfred Ritchy",
+    "Name": "Larvotto",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Amouage",
+    "Name": "Material",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Amouage",
+    "Name": "Braken Man",
+    "Genre": "Fougere",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Amouage",
+    "Name": "Overture 10ml",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Arabian Oud",
+    "Name": "Jabal Cotton",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Argos",
+    "Name": "Neptune's Trident",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Armani",
+    "Name": "Code Elixir",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Arquiste",
+    "Name": "Nocturnality",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Azzaro",
+    "Name": "Chrome Extreme",
+    "Genre": "",
+    "Notes": "AdG Profundo but better",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Barret",
+    "Name": "Dupe House",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Bond #9",
+    "Name": "Lafayette St",
+    "Genre": "Fougere",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Bortnikoff",
+    "Name": "Mysterious Oud real Oud",
+    "Genre": "Oud",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Burberry",
+    "Name": "Hero Elixir",
+    "Genre": "Wood",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Cartier",
+    "Name": "Declaration",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Chanel",
+    "Name": "Antaeus Chanel",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Chanel",
+    "Name": "Boy",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Clandestine Laboratories",
+    "Name": "Astoria",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Clandestine Laboratories",
+    "Name": "Ceremony",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Clandestine Laboratories",
+    "Name": "Cote",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Clandestine Laboratories",
+    "Name": "Covert",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Clandestine Laboratories",
+    "Name": "Enigma",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Clandestine Laboratories",
+    "Name": "Vert",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "CLST",
+    "Name": "Humidors of Perception",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Creed",
+    "Name": "Delphinus",
+    "Genre": "",
+    "Notes": "",
+    "Link": "https://www.fragrantica.com/perfume/Creed/Delphinus-95970.html",
+    "Purchase": ""
+  },
+  {
+    "House": "Creed",
+    "Name": "Erolfa",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Creed",
+    "Name": "Wild Vetiver",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Creed",
+    "Name": "1849 Milliseme",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Dapper Daddy",
+    "Name": "Saffron Oud",
+    "Genre": "",
+    "Notes": "Noah Rec",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Dior",
+    "Name": "Dioramour",
+    "Genre": "Fresh",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Dior",
+    "Name": "Eau Sauvage",
+    "Genre": "Fougere",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Dior",
+    "Name": "Fahrenheit",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Dior",
+    "Name": "Fahrenheit Absolute",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Dior",
+    "Name": "Homme",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Dior",
+    "Name": "Homme Parfum vintage",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Dior",
+    "Name": "Patchouli Imperial",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Diptyque",
+    "Name": "Oud Palao",
+    "Genre": "Wood",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Eight and Bob",
+    "Name": "Egypt",
+    "Genre": "Wood",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Ephemeral Dyadic",
+    "Name": "Bodhi & Utah",
+    "Genre": "",
+    "Notes": "Noah Rec",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Ephemeral Dyadic",
+    "Name": "Bodhi & Utah",
+    "Genre": "",
+    "Notes": "Noah Rec",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Essential Parfums",
+    "Name": "The Musc Extrait",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "FOMO",
+    "Name": "Asylum",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "FOMO",
+    "Name": "Illusion",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Goldfield & Banks",
+    "Name": "Silky Woods",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Gucci",
+    "Name": "Envy",
+    "Genre": "",
+    "Notes": "Vintage",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Gucci",
+    "Name": "Guity Absolu",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Halloween Man",
+    "Name": "Hero",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Hermes",
+    "Name": "H24",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Imaginary Authors",
+    "Name": "City On Fire",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "IO.KO",
+    "Name": "I-Patchouly",
+    "Genre": "Patchouli",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "JPG",
+    "Name": "Le Beau Narcisse",
+    "Genre": "Powder",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Kemi",
+    "Name": "LLM real oud oil that changes",
+    "Genre": "Oud",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Kerosene",
+    "Name": "Winter of '99",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Le Labo",
+    "Name": "Another 13",
+    "Genre": "Wood",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Maison Crivelli",
+    "Name": "Iris Malikhân",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Masque Milano",
+    "Name": "Tango",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "MDCI",
+    "Name": "Le Barbier de Tanger 75 ml EDP Spray without BOX. Fast Shipping!",
+    "Genre": "Fougere",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "MFK",
+    "Name": "Aqua Universalis Forte",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "MFK",
+    "Name": "Baccarat Rouge 540 Extrait and EDP",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Michael Malul",
+    "Name": "Ocean Noir Dive",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Mind Games",
+    "Name": "Mentor",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Mont Blanc",
+    "Name": "Legend (fougere)",
+    "Genre": "Fougere",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Montagne",
+    "Name": "Intermission",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Montagne",
+    "Name": "L'Espice",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Narciso Rodriguez",
+    "Name": "EDP Intense",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Nasomotta",
+    "Name": "Black Afgano",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Nasomotta",
+    "Name": "Duro",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Nasomotta",
+    "Name": "Pardon",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Nichane",
+    "Name": "Mana",
+    "Genre": "Animalic",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Nicolai",
+    "Name": "New York Intense",
+    "Genre": "Fougere",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "oud attars",
+    "Name": "oud",
+    "Genre": "Oud",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "PDM",
+    "Name": "Althair",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "PDM",
+    "Name": "Percival",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Perroy",
+    "Name": "Goldfawn",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Prada",
+    "Name": "L'Homme Absolu",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "riviera",
+    "Name": "English Laundry",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Roja",
+    "Name": "Isola Blue",
+    "Genre": "Blue",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Roja",
+    "Name": "O The Exclusive Parfum",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Roja",
+    "Name": "Ahlam powder",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Roja",
+    "Name": "Scandal Pour Homme",
+    "Genre": "Fougere",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Rouge",
+    "Name": "Fougere L’Aube",
+    "Genre": "Fougere",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Serge Lutens",
+    "Name": "Ambre Sultan",
+    "Genre": "",
+    "Notes": "Noah Rec",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Sultan Pasha",
+    "Name": "Fougere Noir Attar",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Today Perfumer",
+    "Name": "Black Cavendish",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Valentino",
+    "Name": "Valentino Uomo Born in Roma Purple Melancholia",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Versace",
+    "Name": "L'Homme",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Versace",
+    "Name": "Pour Homme",
+    "Genre": "Fougere",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "With & West",
+    "Name": "The Violoteer",
+    "Genre": "",
+    "Notes": "Noah Rec",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Xejoff",
+    "Name": "Groove Xcape",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Xerjoff",
+    "Name": "Pikovaya Dama",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Xerjoff",
+    "Name": "Homme",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Xerjoff",
+    "Name": "Shunkoin",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Yves Saint Laurent",
+    "Name": "Rive Gauche Pour Homme Intense",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Zaharoff",
+    "Name": "Seraphim Blue",
+    "Genre": "Blue",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Zaharoff",
+    "Name": "Signature Pour Homme",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "zaharoff tltg",
+    "Name": "Sunkist island",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Zoologist",
+    "Name": "Tyrannosaurus Rex",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "Shinobi",
+    "Name": "Fahrenheit Parfum",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  },
+  {
+    "House": "House of Cosmos",
+    "Name": "Lunar Mineràle",
+    "Genre": "",
+    "Notes": "",
+    "Link": "",
+    "Purchase": ""
+  }
+]
