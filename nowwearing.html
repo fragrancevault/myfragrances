@@ -18,6 +18,7 @@
             color: #e0e0e0;
             line-height: 1.5;
         }
+        
         header {
             background: linear-gradient(135deg, #1a1a1a, #0f0f0f);
             color: white;
@@ -47,7 +48,7 @@
             padding-bottom: 80px;
         }
         table { 
-            min-width: 1200px; 
+            min-width: 950px;   /* Reduced from 1200px - adjust as needed */
             border-collapse: collapse; 
             background: #111; 
             width: 100%;
@@ -67,12 +68,21 @@
         tr { cursor: pointer; transition: all 0.2s; }
         tr:hover { background: #1f2a3a; }
 
-        .date { text-align: center; font-weight: bold; white-space: nowrap; }
+        /* Pixel-based column widths - easy to narrow */
+        th:nth-child(1), td:nth-child(1) { width: 110px; }   /* Date */
+        th:nth-child(2), td:nth-child(2) { width: 130px; }   /* Brand */
+        th:nth-child(3), td:nth-child(3) { width: 160px; }   /* Name */
+        th:nth-child(4), td:nth-child(4) { width: 40px; }    /* Rating */
+        th:nth-child(5), td:nth-child(5) { width: 90px; }    /* Usage */
+        th:nth-child(6), td:nth-child(6) { width: 40px; }    /* Sprays */
+        th:nth-child(7), td:nth-child(7) { width: 375px; }   /* Notes */
+
+        .date { text-align: left; font-weight: bold; white-space: nowrap; }
         .rating { text-align: center; color: #ffd700; font-weight: bold; }
         .sprays { text-align: center; }
-        .notes { max-width: 450px; white-space: normal; }
+        .notes { white-space: normal; word-break: break-word; }
 
-        /* Modal */
+        /* Modal styles unchanged */
         .modal {
             display: none;
             position: fixed;
@@ -123,28 +133,6 @@
             margin: 6px 0; 
             font-size: 1.02rem; 
             color: #ccc; 
-        }
-        .modal-link {
-            margin-top: 20px;
-            padding: 13px 24px;
-            background: #1e3a8a;
-            border-radius: 8px;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            color: white;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1.05rem;
-        }
-        .modal-link:hover {
-            background: #2563eb;
-        }
-        hr {
-            border: none;
-            border-top: 1px solid #444;
-            margin: 18px 0;
-            width: 100%;
         }
     </style>
 </head>
@@ -302,7 +290,6 @@
             let html = 
                 '<div class="house">' + cleanValue(wear.Brand) + '</div>';
 
-            // ✅ Name is now clickable if Link exists
             if (hasLink) {
                 html += '<a href="' + frag.Link + '" target="_blank" class="name" style="display:block; text-decoration:none;">' + cleanValue(wear.Name) + '</a>';
             } else {
