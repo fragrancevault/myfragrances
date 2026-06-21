@@ -132,7 +132,7 @@
             overflow-y: auto;
         }
         table { 
-            min-width: 1920px; 
+            min-width: 1150px; 
             border-collapse: collapse; 
             background: #111; 
             width: 100%;
@@ -152,14 +152,8 @@
             text-align: left;
         }
 
-        .name-col     { width: 130px; }
-        .notes-col    { width: 280px; }
-        .comments-col { width: 260px; }
-        .link-col     { width: 65px; text-align: center; }
-
-        .rating-col, .hours-col, .sillage-col, .sprays-col {
-            text-align: center;
-        }
+        .name-col { width: 180px; white-space: normal; word-break: break-word; }
+        .rating-col, .hours-col, .sillage-col { text-align: center; width: 70px; }
 
         .link-icon {
             font-size: 1.45rem;
@@ -307,7 +301,7 @@
     
     <div class="controls">
         <div class="search-container">
-            <input type="text" id="search" placeholder="Search House, Name, Perfumer, Notes, Comments..." onkeyup="filterTable()">
+            <input type="text" id="search" placeholder="Search House, Name, Perfumer..." onkeyup="filterTable()">
             <button class="clear-btn" id="clear-search" onclick="clearSearch()" aria-label="Clear search">×</button>
         </div>
         <div id="genre-filters"></div>
@@ -326,8 +320,8 @@
         <button onclick="sortTable(2)">Rating</button>
         <button onclick="sortTable(3)">Hours</button>
         <button onclick="sortTable(4)">Silliage</button>
-        <button onclick="sortTable(8)">Parfumo</button>
         <button onclick="sortTable(7)">Perfumer</button>
+        <button onclick="sortTable(8)">Parfumo</button>
 
         <button onclick="startOver()" class="startover-btn">Start Over</button>
         <button onclick="exportToCSV()" class="export-btn">Export To CSV</button>
@@ -342,15 +336,10 @@
                     <th onclick="sortTable(2)" class="rating-col">Rating</th>
                     <th onclick="sortTable(3)" class="hours-col">Hours</th>
                     <th onclick="sortTable(4)" class="sillage-col">Silliage</th>
-                    <th onclick="sortTable(5)" class="sprays-col">Sprays</th>
-                    <th onclick="sortTable(6)">Genre</th>
-                    <th onclick="sortTable(7)">Perfumer</th>
-                    <th onclick="sortTable(8)">Parfumo</th>
-                    <th onclick="sortTable(9)">Season</th>
-                    <th onclick="sortTable(10)">ml</th>
-                    <th class="notes-col">Notes</th>
-                    <th class="comments-col">Comments</th>
-                    <th class="link-col" onclick="sortTable(13)">🔗</th>
+                    <th onclick="sortTable(5)">Genre</th>
+                    <th onclick="sortTable(6)">Perfumer</th>
+                    <th onclick="sortTable(7)">Parfumo</th>
+                    <th onclick="sortTable(8)">Season</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -375,7 +364,7 @@
         let sortState = {};
         let currentSortCol = null;
 
-        const highFirst = [2, 3, 4, 8];
+        const highFirst = [2, 3, 4, 7];
 
         function cleanValue(val) {
             if (val === null || val === undefined || val === '' || val === '?') return 'N/A';
@@ -399,7 +388,6 @@
             let html = 
                 '<div class="house">' + cleanValue(fragrance.House) + '</div>';
 
-            // ✅ Name is now clickable if Link exists
             if (hasLink) {
                 html += '<a href="' + fragrance.Link + '" target="_blank" class="name" style="display:block; text-decoration:none;">' + cleanValue(fragrance.Name) + '</a>';
             } else {
@@ -631,32 +619,22 @@
             let html = '';
             for (let i = 0; i < data.length; i++) {
                 const f = data[i];
-                const linkHtml = (f.Link && f.Link.trim() !== '' && f.Link !== 'N/A') 
-                    ? '<a href="' + f.Link + '" target="_blank" class="link-icon" title="Open Fragrance Hub">🔗</a>' 
-                    : '—';
-                
                 html += '<tr data-index="' + i + '">' +
                     '<td>' + cleanValue(f.House) + '</td>' +
                     '<td class="name-col"><strong>' + cleanValue(f.Name) + '</strong></td>' +
                     '<td class="rating-col">' + cleanValue(f.Rating) + '</td>' +
                     '<td class="hours-col">' + cleanValue(f['Hours of Performance']) + '</td>' +
                     '<td class="sillage-col">' + cleanValue(f.Silliage) + '</td>' +
-                    '<td class="sprays-col">' + cleanValue(f.Sprays) + '</td>' +
                     '<td>' + cleanValue(f.Genre) + '</td>' +
                     '<td>' + cleanValue(f.Perfumer) + '</td>' +
                     '<td>' + cleanValue(f['Parfumo Rating']) + '</td>' +
                     '<td>' + cleanValue(f.Seasons) + '</td>' +
-                    '<td>' + cleanValue(f.Size) + '</td>' +
-                    '<td class="notes-col">' + cleanValue(f.Notes) + '</td>' +
-                    '<td class="comments-col">' + cleanValue(f.Comments) + '</td>' +
-                    '<td class="link-col">' + linkHtml + '</td>' +
                     '</tr>';
             }
             tbody.innerHTML = html;
 
             document.querySelectorAll('#fragrance-table tbody tr').forEach(row => {
                 row.addEventListener('click', (e) => {
-                    if (e.target.tagName === 'A') return;
                     const index = parseInt(row.dataset.index);
                     showModal(data[index]);
                 });
@@ -777,7 +755,7 @@
             const rows = Array.from(tbody.querySelectorAll('tr'));
             if (rows.length === 0) return alert("No data to export!");
 
-            let csv = "House,Name,Rating,Hours,Silliage,Sprays,Genre,Perfumer,Parfumo,Season,ml,Notes,Comments,Link\n";
+            let csv = "House,Name,Rating,Hours,Silliage,Genre,Perfumer,Parfumo,Season\n";
             rows.forEach(row => {
                 const cells = Array.from(row.cells).map(cell => '"' + cell.textContent.trim().replace(/"/g, '""') + '"');
                 csv += cells.join(',') + '\n';
