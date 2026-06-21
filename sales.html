@@ -22,7 +22,7 @@
         header {
             background: linear-gradient(135deg, #1a1a1a, #0f0f0f);
             color: white;
-            padding: 1.6rem 1rem 1.6rem 65px;
+            padding: 1.6rem 1rem 1.6rem 65px; /* Adjusted for smaller icon */
             text-align: center;
             border-bottom: 1px solid #333;
             position: relative;
@@ -39,6 +39,7 @@
             color: #4ade80;
         }
 
+        /* Help Icon - Smaller & Subtler */
         #help-icon {
             position: absolute;
             left: 22px;
@@ -46,7 +47,7 @@
             transform: translateY(-50%);
             background: none;
             border: none;
-            font-size: 1.35rem;
+            font-size: 1.35rem; /* Roughly half the previous size */
             cursor: pointer;
             color: #60a5fa;
             padding: 6px;
@@ -58,21 +59,6 @@
             color: #93c5fd;
             opacity: 1;
             transform: translateY(-50%) scale(1.15);
-        }
-
-        #copy-all-btn {
-            position: absolute;
-            left: 70px;
-            bottom: 18px;
-            background: #0066cc;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            cursor: pointer;
-            white-space: nowrap;
-            min-width: 48px;
         }
 
         .controls { 
@@ -172,6 +158,7 @@
             font-size: 14.5px;
         }
 
+        /* Column widths */
         th:nth-child(1), td:nth-child(1) { width: 20px; max-width: 20px; text-align: center; }
         th:nth-child(2), td:nth-child(2) { width: 30px; max-width: 30px; text-align: center; }
         th:nth-child(3), td:nth-child(3) { width: 100px; }
@@ -211,27 +198,106 @@
             letter-spacing: 2px;
         }
 
-        .toast {
-            position: fixed;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #22c55e;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 14px;
-            z-index: 3000;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        /* Modals */
+        #detail-modal, #help-modal, #selection-modal {
             display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 1200;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
         }
+        #help-content, #detail-content, #modal-content {
+            background: #1a1a1a;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 720px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            border: 1px solid #444;
+        }
+
+        .detail-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .detail-house {
+            color: #93c5fd;
+            font-size: 1.35rem;
+            margin: 0;
+        }
+        .detail-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 8px 0 15px 0;
+        }
+        .detail-section {
+            margin-bottom: 20px;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #aaa;
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+        }
+        .detail-link {
+            text-align: center;
+            margin-top: 25px;
+        }
+        .detail-link a {
+            font-size: 2.2rem;
+            color: #60a5fa;
+            text-decoration: none;
+        }
+
+        .selection-list {
+            list-style: none;
+            padding: 0;
+        }
+        .selection-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .house-name {
+            font-weight: bold;
+            color: #93c5fd;
+            font-size: 1.1em;
+        }
+        .price-info {
+            text-align: right;
+            min-width: 140px;
+            color: #4ade80;
+        }
+        .modal-total {
+            margin-top: 20px;
+            padding: 15px 0;
+            border-top: 2px solid #444;
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #4ade80;
+            text-align: right;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .modal-buttons button {
+            flex: 1;
+            padding: 12px;
+        }
+        .close-btn { background: #f87171; }
     </style>
 </head>
 <body>
     <header>
         <button id="help-icon" onclick="showHelpModal()" title="How to Use This Page">❓</button>
-        <button id="copy-all-btn" onclick="copyAllView()">ALL</button>
         <h1>The Frag Vault</h1>
         <div id="total-display">Total Selected: $0</div>
     </header>
@@ -281,10 +347,102 @@
 
     <footer id="footer">Loading sales...</footer>
 
-    <div id="toast" class="toast">✅ Copied!</div>
+    <!-- Detail Modal -->
+    <div id="detail-modal">
+        <div id="detail-content">
+            <div class="detail-header">
+                <h2 class="detail-house" id="modal-house"></h2>
+                <h3 class="detail-name" id="modal-name"></h3>
+            </div>
 
-    <!-- Detail Modal, Help Modal, Selection Modal (unchanged) -->
-    <!-- Paste your original modal HTML here if needed -->
+            <div class="detail-section">
+                <div class="detail-label">Perfumer</div>
+                <div id="modal-perfumer"></div>
+            </div>
+
+            <div class="detail-section">
+                <div class="detail-label">Performance</div>
+                <div id="modal-performance" class="stars"></div>
+            </div>
+
+            <div class="detail-section">
+                <div class="detail-label">Rating</div>
+                <div id="modal-rating" class="stars"></div>
+            </div>
+
+            <div class="detail-section">
+                <div class="detail-label">Notes</div>
+                <div id="modal-notes"></div>
+            </div>
+
+            <div class="detail-section">
+                <div class="detail-label">Comments</div>
+                <div id="modal-comments"></div>
+            </div>
+
+            <div class="detail-link">
+                <a href="#" id="modal-link" target="_blank">🔗 Reviews</a>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <button onclick="closeDetailModal()" class="close-btn" style="min-width: 140px;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="help-modal">
+        <div id="help-content">
+            <div style="text-align: right;">
+                <button onclick="closeHelpModal()" class="close-btn" style="min-width: 120px;">Close</button>
+            </div>
+            
+            <h2 style="margin-top: 10px; text-align: center; color: #4ade80;">How To Use This Webpage</h2>
+            
+            <p><strong>Welcome to The Frag Vault!</strong></p>
+            
+            <h3>Basic Navigation</h3>
+            <ul>
+                <li>Use the search bar to find fragrances quickly.</li>
+                <li>Tap the buttons to sort the list.</li>
+                <li>The Start Over button also clears selections</li>
+            </ul>
+
+            <h3>Selecting Items</h3>
+            <ul>
+                <li>Check the box next to available items.</li>
+                <li>Change quantity as needed.</li>
+                <li>Click the green <strong>Total</strong> button to review and copy your selection.</li>
+            </ul>
+
+            <h3>Viewing Details</h3>
+            <ul>
+                <li>Tap any row (not checkbox or quantity) to see full details, ratings, and notes.</li>
+                <li>These are my personal comments and ratings. Performance considers both silliage and hours in a scent bubble.</li>
+                <li>I do not consider the time a fragrance is a skin scent as performance.</li>
+            </ul>
+
+            <div style="text-align: center; margin-top: 40px; color: #666;">
+                <small>Happy Fragrance Hunting ✨</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Selection Modal -->
+    <div id="selection-modal">
+        <div id="modal-content">
+            <h2>Copy/Paste into Chat</h2>
+            <h2>Selected Items (<span id="modal-count">0</span>)</h2>
+            <ul id="selection-list" class="selection-list"></ul>
+            
+            <div id="modal-total" class="modal-total">Total: $0</div>
+            
+            <div class="modal-buttons">
+                <button onclick="copySelectionToClipboard()" style="background: #15803d;">📋 Copy</button>
+                <button onclick="closeModal()" class="close-btn">Close</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         let sales = [];
@@ -329,45 +487,10 @@
             document.getElementById('total-display').textContent = `Total Selected: $${total.toLocaleString()}`;
         }
 
-        function copyAllView() {
-            const tbody = document.querySelector('#sales-table tbody');
-            const rows = Array.from(tbody.querySelectorAll('tr'));
-            
-            if (rows.length === 0) {
-                showToast('No items to copy!');
-                return;
-            }
-
-            let text = 'House - Name\n\n';
-            rows.forEach(row => {
-                const house = row.cells[2].textContent.trim();
-                const name = row.cells[3].textContent.trim();
-                text += `${house} - ${name}\n\n`;
-            });
-
-            navigator.clipboard.writeText(text.trim()).then(() => {
-                showToast(`✅ Copied ${rows.length} items!`);
-            }).catch(() => {
-                showToast('❌ Failed to copy');
-            });
-        }
-
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.style.display = 'block';
-            setTimeout(() => toast.style.display = 'none', 2200);
-        }
-
         async function loadCSV() {
-            const footer = document.getElementById('footer');
             try {
-                footer.innerHTML = 'Loading sales...';
                 const salesUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=1452885969&single=true&output=csv";
-                
                 const res = await fetch(salesUrl + (salesUrl.includes('?') ? '&' : '?') + 't=' + Date.now());
-                if (!res.ok) throw new Error('Network error');
-                
                 const text = await res.text();
 
                 Papa.parse(text, {
@@ -390,7 +513,6 @@
                 });
             } catch (e) {
                 console.error("Load error:", e);
-                footer.innerHTML = `<strong style="color:#ff6666;">Error loading Google Sheet</strong>`;
             }
         }
 
@@ -432,7 +554,218 @@
             updateTotal();
         }
 
-        /* Keep all your other functions (showDetailModal, toggleSelectAll, startOver, etc.) as they were */
+        function showDetailModal(index) {
+            const s = sales[index];
+            if (!s) return;
+
+            document.getElementById('modal-house').textContent = cleanValue(s.House);
+            document.getElementById('modal-name').textContent = cleanValue(s.Name);
+            document.getElementById('modal-perfumer').textContent = cleanValue(s.Perfumer);
+            
+            document.getElementById('modal-performance').innerHTML = createStarRating(s.Performance);
+            document.getElementById('modal-rating').innerHTML = createStarRating(s.Rating);
+            
+            document.getElementById('modal-notes').textContent = cleanValue(s.Notes);
+            document.getElementById('modal-comments').textContent = cleanValue(s.Comment || s.Comments);
+            
+            const linkEl = document.getElementById('modal-link');
+            if (s.Link && s.Link.trim() !== '' && s.Link !== 'N/A') {
+                linkEl.href = s.Link;
+                linkEl.style.display = 'inline';
+            } else {
+                linkEl.style.display = 'none';
+            }
+
+            document.getElementById('detail-modal').style.display = 'flex';
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detail-modal').style.display = 'none';
+        }
+
+        function showHelpModal() {
+            document.getElementById('help-modal').style.display = 'flex';
+        }
+
+        function closeHelpModal() {
+            document.getElementById('help-modal').style.display = 'none';
+        }
+
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('select-all');
+            const checkboxes = document.querySelectorAll('.row-select:not([disabled])');
+            checkboxes.forEach(cb => cb.checked = selectAll.checked);
+            updateTotal();
+        }
+
+        function updateSelectAllState() {
+            const selectAll = document.getElementById('select-all');
+            const enabledCheckboxes = Array.from(document.querySelectorAll('.row-select:not([disabled])'));
+            const allChecked = enabledCheckboxes.length > 0 && enabledCheckboxes.every(cb => cb.checked);
+            selectAll.checked = allChecked;
+        }
+
+        function getSelectedRows() {
+            const rows = Array.from(document.querySelectorAll('#sales-table tbody tr'));
+            return rows.filter(row => {
+                const cb = row.querySelector('.row-select');
+                return cb && cb.checked;
+            });
+        }
+
+        function filterTable() {
+            const term = document.getElementById('search').value.toLowerCase().trim();
+            const clearBtn = document.getElementById('clear-search');
+            clearBtn.style.display = term ? 'block' : 'none';
+
+            const filtered = sales.filter(s => {
+                if (!term) return true;
+                const searchableText = [
+                    s.House, s.Name, s.Perfumer, s.Notes, s.Comment, s.Comments, s.Genre, s.Attribute, s.New
+                ].filter(Boolean).join(' ').toLowerCase();
+                return searchableText.includes(term);
+            });
+            renderTable(filtered);
+            updateFooter(filtered);
+            updateUrl();
+        }
+
+        function clearSearch() {
+            document.getElementById('search').value = '';
+            document.getElementById('clear-search').style.display = 'none';
+            filterTable();
+        }
+
+        function updateFooter(filteredData = null) {
+            const data = filteredData || sales;
+            document.getElementById('footer').innerHTML = `<strong>${data.length}</strong> items listed`;
+        }
+
+        function startOver() {
+            document.getElementById('search').value = '';
+            document.getElementById('clear-search').style.display = 'none';
+            document.getElementById('select-all').checked = false;
+            sortState = {};
+            renderTable(sales);
+            sortTable(2, true);
+            updateFooter();
+            updateUrl();
+        }
+
+        function showSelectionModal() {
+            const selectedRows = getSelectedRows();
+            if (selectedRows.length === 0) {
+                alert("Please select at least one Available item.");
+                return;
+            }
+
+            const items = selectedRows.map(row => {
+                const qtyInput = row.querySelector('.quantity-input');
+                const qty = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
+                const house = row.cells[2].textContent.trim();
+                const name = row.cells[3].textContent.trim();
+                const priceStr = row.cells[4].textContent.trim();
+                return { house, name, price: priceStr, qty };
+            });
+
+            document.getElementById('modal-count').textContent = items.length;
+            
+            const listHtml = items.map(item => 
+                `<li>
+                    <div class="item-info">
+                        <span class="house-name">${item.house}</span><br>
+                        ${item.name}
+                    </div>
+                    <div class="price-info">
+                        ${item.price} × ${item.qty}
+                    </div>
+                </li>`
+            ).join('');
+            
+            document.getElementById('selection-list').innerHTML = listHtml;
+            document.getElementById('modal-total').innerHTML = document.getElementById('total-display').textContent;
+            document.getElementById('selection-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('selection-modal').style.display = 'none';
+        }
+
+        function copySelectionToClipboard() {
+            const selectedRows = getSelectedRows();
+            if (selectedRows.length === 0) return;
+
+            let text = '';
+            selectedRows.forEach(row => {
+                const qtyInput = row.querySelector('.quantity-input');
+                const qty = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
+                const house = row.cells[2].textContent.trim();
+                const name = row.cells[3].textContent.trim();
+                const priceStr = row.cells[4].textContent.trim();
+                text += `${house} - ${name} - ${priceStr} × ${qty}\n\n`;
+            });
+
+            const totalText = document.getElementById('total-display').textContent;
+            text += `${totalText}`;
+
+            navigator.clipboard.writeText(text.trim()).then(() => {
+                const copyButton = event.currentTarget;
+                const original = copyButton.textContent;
+                copyButton.textContent = '✅ Copied!';
+                setTimeout(() => copyButton.textContent = original, 2000);
+            });
+        }
+
+        function sortTable(colIndex, forceInitial = false) {
+            const tbody = document.querySelector('#sales-table tbody');
+            let rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            if (forceInitial) {
+                rows.sort((a, b) => {
+                    const houseA = a.cells[2].textContent.trim();
+                    const houseB = b.cells[2].textContent.trim();
+                    const nameA = a.cells[3].textContent.trim();
+                    const nameB = b.cells[3].textContent.trim();
+                    return houseA.localeCompare(houseB) || nameA.localeCompare(nameB);
+                });
+            } else {
+                if (sortState[colIndex] === undefined) {
+                    sortState[colIndex] = (colIndex === 4 || colIndex === 10) ? false : true;
+                } else {
+                    sortState[colIndex] = !sortState[colIndex];
+                }
+                const ascending = sortState[colIndex];
+
+                rows.sort((a, b) => {
+                    if (colIndex === 10) {
+                        const dateA = sales[parseInt(a.getAttribute('data-index'))].New || '';
+                        const dateB = sales[parseInt(b.getAttribute('data-index'))].New || '';
+                        const timeA = new Date(dateA).getTime() || 0;
+                        const timeB = new Date(dateB).getTime() || 0;
+                        return ascending ? timeA - timeB : timeB - timeA;
+                    }
+
+                    let x = a.cells[colIndex].textContent.trim();
+                    let y = b.cells[colIndex].textContent.trim();
+                    const numX = parseFloat(x.replace('$', '').replace(',', ''));
+                    const numY = parseFloat(y.replace('$', '').replace(',', ''));
+                    if (!isNaN(numX) && !isNaN(numY)) {
+                        return ascending ? numX - numY : numY - numX;
+                    }
+                    return ascending ? x.localeCompare(y) : y.localeCompare(x);
+                });
+            }
+            
+            rows.forEach(row => tbody.appendChild(row));
+            updateTotal();
+        }
+
+        function updateUrl() {
+            const searchTerm = document.getElementById('search').value.trim();
+            const params = new URLSearchParams();
+            if (searchTerm) params.set('search', searchTerm);
+            window.history.replaceState({}, '', window.location.pathname + (params.toString() ? '?' + params.toString() : ''));
+        }
 
         window.onload = loadCSV;
     </script>
