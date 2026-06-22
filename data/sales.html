@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<!-- 
+    =============================================
+    THE FRAG VAULT - SALES PAGE
+    =============================================
+-->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Frag Vault</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            margin: 0; 
+            background: #0a0a0a; 
+            color: #e0e0e0;
+            line-height: 1.5;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #1a1a1a, #0f0f0f);
+            color: white;
+            padding: 1.6rem 1rem 1.6rem 65px; /* Adjusted for smaller icon */
+            text-align: center;
+            border-bottom: 1px solid #333;
+            position: relative;
+        }
+        h1 { 
+            margin: 0; 
+            font-size: 2.0rem; 
+        }
+
+        #total-display {
+            margin-top: 10px;
+            font-size: 1.35rem;
+            font-weight: bold;
+            color: #4ade80;
+        }
+
+        /* Help Icon - Smaller & Subtler */
+        #help-icon {
+            position: absolute;
+            left: 22px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            font-size: 1.35rem; /* Roughly half the previous size */
+            cursor: pointer;
+            color: #60a5fa;
+            padding: 6px;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+            opacity: 0.85;
+        }
+        #help-icon:hover {
+            color: #93c5fd;
+            opacity: 1;
+            transform: translateY(-50%) scale(1.15);
+        }
+
+        .controls { 
+            padding: 18px 20px 14px; 
+            background: #111; 
+            border-bottom: 1px solid #333;
+        }
+
+        .control-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .search-row { 
+            margin-bottom: 12px;
+            position: relative;
+            max-width: 600px;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #search {
+            padding: 10px 40px 10px 12px; 
+            font-size: 14px;
+            border-radius: 8px; 
+            background: #1f1f1f;
+            color: #e0e0e0;
+            border: 1px solid #444;
+            width: 100%;
+        }
+
+        .clear-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px 8px;
+            display: none;
+        }
+
+        .clear-btn:hover {
+            color: #e0e0e0;
+        }
+
+        button { 
+            background: #0066cc; 
+            color: white; 
+            border: none; 
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13.5px;
+            padding: 9px 16px;
+            border-radius: 20px;
+            white-space: nowrap;
+            min-width: 110px;
+        }
+
+        .startover-btn { background: #d97706 !important; min-width: 120px; }
+        .export-btn { background: #15803d !important; min-width: 160px; padding: 9px 20px; }
+
+        .table-wrapper { 
+            padding: 0 20px 20px; 
+            overflow-x: auto; 
+            max-height: 75vh;
+            overflow-y: auto;
+        }
+        table { 
+            min-width: 1250px; 
+            border-collapse: collapse; 
+            background: #111; 
+            width: 100%;
+            table-layout: fixed;
+        }
+        th, td { 
+            padding: 10px 8px; 
+            border-bottom: 1px solid #333;
+            font-size: 14px;
+            vertical-align: top;
+            text-align: left;
+        }
+        th { 
+            background: #1a1a1a; 
+            color: #fff; 
+            position: sticky; 
+            top: 0; 
+            z-index: 10;
+            font-size: 14.5px;
+        }
+
+        /* Column widths */
+        th:nth-child(1), td:nth-child(1) { width: 20px; max-width: 20px; text-align: center; }
+        th:nth-child(2), td:nth-child(2) { width: 30px; max-width: 30px; text-align: center; }
+        th:nth-child(3), td:nth-child(3) { width: 100px; }
+        th:nth-child(4), td:nth-child(4) { width: 100px; }
+        th:nth-child(5), td:nth-child(5) { width: 50px; text-align: right; }
+        th:nth-child(6), td:nth-child(6) { width: 60px; }
+        th:nth-child(7), td:nth-child(7) { width: 30px; text-align: left; }
+        th:nth-child(8), td:nth-child(8) { width: 60px; }
+        th:nth-child(9), td:nth-child(9) { width: 70px; }
+        th:nth-child(10), td:nth-child(10) { width: 140px; }
+
+        tr { cursor: pointer; }
+        tr:hover { background: #1f1f1f; }
+
+        input.quantity-input {
+            width: 50px;
+            text-align: center;
+            background: #1f1f1f;
+            color: #e0e0e0;
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 4px;
+        }
+
+        .link-cell { text-align: left; padding-left: 12px; }
+        .link-cell a { color: #60a5fa; font-size: 1.4rem; text-decoration: none; }
+        .link-cell a:hover { color: #93c5fd; }
+
+        input[type="checkbox"] { width: 18px; height: 18px; accent-color: #0066cc; }
+
+        .status-available { color: #4ade80; font-weight: 600; }
+        .status-sold { color: #f87171; font-weight: 600; }
+
+        .stars {
+            color: #fbbf24;
+            font-size: 1.6rem;
+            letter-spacing: 2px;
+        }
+
+        /* Modals */
+        #detail-modal, #help-modal, #selection-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 1200;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+        #help-content, #detail-content, #modal-content {
+            background: #1a1a1a;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 720px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            border: 1px solid #444;
+        }
+
+        .detail-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .detail-house {
+            color: #93c5fd;
+            font-size: 1.35rem;
+            margin: 0;
+        }
+        .detail-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 8px 0 15px 0;
+        }
+        .detail-section {
+            margin-bottom: 20px;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #aaa;
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+        }
+        .detail-link {
+            text-align: center;
+            margin-top: 25px;
+        }
+        .detail-link a {
+            font-size: 2.2rem;
+            color: #60a5fa;
+            text-decoration: none;
+        }
+
+        .selection-list {
+            list-style: none;
+            padding: 0;
+        }
+        .selection-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .house-name {
+            font-weight: bold;
+            color: #93c5fd;
+            font-size: 1.1em;
+        }
+        .price-info {
+            text-align: right;
+            min-width: 140px;
+            color: #4ade80;
+        }
+        .modal-total {
+            margin-top: 20px;
+            padding: 15px 0;
+            border-top: 2px solid #444;
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #4ade80;
+            text-align: right;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .modal-buttons button {
+            flex: 1;
+            padding: 12px;
+        }
+        .close-btn { background: #f87171; }
+    </style>
+</head>
+<body>
+    <header>
+        <button id="help-icon" onclick="showHelpModal()" title="How to Use This Page">❓</button>
+        <h1>The Frag Vault</h1>
+        <div id="total-display">Total Selected: $0</div>
+    </header>
+    
+    <div class="controls">
+        <div class="control-row search-row">
+            <input type="text" id="search" placeholder="Search House, Name, Perfumer, Notes..." onkeyup="filterTable()">
+            <button class="clear-btn" id="clear-search" onclick="clearSearch()">×</button>
+        </div>
+
+        <div class="control-row">
+            <button onclick="sortTable(2)">House</button>
+            <button onclick="sortTable(3)">Name</button>
+            <button onclick="sortTable(4)">5ml</button>
+            <button onclick="sortTable(5)">Status</button>
+            <button onclick="sortTable(7)">Genre</button>
+            <button onclick="sortTable(8)">Attribute</button>
+            <button onclick="sortTable(9)">Perfumer</button>
+            <button onclick="sortTable(10)">New</button>
+        </div>
+
+        <div class="control-row">
+    <button onclick="updateLocalJSON()" style="background:#d97706;color:white;padding:8px 12px;font-size:13px;border-radius:20px;min-width:85px;">🔄 Update JSON</button>
+    <button onclick="startOver()" class="startover-btn" style="min-width:85px;">Start Over</button>
+    <button onclick="showSelectionModal()" class="export-btn" style="min-width:85px;">Total</button>
+</div>
+        
+        
+    </div>
+
+    <div class="table-wrapper">
+        <table id="sales-table">
+            <thead>
+                <tr>
+                    <th><input type="checkbox" id="select-all" onchange="toggleSelectAll()"></th>
+                    <th>Qty</th>
+                    <th onclick="sortTable(2)">House</th>
+                    <th onclick="sortTable(3)">Name</th>
+                    <th onclick="sortTable(4)">5ml</th>
+                    <th onclick="sortTable(5)">Status</th>
+                    <th>Link</th>
+                    <th>Genre</th>
+                    <th>Attribute</th>
+                    <th>Perfumer</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <footer id="footer">Loading sales...</footer>
+
+    <!-- Detail Modal -->
+    <div id="detail-modal">
+        <div id="detail-content">
+            <div class="detail-header">
+                <h2 class="detail-house" id="modal-house"></h2>
+                <h3 class="detail-name" id="modal-name"></h3>
+            </div>
+
+            <div class="detail-section">
+                <div class="detail-label">Perfumer</div>
+                <div id="modal-perfumer"></div>
+            </div>
+
+            <div class="detail-section">
+                <div class="detail-label">Performance</div>
+                <div id="modal-performance" class="stars"></div>
+            </div>
+
+            <div class="detail-section">
+                <div class="detail-label">Rating</div>
+                <div id="modal-rating" class="stars"></div>
+            </div>
+
+            <div class="detail-section">
+                <div class="detail-label">Notes</div>
+                <div id="modal-notes"></div>
+            </div>
+
+            <div class="detail-section">
+                <div class="detail-label">Comments</div>
+                <div id="modal-comments"></div>
+            </div>
+
+            <div class="detail-link">
+                <a href="#" id="modal-link" target="_blank">🔗 Reviews</a>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <button onclick="closeDetailModal()" class="close-btn" style="min-width: 140px;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Modal -->
+    <div id="help-modal">
+        <div id="help-content">
+            <div style="text-align: right;">
+                <button onclick="closeHelpModal()" class="close-btn" style="min-width: 120px;">Close</button>
+            </div>
+            
+            <h2 style="margin-top: 10px; text-align: center; color: #4ade80;">How To Use This Webpage</h2>
+            
+            <p><strong>Welcome to The Frag Vault!</strong></p>
+            
+            <h3>Basic Navigation</h3>
+            <ul>
+                <li>Use the search bar to find fragrances quickly.</li>
+                <li>Tap the buttons to sort the list.</li>
+                <li>The Start Over button also clears selections</li>
+            </ul>
+
+            <h3>Selecting Items</h3>
+            <ul>
+                <li>Check the box next to available items.</li>
+                <li>Change quantity as needed.</li>
+                <li>Click the green <strong>Total</strong> button to review and copy your selection.</li>
+            </ul>
+
+            <h3>Viewing Details</h3>
+            <ul>
+                <li>Tap any row (not checkbox or quantity) to see full details, ratings, and notes.</li>
+                <li>These are my personal comments and ratings. Performance considers both silliage and hours in a scent bubble.</li>
+                <li>I do not consider the time a fragrance is a skin scent as performance.</li>
+            </ul>
+
+            <div style="text-align: center; margin-top: 40px; color: #666;">
+                <small>Happy Fragrance Hunting ✨</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Selection Modal -->
+    <div id="selection-modal">
+        <div id="modal-content">
+            <h2>Copy/Paste into Chat</h2>
+            <h2>Selected Items (<span id="modal-count">0</span>)</h2>
+            <ul id="selection-list" class="selection-list"></ul>
+            
+            <div id="modal-total" class="modal-total">Total: $0</div>
+            
+            <div class="modal-buttons">
+                <button onclick="copySelectionToClipboard()" style="background: #15803d;">📋 Copy</button>
+                <button onclick="closeModal()" class="close-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let sales = [];
+        let sortState = {};
+
+        function cleanValue(val) {
+            if (val === null || val === undefined || val === '' || val === '?') return 'N/A';
+            return val.trim();
+        }
+
+        function formatPrice(val) {
+            const cleaned = cleanValue(val);
+            if (cleaned === 'N/A') return 'N/A';
+            if (!isNaN(parseFloat(cleaned))) return '$' + cleaned;
+            return cleaned;
+        }
+
+        function isAvailable(status) {
+            return status && status.toLowerCase().includes('available');
+        }
+
+        function createStarRating(rating) {
+            const num = Math.round(parseFloat(rating) || 0);
+            let stars = '';
+            for (let i = 1; i <= 10; i++) {
+                stars += i <= num ? '★' : '☆';
+            }
+            return stars;
+        }
+
+        function updateTotal() {
+            const selectedRows = getSelectedRows();
+            let total = 0;
+            selectedRows.forEach(row => {
+                const qtyInput = row.querySelector('.quantity-input');
+                const qty = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
+                const priceCell = row.cells[4];
+                const priceText = priceCell.textContent.trim().replace('$', '').replace(',', '');
+                const price = parseFloat(priceText) || 0;
+                total += qty * price;
+            });
+            document.getElementById('total-display').textContent = `Total Selected: $${total.toLocaleString()}`;
+        }
+
+        // Load from local JSON
+        async function loadSales() {
+            try {
+                const res = await fetch('data/sales.json?t=' + Date.now());
+                sales = await res.json();
+
+                sales = sales
+                    .filter(row => row.Name && row.Name.trim())
+                    .map(row => {
+                        Object.keys(row).forEach(key => {
+                            if (typeof row[key] === 'string') row[key] = row[key].trim();
+                        });
+                        return row;
+                    });
+                
+                renderTable(sales);
+                sortTable(2, true);
+                updateFooter();
+            } catch (e) {
+                console.error("Load error:", e);
+                document.getElementById('footer').innerHTML = 'Error loading sales.json';
+            }
+        }
+
+        function renderTable(data) {
+            const tbody = document.querySelector('#sales-table tbody');
+            let html = '';
+            for (let i = 0; i < data.length; i++) {
+                const s = data[i];
+                const link = s.Link && s.Link.trim() !== '' && s.Link !== 'N/A' 
+                    ? `<a href="${s.Link}" target="_blank" title="View listing">🔗</a>` 
+                    : 'N/A';
+                
+                const statusClass = isAvailable(s.Status) ? 'status-available' : 'status-sold';
+                const isAvail = isAvailable(s.Status);
+
+                html += `<tr data-index="${i}">` +
+                    '<td><input type="checkbox" class="row-select" ' + (isAvail ? '' : 'disabled') + ' onchange="updateSelectAllState(); updateTotal()"></td>' +
+                    '<td><input type="number" min="1" value="1" class="quantity-input" onchange="updateTotal()" ' + (isAvail ? '' : 'disabled') + ' onfocus="this.select()"></td>' +
+                    '<td>' + cleanValue(s.House) + '</td>' +
+                    '<td><strong>' + cleanValue(s.Name) + '</strong></td>' +
+                    '<td>' + formatPrice(s['5ml']) + '</td>' +
+                    '<td class="' + statusClass + '">' + cleanValue(s.Status) + '</td>' +
+                    '<td class="link-cell">' + link + '</td>' +
+                    '<td>' + cleanValue(s.Genre) + '</td>' +
+                    '<td>' + cleanValue(s.Attribute) + '</td>' +
+                    '<td>' + cleanValue(s.Perfumer) + '</td>' +
+                    '</tr>';
+            }
+            tbody.innerHTML = html;
+
+            tbody.querySelectorAll('tr').forEach(row => {
+                row.addEventListener('click', function(e) {
+                    if (e.target.type === 'checkbox' || e.target.classList.contains('quantity-input')) return;
+                    const index = parseInt(this.getAttribute('data-index'));
+                    showDetailModal(index);
+                });
+            });
+
+            updateTotal();
+        }
+
+        function showDetailModal(index) {
+            const s = sales[index];
+            if (!s) return;
+
+            document.getElementById('modal-house').textContent = cleanValue(s.House);
+            document.getElementById('modal-name').textContent = cleanValue(s.Name);
+            document.getElementById('modal-perfumer').textContent = cleanValue(s.Perfumer);
+            
+            document.getElementById('modal-performance').innerHTML = createStarRating(s.Performance);
+            document.getElementById('modal-rating').innerHTML = createStarRating(s.Rating);
+            
+            document.getElementById('modal-notes').textContent = cleanValue(s.Notes);
+            document.getElementById('modal-comments').textContent = cleanValue(s.Comment || s.Comments);
+            
+            const linkEl = document.getElementById('modal-link');
+            if (s.Link && s.Link.trim() !== '' && s.Link !== 'N/A') {
+                linkEl.href = s.Link;
+                linkEl.style.display = 'inline';
+            } else {
+                linkEl.style.display = 'none';
+            }
+
+            document.getElementById('detail-modal').style.display = 'flex';
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detail-modal').style.display = 'none';
+        }
+
+        function showHelpModal() {
+            document.getElementById('help-modal').style.display = 'flex';
+        }
+
+        function closeHelpModal() {
+            document.getElementById('help-modal').style.display = 'none';
+        }
+
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('select-all');
+            const checkboxes = document.querySelectorAll('.row-select:not([disabled])');
+            checkboxes.forEach(cb => cb.checked = selectAll.checked);
+            updateTotal();
+        }
+
+        function updateSelectAllState() {
+            const selectAll = document.getElementById('select-all');
+            const enabledCheckboxes = Array.from(document.querySelectorAll('.row-select:not([disabled])'));
+            const allChecked = enabledCheckboxes.length > 0 && enabledCheckboxes.every(cb => cb.checked);
+            selectAll.checked = allChecked;
+        }
+
+        function getSelectedRows() {
+            const rows = Array.from(document.querySelectorAll('#sales-table tbody tr'));
+            return rows.filter(row => {
+                const cb = row.querySelector('.row-select');
+                return cb && cb.checked;
+            });
+        }
+
+        function filterTable() {
+            const term = document.getElementById('search').value.toLowerCase().trim();
+            const clearBtn = document.getElementById('clear-search');
+            clearBtn.style.display = term ? 'block' : 'none';
+
+            const filtered = sales.filter(s => {
+                if (!term) return true;
+                const searchableText = [
+                    s.House, s.Name, s.Perfumer, s.Notes, s.Comment, s.Comments, s.Genre, s.Attribute, s.New
+                ].filter(Boolean).join(' ').toLowerCase();
+                return searchableText.includes(term);
+            });
+            renderTable(filtered);
+            updateFooter(filtered);
+            updateUrl();
+        }
+
+        function clearSearch() {
+            document.getElementById('search').value = '';
+            document.getElementById('clear-search').style.display = 'none';
+            filterTable();
+        }
+
+        function updateFooter(filteredData = null) {
+            const data = filteredData || sales;
+            document.getElementById('footer').innerHTML = `<strong>${data.length}</strong> items listed`;
+        }
+
+        function startOver() {
+            document.getElementById('search').value = '';
+            document.getElementById('clear-search').style.display = 'none';
+            document.getElementById('select-all').checked = false;
+            sortState = {};
+            renderTable(sales);
+            sortTable(2, true);
+            updateFooter();
+            updateUrl();
+        }
+
+        function showSelectionModal() {
+            const selectedRows = getSelectedRows();
+            if (selectedRows.length === 0) {
+                alert("Please select at least one Available item.");
+                return;
+            }
+
+            const items = selectedRows.map(row => {
+                const qtyInput = row.querySelector('.quantity-input');
+                const qty = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
+                const house = row.cells[2].textContent.trim();
+                const name = row.cells[3].textContent.trim();
+                const priceStr = row.cells[4].textContent.trim();
+                return { house, name, price: priceStr, qty };
+            });
+
+            document.getElementById('modal-count').textContent = items.length;
+            
+            const listHtml = items.map(item => 
+                `<li>
+                    <div class="item-info">
+                        <span class="house-name">${item.house}</span><br>
+                        ${item.name}
+                    </div>
+                    <div class="price-info">
+                        ${item.price} × ${item.qty}
+                    </div>
+                </li>`
+            ).join('');
+            
+            document.getElementById('selection-list').innerHTML = listHtml;
+            document.getElementById('modal-total').innerHTML = document.getElementById('total-display').textContent;
+            document.getElementById('selection-modal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('selection-modal').style.display = 'none';
+        }
+
+        function copySelectionToClipboard() {
+            const selectedRows = getSelectedRows();
+            if (selectedRows.length === 0) return;
+
+            let text = '';
+            selectedRows.forEach(row => {
+                const qtyInput = row.querySelector('.quantity-input');
+                const qty = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
+                const house = row.cells[2].textContent.trim();
+                const name = row.cells[3].textContent.trim();
+                const priceStr = row.cells[4].textContent.trim();
+                text += `${house} - ${name} - ${priceStr} × ${qty}\n\n`;
+            });
+
+            const totalText = document.getElementById('total-display').textContent;
+            text += `${totalText}`;
+
+            navigator.clipboard.writeText(text.trim()).then(() => {
+                const copyButton = event.currentTarget;
+                const original = copyButton.textContent;
+                copyButton.textContent = '✅ Copied!';
+                setTimeout(() => copyButton.textContent = original, 2000);
+            });
+        }
+
+        function sortTable(colIndex, forceInitial = false) {
+            const tbody = document.querySelector('#sales-table tbody');
+            let rows = Array.from(tbody.querySelectorAll('tr'));
+            
+            if (forceInitial) {
+                rows.sort((a, b) => {
+                    const houseA = a.cells[2].textContent.trim();
+                    const houseB = b.cells[2].textContent.trim();
+                    const nameA = a.cells[3].textContent.trim();
+                    const nameB = b.cells[3].textContent.trim();
+                    return houseA.localeCompare(houseB) || nameA.localeCompare(nameB);
+                });
+            } else {
+                if (sortState[colIndex] === undefined) {
+                    sortState[colIndex] = (colIndex === 4 || colIndex === 10) ? false : true;
+                } else {
+                    sortState[colIndex] = !sortState[colIndex];
+                }
+                const ascending = sortState[colIndex];
+
+                rows.sort((a, b) => {
+                    if (colIndex === 10) {
+                        const dateA = sales[parseInt(a.getAttribute('data-index'))].New || '';
+                        const dateB = sales[parseInt(b.getAttribute('data-index'))].New || '';
+                        const timeA = new Date(dateA).getTime() || 0;
+                        const timeB = new Date(dateB).getTime() || 0;
+                        return ascending ? timeA - timeB : timeB - timeA;
+                    }
+
+                    let x = a.cells[colIndex].textContent.trim();
+                    let y = b.cells[colIndex].textContent.trim();
+                    const numX = parseFloat(x.replace('$', '').replace(',', ''));
+                    const numY = parseFloat(y.replace('$', '').replace(',', ''));
+                    if (!isNaN(numX) && !isNaN(numY)) {
+                        return ascending ? numX - numY : numY - numX;
+                    }
+                    return ascending ? x.localeCompare(y) : y.localeCompare(x);
+                });
+            }
+            
+            rows.forEach(row => tbody.appendChild(row));
+            updateTotal();
+        }
+
+        function updateUrl() {
+            const searchTerm = document.getElementById('search').value.trim();
+            const params = new URLSearchParams();
+            if (searchTerm) params.set('search', searchTerm);
+            window.history.replaceState({}, '', window.location.pathname + (params.toString() ? '?' + params.toString() : ''));
+        }
+
+        window.onload = loadSales;
+    </script>
+</body>
+</html>
