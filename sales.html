@@ -320,12 +320,9 @@
         </div>
 
         <div class="control-row">
-    <button onclick="updateLocalJSON()" style="background:#d97706;color:white;padding:8px 12px;font-size:13px;border-radius:20px;min-width:85px;">🔄 Update JSON</button>
-    <button onclick="startOver()" class="startover-btn" style="min-width:85px;">Start Over</button>
-    <button onclick="showSelectionModal()" class="export-btn" style="min-width:85px;">Total</button>
-</div>
-        
-        
+            <button onclick="startOver()" class="startover-btn">Start Over</button>
+            <button onclick="showSelectionModal()" class="export-btn">Total</button>
+        </div>
     </div>
 
     <div class="table-wrapper">
@@ -490,27 +487,32 @@
             document.getElementById('total-display').textContent = `Total Selected: $${total.toLocaleString()}`;
         }
 
-        // Load from local JSON
-        async function loadSales() {
+        async function loadCSV() {
             try {
-                const res = await fetch('data/sales.json?t=' + Date.now());
-                sales = await res.json();
+                const salesUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=1452885969&single=true&output=csv";
+                const res = await fetch(salesUrl + (salesUrl.includes('?') ? '&' : '?') + 't=' + Date.now());
+                const text = await res.text();
 
-                sales = sales
-                    .filter(row => row.Name && row.Name.trim())
-                    .map(row => {
-                        Object.keys(row).forEach(key => {
-                            if (typeof row[key] === 'string') row[key] = row[key].trim();
-                        });
-                        return row;
-                    });
-                
-                renderTable(sales);
-                sortTable(2, true);
-                updateFooter();
+                Papa.parse(text, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: (result) => {
+                        sales = result.data
+                            .filter(row => row.Name && row.Name.trim())
+                            .map(row => {
+                                Object.keys(row).forEach(key => {
+                                    if (typeof row[key] === 'string') row[key] = row[key].trim();
+                                });
+                                return row;
+                            });
+                        
+                        renderTable(sales);
+                        sortTable(2, true);
+                        updateFooter();
+                    }
+                });
             } catch (e) {
                 console.error("Load error:", e);
-                document.getElementById('footer').innerHTML = 'Error loading sales.json';
             }
         }
 
@@ -765,56 +767,7 @@
             window.history.replaceState({}, '', window.location.pathname + (params.toString() ? '?' + params.toString() : ''));
         }
 
-         // Download fresh JSONs for all
-        async function updateLocalJSON() {
-            const sheets = [
-                { name: "sales.json", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=1452885969&single=true&output=csv" }
-            ];
-
-            showToast('Downloading fresh JSONs...');
-
-            for (const sheet of sheets) {
-                try {
-                    const res = await fetch(sheet.url + '?t=' + Date.now());
-                    const text = await res.text();
-
-                    Papa.parse(text, {
-                        header: true,
-                        skipEmptyLines: true,
-                        complete: (result) => {
-                            const data = result.data
-                                .filter(row => Object.values(row).some(v => v && v.trim && v.trim() !== ''))
-                                .map(row => {
-                                    Object.keys(row).forEach(key => {
-                                        if (typeof row[key] === 'string') row[key] = row[key].trim();
-                                    });
-                                    return row;
-                                });
-
-                            const jsonStr = JSON.stringify(data, null, 2);
-                            const blob = new Blob([jsonStr], { type: 'application/json' });
-                            const url = URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = url;
-                            a.download = sheet.name;
-                            a.click();
-                            URL.revokeObjectURL(url);
-                        }
-                    });
-                } catch (e) {
-                    console.error("Failed to download", sheet.name, e);
-                }
-            }
-
-            setTimeout(() => {
-                showToast('✅ All JSONs downloaded (except Sales). Upload to data/ folder.');
-            }, 1500);
-        }
-
-
-
-
-        window.onload = loadSales;
+        window.onload = loadCSV;
     </script>
 </body>
 </html>
