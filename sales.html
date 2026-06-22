@@ -1,4 +1,9 @@
 <!DOCTYPE html>
+<!-- 
+    =============================================
+    THE FRAG VAULT - SALES PAGE
+    =============================================
+-->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -6,112 +11,496 @@
     <title>The Frag Vault</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: #0a0a0a; color: #e0e0e0; }
-        header { background: linear-gradient(135deg, #1a1a1a, #0f0f0f); padding: 1.6rem 1rem; text-align: center; }
-        .controls { padding: 15px; background: #111; }
-        .control-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 10px; }
-        button { padding: 8px 12px; font-size: 13px; border-radius: 20px; }
-        .refresh-btn { background: #d97706; color: white; }
-        .startover-btn { background: #d97706; color: white; }
-        .export-btn { background: #15803d; color: white; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 8px; border-bottom: 1px solid #333; text-align: left; }
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            margin: 0; 
+            background: #0a0a0a; 
+            color: #e0e0e0;
+            line-height: 1.5;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #1a1a1a, #0f0f0f);
+            color: white;
+            padding: 1.6rem 1rem 1.6rem 65px;
+            text-align: center;
+            border-bottom: 1px solid #333;
+            position: relative;
+        }
+        h1 { 
+            margin: 0; 
+            font-size: 2.0rem; 
+        }
+
+        #total-display {
+            margin-top: 10px;
+            font-size: 1.35rem;
+            font-weight: bold;
+            color: #4ade80;
+        }
+
+        #help-icon {
+            position: absolute;
+            left: 22px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            font-size: 1.35rem;
+            cursor: pointer;
+            color: #60a5fa;
+            padding: 6px;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+            opacity: 0.85;
+        }
+        #help-icon:hover {
+            color: #93c5fd;
+            opacity: 1;
+            transform: translateY(-50%) scale(1.15);
+        }
+
+        .controls { 
+            padding: 18px 20px 14px; 
+            background: #111; 
+            border-bottom: 1px solid #333;
+        }
+
+        .control-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .search-row { 
+            margin-bottom: 12px;
+            position: relative;
+            max-width: 600px;
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #search {
+            padding: 10px 40px 10px 12px; 
+            font-size: 14px;
+            border-radius: 8px; 
+            background: #1f1f1f;
+            color: #e0e0e0;
+            border: 1px solid #444;
+            width: 100%;
+        }
+
+        .clear-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px 8px;
+            display: none;
+        }
+
+        .clear-btn:hover {
+            color: #e0e0e0;
+        }
+
+        button { 
+            background: #0066cc; 
+            color: white; 
+            border: none; 
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13.5px;
+            padding: 9px 16px;
+            border-radius: 20px;
+            white-space: nowrap;
+            min-width: 110px;
+        }
+
+        .startover-btn { background: #d97706 !important; min-width: 120px; }
+        .export-btn { background: #15803d !important; min-width: 160px; padding: 9px 20px; }
+        .update-btn { background: #d97706; min-width: 180px; }
+
+        .table-wrapper { 
+            padding: 0 20px 20px; 
+            overflow-x: auto; 
+            max-height: 75vh;
+            overflow-y: auto;
+        }
+        table { 
+            min-width: 1250px; 
+            border-collapse: collapse; 
+            background: #111; 
+            width: 100%;
+            table-layout: fixed;
+        }
+        th, td { 
+            padding: 10px 8px; 
+            border-bottom: 1px solid #333;
+            font-size: 14px;
+            vertical-align: top;
+            text-align: left;
+        }
+        th { 
+            background: #1a1a1a; 
+            color: #fff; 
+            position: sticky; 
+            top: 0; 
+            z-index: 10;
+            font-size: 14.5px;
+        }
+
+        /* Column widths */
+        th:nth-child(1), td:nth-child(1) { width: 20px; max-width: 20px; text-align: center; }
+        th:nth-child(2), td:nth-child(2) { width: 30px; max-width: 30px; text-align: center; }
+        th:nth-child(3), td:nth-child(3) { width: 100px; }
+        th:nth-child(4), td:nth-child(4) { width: 100px; }
+        th:nth-child(5), td:nth-child(5) { width: 50px; text-align: right; }
+        th:nth-child(6), td:nth-child(6) { width: 60px; }
+        th:nth-child(7), td:nth-child(7) { width: 30px; text-align: left; }
+        th:nth-child(8), td:nth-child(8) { width: 60px; }
+        th:nth-child(9), td:nth-child(9) { width: 70px; }
+        th:nth-child(10), td:nth-child(10) { width: 140px; }
+
+        tr { cursor: pointer; }
+        tr:hover { background: #1f1f1f; }
+
+        input.quantity-input {
+            width: 50px;
+            text-align: center;
+            background: #1f1f1f;
+            color: #e0e0e0;
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 4px;
+        }
+
+        .link-cell { text-align: left; padding-left: 12px; }
+        .link-cell a { color: #60a5fa; font-size: 1.4rem; text-decoration: none; }
+        .link-cell a:hover { color: #93c5fd; }
+
+        input[type="checkbox"] { width: 18px; height: 18px; accent-color: #0066cc; }
+
+        .status-available { color: #4ade80; font-weight: 600; }
+        .status-sold { color: #f87171; font-weight: 600; }
+
+        .stars {
+            color: #fbbf24;
+            font-size: 1.6rem;
+            letter-spacing: 2px;
+        }
+
+        /* Modals */
+        #detail-modal, #help-modal, #selection-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 1200;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+        #help-content, #detail-content, #modal-content {
+            background: #1a1a1a;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 720px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            border: 1px solid #444;
+        }
+
+        .detail-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .detail-house {
+            color: #93c5fd;
+            font-size: 1.35rem;
+            margin: 0;
+        }
+        .detail-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 8px 0 15px 0;
+        }
+        .detail-section {
+            margin-bottom: 20px;
+        }
+        .detail-label {
+            font-weight: bold;
+            color: #aaa;
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+        }
+        .detail-link {
+            text-align: center;
+            margin-top: 25px;
+        }
+        .detail-link a {
+            font-size: 2.2rem;
+            color: #60a5fa;
+            text-decoration: none;
+        }
+
+        .selection-list {
+            list-style: none;
+            padding: 0;
+        }
+        .selection-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .house-name {
+            font-weight: bold;
+            color: #93c5fd;
+            font-size: 1.1em;
+        }
+        .price-info {
+            text-align: right;
+            min-width: 140px;
+            color: #4ade80;
+        }
+        .modal-total {
+            margin-top: 20px;
+            padding: 15px 0;
+            border-top: 2px solid #444;
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #4ade80;
+            text-align: right;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .modal-buttons button {
+            flex: 1;
+            padding: 12px;
+        }
+        .close-btn { background: #f87171; }
     </style>
 </head>
 <body>
     <header>
+        <button id="help-icon" onclick="showHelpModal()" title="How to Use This Page">❓</button>
         <h1>The Frag Vault</h1>
         <div id="total-display">Total Selected: $0</div>
     </header>
     
     <div class="controls">
+        <div class="control-row search-row">
+            <input type="text" id="search" placeholder="Search House, Name, Perfumer, Notes..." onkeyup="filterTable()">
+            <button class="clear-btn" id="clear-search" onclick="clearSearch()">×</button>
+        </div>
+
         <div class="control-row">
-            <button onclick="refreshData()" class="refresh-btn" id="refreshBtn">🔄 Refresh</button>
+            <button onclick="sortTable(2)">House</button>
+            <button onclick="sortTable(3)">Name</button>
+            <button onclick="sortTable(4)">5ml</button>
+            <button onclick="sortTable(5)">Status</button>
+            <button onclick="sortTable(7)">Genre</button>
+            <button onclick="sortTable(8)">Attribute</button>
+            <button onclick="sortTable(9)">Perfumer</button>
+            <button onclick="sortTable(10)">New</button>
+        </div>
+
+        <div class="control-row">
+            <button onclick="updateLocalJSON()">Update Local JSON (Download)</button>
             <button onclick="startOver()" class="startover-btn">Start Over</button>
             <button onclick="showSelectionModal()" class="export-btn">Total</button>
         </div>
-        <div class="control-row">
-            <input type="text" id="search" placeholder="Search..." style="width:100%;padding:10px;" onkeyup="filterTable()">
-        </div>
     </div>
 
-    <div style="padding:0 10px;">
+    <div class="table-wrapper">
         <table id="sales-table">
             <thead>
                 <tr>
-                    <th>House</th>
-                    <th>Name</th>
-                    <th>5ml</th>
-                    <th>Status</th>
+                    <th><input type="checkbox" id="select-all" onchange="toggleSelectAll()"></th>
+                    <th>Qty</th>
+                    <th onclick="sortTable(2)">House</th>
+                    <th onclick="sortTable(3)">Name</th>
+                    <th onclick="sortTable(4)">5ml</th>
+                    <th onclick="sortTable(5)">Status</th>
+                    <th>Link</th>
+                    <th>Genre</th>
+                    <th>Attribute</th>
+                    <th>Perfumer</th>
                 </tr>
             </thead>
             <tbody></tbody>
         </table>
     </div>
 
+    <footer id="footer">Loading sales...</footer>
+
+    <!-- Your original modals (unchanged) -->
+
     <script>
         let sales = [];
+        let sortState = {};
 
-        async function fetchJSON() {
+        function cleanValue(val) {
+            if (val === null || val === undefined || val === '' || val === '?') return 'N/A';
+            return val.trim();
+        }
+
+        function formatPrice(val) {
+            const cleaned = cleanValue(val);
+            if (cleaned === 'N/A') return 'N/A';
+            if (!isNaN(parseFloat(cleaned))) return '$' + cleaned;
+            return cleaned;
+        }
+
+        function isAvailable(status) {
+            return status && status.toLowerCase().includes('available');
+        }
+
+        function createStarRating(rating) {
+            const num = Math.round(parseFloat(rating) || 0);
+            let stars = '';
+            for (let i = 1; i <= 10; i++) {
+                stars += i <= num ? '★' : '☆';
+            }
+            return stars;
+        }
+
+        function updateTotal() {
+            const selectedRows = getSelectedRows();
+            let total = 0;
+            selectedRows.forEach(row => {
+                const qtyInput = row.querySelector('.quantity-input');
+                const qty = qtyInput ? parseInt(qtyInput.value) || 1 : 1;
+                const priceCell = row.cells[4];
+                const priceText = priceCell.textContent.trim().replace('$', '').replace(',', '');
+                const price = parseFloat(priceText) || 0;
+                total += qty * price;
+            });
+            document.getElementById('total-display').textContent = `Total Selected: $${total.toLocaleString()}`;
+        }
+
+        // Load from local JSON
+        async function loadSales() {
             try {
                 const res = await fetch('data/sales.json?t=' + Date.now());
-                return await res.json();
+                sales = await res.json();
+
+                sales = sales
+                    .filter(row => row.Name && row.Name.trim())
+                    .map(row => {
+                        Object.keys(row).forEach(key => {
+                            if (typeof row[key] === 'string') row[key] = row[key].trim();
+                        });
+                        return row;
+                    });
+                
+                renderTable(sales);
+                sortTable(2, true);
+                updateFooter();
             } catch (e) {
-                console.error(e);
-                return [];
+                console.error("Load error:", e);
+                document.getElementById('footer').innerHTML = 'Error loading sales.json';
             }
         }
 
-        async function refreshData() {
-            const btn = document.getElementById('refreshBtn');
-            btn.textContent = 'Loading...';
-            sales = await fetchJSON();
-            renderTable();
-            btn.textContent = '🔄 Refresh';
-        }
-
-        function renderTable() {
+        function renderTable(data) {
             const tbody = document.querySelector('#sales-table tbody');
-            tbody.innerHTML = '';
-            sales.forEach(item => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${item.House || ''}</td>
-                    <td>${item.Name || ''}</td>
-                    <td>${item['5ml'] || ''}</td>
-                    <td>${item.Status || ''}</td>
-                `;
-                tbody.appendChild(row);
+            let html = '';
+            for (let i = 0; i < data.length; i++) {
+                const s = data[i];
+                const link = s.Link && s.Link.trim() !== '' && s.Link !== 'N/A' 
+                    ? `<a href="${s.Link}" target="_blank" title="View listing">🔗</a>` 
+                    : 'N/A';
+                
+                const statusClass = isAvailable(s.Status) ? 'status-available' : 'status-sold';
+                const isAvail = isAvailable(s.Status);
+
+                html += `<tr data-index="${i}">` +
+                    '<td><input type="checkbox" class="row-select" ' + (isAvail ? '' : 'disabled') + ' onchange="updateSelectAllState(); updateTotal()"></td>' +
+                    '<td><input type="number" min="1" value="1" class="quantity-input" onchange="updateTotal()" ' + (isAvail ? '' : 'disabled') + ' onfocus="this.select()"></td>' +
+                    '<td>' + cleanValue(s.House) + '</td>' +
+                    '<td><strong>' + cleanValue(s.Name) + '</strong></td>' +
+                    '<td>' + formatPrice(s['5ml']) + '</td>' +
+                    '<td class="' + statusClass + '">' + cleanValue(s.Status) + '</td>' +
+                    '<td class="link-cell">' + link + '</td>' +
+                    '<td>' + cleanValue(s.Genre) + '</td>' +
+                    '<td>' + cleanValue(s.Attribute) + '</td>' +
+                    '<td>' + cleanValue(s.Perfumer) + '</td>' +
+                    '</tr>';
+            }
+            tbody.innerHTML = html;
+
+            tbody.querySelectorAll('tr').forEach(row => {
+                row.addEventListener('click', function(e) {
+                    if (e.target.type === 'checkbox' || e.target.classList.contains('quantity-input')) return;
+                    const index = parseInt(this.getAttribute('data-index'));
+                    showDetailModal(index);
+                });
             });
+
+            updateTotal();
         }
 
-        function filterTable() {
-            const term = document.getElementById('search').value.toLowerCase();
-            const filtered = sales.filter(item => 
-                (item.House || '').toLowerCase().includes(term) || (item.Name || '').toLowerCase().includes(term)
-            );
-            const tbody = document.querySelector('#sales-table tbody');
-            tbody.innerHTML = '';
-            filtered.forEach(item => {
-                const row = document.createElement('tr');
-                row.innerHTML = `<td>\( {item.House}</td><td> \){item.Name}</td><td>\( {item['5ml']}</td><td> \){item.Status}</td>`;
-                tbody.appendChild(row);
-            });
+        // ... (keep all your other original functions: showDetailModal, showHelpModal, toggleSelectAll, filterTable, startOver, showSelectionModal, copySelectionToClipboard, sortTable, updateUrl, etc.) ...
+
+        async function updateLocalJSON() {
+            try {
+                const salesUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=1452885969&single=true&output=csv";
+                const res = await fetch(salesUrl + '?t=' + Date.now());
+                const text = await res.text();
+
+                Papa.parse(text, {
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: (result) => {
+                        const data = result.data
+                            .filter(row => row.Name && row.Name.trim())
+                            .map(row => {
+                                Object.keys(row).forEach(key => {
+                                    if (typeof row[key] === 'string') row[key] = row[key].trim();
+                                });
+                                return row;
+                            });
+
+                        const jsonStr = JSON.stringify(data, null, 2);
+                        const blob = new Blob([jsonStr], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'sales.json';
+                        a.click();
+                        URL.revokeObjectURL(url);
+                        showToast('✅ sales.json downloaded - upload to data/ folder');
+                    }
+                });
+            } catch (e) {
+                showToast('❌ Failed');
+            }
         }
 
-        function startOver() {
-            document.getElementById('search').value = '';
-            renderTable();
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#22c55e;color:white;padding:12px 24px;border-radius:8px;z-index:3000;';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2200);
         }
 
-        function showSelectionModal() {
-            alert('Total: $0');
-        }
-
-        window.onload = async () => {
-            sales = await fetchJSON();
-            renderTable();
-        };
+        window.onload = loadSales;
     </script>
 </body>
 </html>
