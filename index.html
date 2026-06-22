@@ -129,10 +129,12 @@
             padding: 9px 14px;
             border-radius: 20px;
             white-space: nowrap;
+            min-width: 85px;
         }
 
         .startover-btn { background: #d97706 !important; }
         .export-btn { background: #15803d !important; }
+        .update-btn { background: #d97706; }
 
         .table-wrapper { 
             padding: 0 20px 20px; 
@@ -302,10 +304,13 @@
         <button onclick="sortTable(4)">Silliage</button>
         <button onclick="sortTable(7)">Perfumer</button>
         <button onclick="sortTable(8)">Parfumo</button>
-
+    <div>
+        <button onclick="updateLocalJSONs()" class="update-btn">🔄 Refresh</button>
         <button onclick="startOver()" class="startover-btn">Start Over</button>
-        <button onclick="exportToCSV()" class="export-btn">Export To CSV</button>
+        <button onclick="exportToCSV()" class="export-btn">Export to CSV</button>
     </div>
+    
+   </div>
 
     <div class="table-wrapper">
         <table id="fragrance-table">
@@ -338,7 +343,6 @@
     </div>
 
     <script>
-        // (The full script is unchanged from the previous version - all logic remains the same)
         let fragrances = [];
         let nowWearingData = [];
         let currentGenres = new Set();
@@ -521,75 +525,62 @@
             searchInput.focus();
         }
 
-        async function loadCSV() {
+        // Load from local JSON
+        async function loadCollection() {
             const footer = document.getElementById('footer');
             try {
-                footer.innerHTML = 'Loading from Google Sheets...';
-                const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=1371140242&single=true&output=csv";
-                
-                const res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now());
-                if (!res.ok) throw new Error('Network error');
-                
-                const text = await res.text();
-                Papa.parse(text, {
-                    header: true,
-                    skipEmptyLines: true,
-                    complete: (result) => {
-                        fragrances = result.data
-                            .filter(row => row.Name && row.Name.trim())
-                            .map(row => {
-                                Object.keys(row).forEach(key => {
-                                    if (typeof row[key] === 'string') row[key] = row[key].trim();
-                                });
-                                return row;
-                            });
-                        
-                        console.log("✅ Loaded", fragrances.length, "fragrances");
-                        renderTable(fragrances);
-                        renderGenreButtons();
-                        updateFooter();
+                footer.innerHTML = 'Loading collection...';
+                const res = await fetch('data/website.json?t=' + Date.now());
+                fragrances = await res.json();
 
-                        applyUrlParams();
-                        toggleClearButton();
-                        
-                        document.querySelectorAll('.genre-btn').forEach(btn => {
-                            if (currentGenres.has(btn.textContent.trim())) {
-                                btn.classList.add('active');
-                            }
+                fragrances = fragrances
+                    .filter(row => row.Name && row.Name.trim())
+                    .map(row => {
+                        Object.keys(row).forEach(key => {
+                            if (typeof row[key] === 'string') row[key] = row[key].trim();
                         });
+                        return row;
+                    });
+                
+                console.log("✅ Loaded", fragrances.length, "fragrances from local JSON");
+                renderTable(fragrances);
+                renderGenreButtons();
+                updateFooter();
 
-                        filterTable();
-
-                        if (currentSortCol !== null) {
-                            sortTable(currentSortCol, true);
-                        }
+                applyUrlParams();
+                toggleClearButton();
+                
+                document.querySelectorAll('.genre-btn').forEach(btn => {
+                    if (currentGenres.has(btn.textContent.trim())) {
+                        btn.classList.add('active');
                     }
                 });
+
+                filterTable();
+
+                if (currentSortCol !== null) {
+                    sortTable(currentSortCol, true);
+                }
             } catch (e) {
                 console.error("Load error:", e);
-                footer.innerHTML = '<strong style="color:#ff6666;">Error loading Google Sheet</strong>';
+                footer.innerHTML = '<strong style="color:#ff6666;">Error loading collection.json</strong>';
             }
         }
 
+        // Load Now Wearing from local JSON
         async function loadNowWearing() {
             try {
-                const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=775413918&single=true&output=csv";
-                const res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now());
-                const text = await res.text();
-                Papa.parse(text, {
-                    header: true,
-                    skipEmptyLines: true,
-                    complete: (result) => {
-                        nowWearingData = result.data
-                            .filter(row => row.Date && row.Name)
-                            .map(row => {
-                                Object.keys(row).forEach(key => {
-                                    if (typeof row[key] === 'string') row[key] = row[key].trim();
-                                });
-                                return row;
-                            });
-                    }
-                });
+                const res = await fetch('data/nowwearing.json?t=' + Date.now());
+                nowWearingData = await res.json();
+
+                nowWearingData = nowWearingData
+                    .filter(row => row.Date && row.Name)
+                    .map(row => {
+                        Object.keys(row).forEach(key => {
+                            if (typeof row[key] === 'string') row[key] = row[key].trim();
+                        });
+                        return row;
+                    });
             } catch (e) {
                 console.error("Now wearing load failed:", e);
             }
@@ -749,6 +740,57 @@
             link.click();
         }
 
+        // Download fresh JSONs for all
+        async function updateLocalJSONs() {
+            const sheets = [
+                { name: "website.json", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=1371140242&single=true&output=csv" },
+                { name: "nowwearing.json", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=775413918&single=true&output=csv" },
+                { name: "layers.json", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=1331568544&single=true&output=csv" },
+                { name: "top10.json", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=146247773&single=true&output=csv" },
+                { name: "bottle.json", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=136278588&single=true&output=csv" },
+                { name: "sample.json", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=1763745231&single=true&output=csv" }
+            ];
+
+            showToast('Downloading fresh JSONs...');
+
+            for (const sheet of sheets) {
+                try {
+                    const res = await fetch(sheet.url + '?t=' + Date.now());
+                    const text = await res.text();
+
+                    Papa.parse(text, {
+                        header: true,
+                        skipEmptyLines: true,
+                        complete: (result) => {
+                            const data = result.data
+                                .filter(row => Object.values(row).some(v => v && v.trim && v.trim() !== ''))
+                                .map(row => {
+                                    Object.keys(row).forEach(key => {
+                                        if (typeof row[key] === 'string') row[key] = row[key].trim();
+                                    });
+                                    return row;
+                                });
+
+                            const jsonStr = JSON.stringify(data, null, 2);
+                            const blob = new Blob([jsonStr], { type: 'application/json' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = sheet.name;
+                            a.click();
+                            URL.revokeObjectURL(url);
+                        }
+                    });
+                } catch (e) {
+                    console.error("Failed to download", sheet.name, e);
+                }
+            }
+
+            setTimeout(() => {
+                showToast('✅ All JSONs downloaded (except Sales). Upload to data/ folder.');
+            }, 1500);
+        }
+
         function toggleMenu() {
             document.getElementById('menu').classList.toggle('active');
         }
@@ -765,7 +807,7 @@
         });
 
         window.onload = () => {
-            loadCSV();
+            loadCollection();
             loadNowWearing();
 
             const searchInput = document.getElementById('search');
