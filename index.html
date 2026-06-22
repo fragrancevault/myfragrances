@@ -740,7 +740,7 @@
             link.click();
         }
 
-        // Download fresh JSONs for all
+// Download fresh JSONs for all except Sales (FIXED VERSION)
         async function updateLocalJSONs() {
             const sheets = [
                 { name: "website.json", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=1371140242&single=true&output=csv" },
@@ -758,28 +758,33 @@
                     const res = await fetch(sheet.url + '?t=' + Date.now());
                     const text = await res.text();
 
-                    Papa.parse(text, {
-                        header: true,
-                        skipEmptyLines: true,
-                        complete: (result) => {
-                            const data = result.data
-                                .filter(row => Object.values(row).some(v => v && v.trim && v.trim() !== ''))
-                                .map(row => {
-                                    Object.keys(row).forEach(key => {
-                                        if (typeof row[key] === 'string') row[key] = row[key].trim();
+                    // Proper async handling so each file gets its own correct name
+                    await new Promise(resolve => {
+                        Papa.parse(text, {
+                            header: true,
+                            skipEmptyLines: true,
+                            complete: (result) => {
+                                const data = result.data
+                                    .filter(row => Object.values(row).some(v => v && v.trim && v.trim() !== ''))
+                                    .map(row => {
+                                        Object.keys(row).forEach(key => {
+                                            if (typeof row[key] === 'string') row[key] = row[key].trim();
+                                        });
+                                        return row;
                                     });
-                                    return row;
-                                });
 
-                            const jsonStr = JSON.stringify(data, null, 2);
-                            const blob = new Blob([jsonStr], { type: 'application/json' });
-                            const url = URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = url;
-                            a.download = sheet.name;
-                            a.click();
-                            URL.revokeObjectURL(url);
-                        }
+                                const jsonStr = JSON.stringify(data, null, 2);
+                                const blob = new Blob([jsonStr], { type: 'application/json' });
+                                const downloadUrl = URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = downloadUrl;
+                                a.download = sheet.name;           // ← This now correctly uses the current sheet
+                                a.click();
+                                URL.revokeObjectURL(downloadUrl);
+
+                                resolve();
+                            }
+                        });
                     });
                 } catch (e) {
                     console.error("Failed to download", sheet.name, e);
@@ -788,7 +793,7 @@
 
             setTimeout(() => {
                 showToast('✅ All JSONs downloaded (except Sales). Upload to data/ folder.');
-            }, 1500);
+            }, 600);
         }
 
         function toggleMenu() {
