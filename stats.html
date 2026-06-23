@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FragVault - Stats</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: #0a0a0a; color: #e0e0e0; line-height: 1.5; }
+        header { background: linear-gradient(135deg, #1a1a1a, #0f0f0f); color: white; padding: 1.6rem 1rem; text-align: center; position: relative; }
+        h1 { margin: 0; font-size: 2rem; }
+        .nav { position: absolute; top: 20px; left: 20px; }
+        .hamburger { display: flex; flex-direction: column; cursor: pointer; padding: 8px; }
+        .hamburger span { width: 28px; height: 3px; background: #60a5fa; margin: 4px 0; }
+        .menu { display: none; position: absolute; top: 65px; left: 20px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 12px 0; min-width: 180px; z-index: 1000; }
+        .menu a { display: block; padding: 12px 20px; color: #e0e0e0; text-decoration: none; }
+        .menu.active { display: block; }
+        .container { padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .stat-card { background: #111; border: 1px solid #333; border-radius: 12px; padding: 20px; margin-bottom: 25px; }
+        .section-title { color: #60a5fa; border-bottom: 2px solid #60a5fa; padding-bottom: 8px; margin-bottom: 18px; font-size: 1.4rem; }
+        .bar-container { height: 28px; background: #222; border-radius: 999px; overflow: hidden; margin: 10px 0; }
+        .bar { height: 100%; background: linear-gradient(90deg, #60a5fa, #3b82f6); display: flex; align-items: center; padding: 0 12px; color: white; font-weight: bold; font-size: 0.95rem; }
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+        .overview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; text-align: center; }
+        .overview-item { background: #1a1a1a; padding: 16px; border-radius: 10px; border: 1px solid #333; }
+        canvas { max-width: 100% !important; height: 320px !important; background: #111; border-radius: 8px; padding: 10px; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Stats</h1>
+        <div class="nav">
+            <div class="hamburger" onclick="toggleMenu()">
+                <span></span><span></span><span></span>
+            </div>
+            <div class="menu" id="menu">
+                <a href="index.html"><strong>Home</strong></a>
+                <a href="nowwearing.html">Now Wearing</a>
+                <a href="top.html">The Best</a>
+                <a href="randomizer.html">Randomizer</a>
+                <a href="unratedrandomizer.html">Unrated Randomizer</a>
+                <a href="top10.html">My Top 10</a>
+                <a href="layers.html">Layers</a>
+                <a href="stats.html"><strong>Stats</strong></a>
+                <a href="searchingbottle.html">Searching For</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="stat-card">
+            <h2 class="section-title">Collection Overview</h2>
+            <div id="overview" class="overview-grid"></div>
+        </div>
+
+        <div class="stat-card">
+            <h2 class="section-title">Ratings</h2>
+            <canvas id="ratingsChart" height="300"></canvas>
+            <div id="ratingsList"></div>
+        </div>
+
+        <div class="stat-card">
+            <h2 class="section-title">Genres</h2>
+            <canvas id="genresChart" height="300"></canvas>
+            <div id="genresList" class="stat-grid"></div>
+        </div>
+
+        <div class="stat-card">
+            <h2 class="section-title">Seasons</h2>
+            <div id="seasonsList" class="stat-grid"></div>
+        </div>
+
+        <div class="stat-card">
+            <h2 class="section-title">Top Perfumers</h2>
+            <div id="perfumersList" style="line-height:1.8;"></div>
+        </div>
+    </div>
+
+    <script>
+        let fragrances = [];
+
+        Papa.parse("https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=1371140242&single=true&output=csv", {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            complete: function(result) {
+                fragrances = result.data.filter(row => row.Name && row.Name.trim() !== '');
+                renderAllStats();
+            }
+        });
+
+        function renderAllStats() {
+            var total = fragrances.length;
+            var rated = 0;
+            var sumRating = 0;
+            var unrated = 0;
+
+            fragrances.forEach(function(f) {
+                var r = parseFloat(f.Rating || 0);
+                if (r > 0) {
+                    rated++;
+                    sumRating += r;
+                } else {
+                    unrated++;
+                }
+            });
+
+            var avg = rated > 0 ? (sumRating / rated).toFixed(2) : '0.00';
+
+            document.getElementById('overview').innerHTML = 
+                '<div class="overview-item"><strong>Total</strong><br>' + total + '</div>' +
+                '<div class="overview-item"><strong>Rated</strong><br>' + rated + ' (' + (total > 0 ? ((rated/total)*100).toFixed(1) : 0) + '%)</div>' +
+                '<div class="overview-item"><strong>Avg Rating</strong><br>' + avg + '</div>';
+
+            // Ratings
+            var ratingCounts = {};
+            fragrances.forEach(function(f) {
+                var r = parseFloat(f.Rating || 0).toFixed(2);
+                ratingCounts[r] = (ratingCounts[r] || 0) + 1;
+            });
+
+            var ratingsSorted = Object.keys(ratingCounts).filter(r => parseFloat(r) > 0).sort(function(a,b){ return parseFloat(b)-parseFloat(a); });
+            var ratingsHTML = '';
+            ratingsSorted.forEach(function(rating) {
+                var count = ratingCounts[rating];
+                var perc = total > 0 ? ((count / total) * 100).toFixed(1) : '0';
+                ratingsHTML += '<div style="padding:12px; background:#1a1a1a; margin:8px 0; border-radius:8px;">' +
+                    '<strong>' + rating + '</strong> — ' + count + ' (' + perc + '%)' +
+                    '<div class="bar-container"><div class="bar" style="width:' + perc + '%">' + perc + '%</div></div></div>';
+            });
+
+            // Unrated row
+            var unratedPerc = total > 0 ? ((unrated / total) * 100).toFixed(1) : '0';
+            ratingsHTML += '<div style="padding:12px; background:#1a1a1a; margin:8px 0; border-radius:8px; border: 2px dashed #f87171;">' +
+                '<strong>0.00 (Unrated)</strong> — ' + unrated + ' (' + unratedPerc + '%)' +
+                '<div class="bar-container"><div class="bar" style="width:' + unratedPerc + '%">' + unratedPerc + '%</div></div></div>';
+
+            document.getElementById('ratingsList').innerHTML = ratingsHTML;
+
+            // Chart without 0.00
+            new Chart(document.getElementById('ratingsChart'), {
+                type: 'bar',
+                data: { 
+                    labels: ratingsSorted, 
+                    datasets: [{ 
+                        label: 'Count', 
+                        data: ratingsSorted.map(function(r){return ratingCounts[r];}), 
+                        backgroundColor: '#60a5fa' 
+                    }] 
+                },
+                options: { responsive: true, plugins: { legend: { display: false } } }
+            });
+
+            // Genres
+            var genreCounts = {};
+            fragrances.forEach(function(f) {
+                var g = (f.Genre || 'Unknown').trim();
+                genreCounts[g] = (genreCounts[g] || 0) + 1;
+            });
+            var genresSorted = Object.keys(genreCounts).sort(function(a,b){ return genreCounts[b] - genreCounts[a]; });
+            var genresHTML = '';
+            genresSorted.forEach(function(genre) {
+                var count = genreCounts[genre];
+                var perc = total > 0 ? ((count / total) * 100).toFixed(1) : '0';
+                genresHTML += '<div class="stat-card" style="margin:0;"><strong>' + genre + '</strong><br>' + count + ' (' + perc + '%)' +
+                    '<div class="bar-container"><div class="bar" style="width:' + perc + '%">' + perc + '%</div></div></div>';
+            });
+            document.getElementById('genresList').innerHTML = genresHTML;
+
+            new Chart(document.getElementById('genresChart'), {
+                type: 'pie',
+                data: { labels: genresSorted.slice(0,10), datasets: [{ data: genresSorted.slice(0,10).map(function(g){return genreCounts[g];}), backgroundColor: ['#60a5fa','#3b82f6','#2563eb','#1e40af','#1e3a8a'] }] }
+            });
+
+            // Seasons
+            var seasonCounts = {};
+            fragrances.forEach(function(f) {
+                var s = (f.Seasons || f.Season || 'Any').trim();
+                seasonCounts[s] = (seasonCounts[s] || 0) + 1;
+            });
+            var seasonsHTML = '';
+            Object.keys(seasonCounts).sort(function(a,b){ return seasonCounts[b] - seasonCounts[a]; }).forEach(function(s) {
+                var c = seasonCounts[s];
+                var p = total > 0 ? ((c / total) * 100).toFixed(1) : '0';
+                seasonsHTML += '<div class="stat-card" style="margin:0;text-align:center;"><strong>' + s + '</strong><br>' + c + ' (' + p + '%)</div>';
+            });
+            document.getElementById('seasonsList').innerHTML = seasonsHTML;
+
+            // Top Perfumers
+            var perfCounts = {};
+            fragrances.forEach(function(f) {
+                var p = (f.Perfumer || 'Unknown').trim();
+                perfCounts[p] = (perfCounts[p] || 0) + 1;
+            });
+            var topPerf = Object.keys(perfCounts).sort(function(a,b){ return perfCounts[b] - perfCounts[a]; }).slice(0,12);
+            var perfHTML = '<ol>';
+            topPerf.forEach(function(p) { perfHTML += '<li><strong>' + p + '</strong> — ' + perfCounts[p] + '</li>'; });
+            perfHTML += '</ol>';
+            document.getElementById('perfumersList').innerHTML = perfHTML;
+        }
+
+        function toggleMenu() {
+            document.getElementById('menu').classList.toggle('active');
+        }
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.nav')) document.getElementById('menu').classList.remove('active');
+        });
+    </script>
+</body>
+</html>
