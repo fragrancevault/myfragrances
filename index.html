@@ -140,6 +140,23 @@
             color: #7c3aed; 
         }
 
+        .inspiration-toggle {
+            background: #0066cc;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13.5px;
+            padding: 11px 24px;
+            border-radius: 9999px;
+            white-space: nowrap;
+            margin: 8px auto 0;
+            display: block;
+            min-width: 160px;
+            max-width: 220px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        }
+
         .table-wrapper { 
             padding: 0 20px 20px; 
             overflow-x: auto; 
@@ -313,6 +330,8 @@
         <button onclick="startOver()" class="startover-btn">Start Over</button>
         <button onclick="showTop10()" id="top10-btn" class="top10-btn">Top 10</button>
         <button onclick="exportToCSV()" class="export-btn">Export To CSV</button>
+
+        <button id="inspiration-toggle" onclick="cycleInspirationFilter()" class="inspiration-toggle">Include Dupes</button>
     </div>
 
     <div class="table-wrapper">
@@ -352,6 +371,7 @@
         let sortState = {};
         let currentSortCol = null;
         let isTop10Active = false;
+        let inspirationFilter = 0; // 0: Include Dupes (all), 1: No Dupes (N), 2: Dupes Only (Y)
 
         const highFirst = [2, 3, 4, 7];
 
@@ -675,7 +695,18 @@
                 }
                 
                 const matchGenre = currentGenres.size === 0 || currentGenres.has(f.Genre);
-                return matchSearch && matchSeason && matchGenre;
+
+                // Inspiration filter
+                let matchInspiration = true;
+                const insp = (f.Inspiration || '').trim().toUpperCase();
+                if (inspirationFilter === 1) { // No Dupes
+                    matchInspiration = insp === 'N' || insp === '';
+                } else if (inspirationFilter === 2) { // Dupes Only
+                    matchInspiration = insp === 'Y';
+                }
+                // 0 = all
+
+                return matchSearch && matchSeason && matchGenre && matchInspiration;
             });
             
             renderTable(filtered);
@@ -740,6 +771,8 @@
             isTop10Active = false;
             sortState = {};
             currentSortCol = null;
+            inspirationFilter = 0;
+            updateInspirationButton();
             renderTable(fragrances);
             updateFooter();
             updateUrl();
@@ -777,7 +810,16 @@
                 }
                 
                 const matchGenre = currentGenres.size === 0 || currentGenres.has(f.Genre);
-                return matchSearch && matchSeason && matchGenre;
+
+                const insp = (f.Inspiration || '').trim().toUpperCase();
+                let matchInspiration = true;
+                if (inspirationFilter === 1) {
+                    matchInspiration = insp === 'N' || insp === '';
+                } else if (inspirationFilter === 2) {
+                    matchInspiration = insp === 'Y';
+                }
+
+                return matchSearch && matchSeason && matchGenre && matchInspiration;
             });
 
             if (filtered.length === 0) {
@@ -822,6 +864,29 @@
             link.click();
         }
 
+        function cycleInspirationFilter() {
+            inspirationFilter = (inspirationFilter + 1) % 3;
+            updateInspirationButton();
+            filterTable();
+        }
+
+        function updateInspirationButton() {
+            const btn = document.getElementById('inspiration-toggle');
+            if (inspirationFilter === 0) {
+                btn.textContent = 'Include Dupes';
+                btn.style.backgroundColor = '#15803d'; // green
+                btn.style.color = 'white';
+            } else if (inspirationFilter === 1) {
+                btn.textContent = 'No Dupes';
+                btn.style.backgroundColor = '#b91c1c'; // red
+                btn.style.color = 'white';
+            } else {
+                btn.textContent = 'Dupes Only';
+                btn.style.backgroundColor = '#eab308'; // yellow
+                btn.style.color = '#1f2937';
+            }
+        }
+
         function toggleMenu() {
             document.getElementById('menu').classList.toggle('active');
         }
@@ -843,6 +908,9 @@
 
             const searchInput = document.getElementById('search');
             searchInput.addEventListener('input', toggleClearButton);
+
+            // Init toggle
+            updateInspirationButton();
         };
     </script>
 </body>
