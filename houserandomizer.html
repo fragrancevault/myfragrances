@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <!-- 
     =============================================
-    MY FRAGRANCE COLLECTION - CUSTOMIZATION GUIDE
+    HOUSE RANDOMIZER - My Fragrance Collection
     =============================================
 -->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Randomizer - My Fragrance Collection</title>
+    <title>House Randomizer - My Fragrance Collection</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
         body { 
@@ -44,7 +44,7 @@
 
         .controls { 
             text-align: center; 
-            padding: 15px 20px; 
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -59,6 +59,7 @@
             border: 2px solid #60a5fa;
             border-radius: 50px;
             cursor: pointer;
+            min-width: 280px;
         }
 
         .inspiration-toggle {
@@ -76,32 +77,30 @@
             box-shadow: 0 2px 8px rgba(0,0,0,0.4);
         }
 
-        .cards-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 20px;
-            padding: 20px;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .random-card {
+        .main-card {
+            max-width: 520px;
+            margin: 20px auto;
             background: #1f2a3a;
-            border: 2px solid #60a5fa;
-            border-radius: 16px;
-            padding: 25px 20px;
+            border: 3px solid #60a5fa;
+            border-radius: 20px;
+            padding: 35px 25px;
             text-align: center;
-            min-height: 520px;
+            min-height: 560px;
             display: flex;
             flex-direction: column;
         }
 
-        .card-title { font-size: 1.35rem; color: #60a5fa; margin-bottom: 12px; font-weight: 600; }
-        .house { font-size: 1.25rem; color: #aaa; }
-        .name { 
-            font-size: 2.1rem; 
+        .card-title { 
+            font-size: 1.6rem; 
             color: #60a5fa; 
-            margin: 8px 0 16px; 
+            margin-bottom: 16px; 
+            font-weight: 600; 
+        }
+        .house { font-size: 1.4rem; color: #aaa; }
+        .name { 
+            font-size: 2.4rem; 
+            color: #60a5fa; 
+            margin: 12px 0 20px; 
             cursor: pointer;
             text-decoration: none;
         }
@@ -111,19 +110,19 @@
         }
 
         .main-stats { 
-            font-size: 1.1rem; 
+            font-size: 1.15rem; 
             color: #ddd; 
-            margin: 12px 0; 
+            margin: 16px 0; 
         }
         .perfume-info { 
-            font-size: 1.0rem; 
+            font-size: 1.05rem; 
             color: #bbb; 
-            margin: 12px 0; 
-            line-height: 1.45;
+            margin: 14px 0; 
+            line-height: 1.5;
         }
         .wear-stat { 
-            margin: 6px 0; 
-            font-size: 1.02rem; 
+            margin: 8px 0; 
+            font-size: 1.05rem; 
             color: #ccc; 
         }
 
@@ -131,8 +130,8 @@
             border: 0;
             height: 1px;
             background: #444;
-            margin: 18px 0;
-            width: 80%;
+            margin: 22px 0;
+            width: 85%;
             margin-left: auto;
             margin-right: auto;
         }
@@ -145,15 +144,26 @@
             font-size: 1.25rem;
             border-radius: 50px;
             cursor: pointer;
-            margin: 20px auto;
+            margin: 25px auto;
             display: block;
         }
 
-        .count { margin-top: 20px; font-size: 1rem; color: #60a5fa; }
+        .count { 
+            margin-top: 25px; 
+            font-size: 1.1rem; 
+            color: #60a5fa; 
+        }
+
+        .no-match {
+            color: #ffcc66;
+            font-size: 1.2rem;
+            padding: 40px 20px;
+        }
     </style>
 </head>
 <body>
     <header>
+        <h1>House</h1>
         <h1>Randomizer</h1>
         <div class="nav">
             <div class="hamburger" onclick="toggleMenu()">
@@ -163,10 +173,10 @@
                 <a href="index.html">Home</a>
                 <a href="nowwearing.html">Now Wearing</a>
                 <a href="top.html">Top Fragrances</a>
-                <a href="randomizer.html"><strong>Randomizer</strong></a>
-                <a href="house-randomizer.html">House Randomizer</a>
+                <a href="randomizer.html">Randomizer</a>
+                <a href="house-randomizer.html"><strong>House Randomizer</strong></a>
                 <a href="unratedrandomizer.html">Unrated Randomizer</a>
-                <a href="top10.html"><strong>Top 10</strong></a>
+                <a href="top10.html">Top 10</a>
                 <a href="layers.html">Layers</a>
                 <a href="stats.html">Stats</a>
                 <a href="searchingbottle.html">Searching For</a>
@@ -175,7 +185,7 @@
     </header>
 
     <div class="controls">
-        <select id="season-filter" onchange="randomizeAll()">
+        <select id="season-filter" onchange="refreshHouseDropdown()">
             <option value="Everything">🌍 Show Me Any Season</option>
             <option value="Any">🌡️ Any Season Only</option>
             <option value="Hot">☀️ Hot</option>
@@ -184,21 +194,27 @@
             <option value="Cold+Any">❄️ Cold + Any</option>
         </select>
 
+        <select id="house-filter" onchange="randomizeHouse()">
+            <!-- Populated by JavaScript -->
+        </select>
+
         <button id="inspiration-toggle" onclick="cycleInspirationFilter()" class="inspiration-toggle">Include Dupes</button>
     </div>
 
     <div style="text-align:center;">
-        <button onclick="randomizeAll()">🎲 Randomize</button>
+        <button onclick="randomizeHouse()">🎲 Randomize from House</button>
     </div>
 
-    <div class="cards-container" id="cards-container"></div>
+    <div class="main-card" id="main-card">
+        <!-- Populated by JavaScript -->
+    </div>
 
     <script>
         let fragrances = [];
         let nowWearingData = [];
-        let genreMaxRatings = {};
         let currentSeasonFilter = 'Everything';
-        let inspirationFilter = 0; // 0: all, 1: No Dupes, 2: Dupes Only
+        let currentHouseFilter = 'All Houses';
+        let inspirationFilter = 0;
 
         function cleanValue(val) {
             if (val === null || val === undefined || val === '' || val === '?') {
@@ -209,8 +225,8 @@
 
         function findWearStats(house, name) {
             if (!house || !name || !nowWearingData.length) return null;
-            const h = house.toLowerCase().trim();
-            const n = name.toLowerCase().trim();
+            const h = (house || '').toLowerCase().trim();
+            const n = (name || '').toLowerCase().trim();
             
             const match = nowWearingData.find(row => 
                 String(row.Brand || row.House || '').toLowerCase().trim() === h &&
@@ -238,7 +254,7 @@
                                 return row;
                             });
 
-                        calculateGenreMaxRatings();
+                        populateHouseDropdown();
                         loadNowWearingCSV();
                     }
                 });
@@ -266,27 +282,22 @@
                                 return row;
                             });
 
-                        createAllCards();
-                        randomizeAll();
+                        randomizeHouse();
                     }
                 });
             } catch (e) {
                 console.error("Now Wearing load failed:", e);
-                createAllCards();
-                randomizeAll();
+                randomizeHouse();
             }
         }
 
-        function calculateGenreMaxRatings() {
-            genreMaxRatings = {};
-            fragrances.forEach(row => {
-                const genre = (row.Genre || '').trim();
-                if (!genre) return;
-                const rating = parseFloat(row.Rating);
-                if (isNaN(rating)) return;
-                if (!genreMaxRatings[genre] || rating > genreMaxRatings[genre]) {
-                    genreMaxRatings[genre] = rating;
-                }
+        function getFilteredFragrances(season, inspFilter) {
+            return fragrances.filter(row => {
+                if (!matchesSeason(row, season)) return false;
+                const insp = (row.Inspiration || '').trim().toUpperCase();
+                if (inspFilter === 1) return insp === 'N' || insp === '';
+                if (inspFilter === 2) return insp === 'Y';
+                return true;
             });
         }
 
@@ -301,24 +312,52 @@
             return true;
         }
 
-        function getFilteredFragrances(key) {
-            let baseList = [];
+        function populateHouseDropdown() {
+            const filtered = getFilteredFragrances(currentSeasonFilter, inspirationFilter);
+            const houseSet = new Set(["All Houses"]);
 
-            if (key === 'bangers') {
-                baseList = fragrances.filter(row => parseFloat(row.Rating) > 8.5);
-            } else if (key === 'all') {
-                baseList = fragrances;
-            } else if (key === 'unrated') {
-                baseList = fragrances.filter(row => !row.Rating || row.Rating === '0' || row.Rating === '0.0');
-            } else {
-                const maxRating = genreMaxRatings[key];
-                if (maxRating) {
-                    const threshold = maxRating - 2;
-                    baseList = fragrances.filter(row => row.Genre === key && parseFloat(row.Rating) > threshold);
-                }
+            filtered.forEach(row => {
+                const house = (row.House || row.Brand || '').trim();
+                if (house) houseSet.add(house);
+            });
+
+            const sorted = Array.from(houseSet).sort((a, b) => {
+                if (a === "All Houses") return -1;
+                if (b === "All Houses") return 1;
+                return a.toLowerCase().localeCompare(b.toLowerCase());
+            });
+
+            const select = document.getElementById('house-filter');
+            const prevValue = currentHouseFilter;
+            select.innerHTML = '';
+
+            sorted.forEach(house => {
+                const option = document.createElement('option');
+                option.value = house;
+                option.textContent = house;
+                if (house === prevValue) option.selected = true;
+                select.appendChild(option);
+            });
+
+            currentHouseFilter = select.value || 'All Houses';
+        }
+
+        function refreshHouseDropdown() {
+            currentSeasonFilter = document.getElementById('season-filter').value;
+            populateHouseDropdown();
+            randomizeHouse();
+        }
+
+        function getFilteredFragrancesForHouse() {
+            let baseList = fragrances;
+
+            if (currentHouseFilter !== 'All Houses') {
+                baseList = baseList.filter(row => {
+                    const house = (row.House || row.Brand || '').trim();
+                    return house === currentHouseFilter;
+                });
             }
 
-            // Apply Inspiration filter
             return baseList.filter(row => {
                 if (!matchesSeason(row, currentSeasonFilter)) return false;
 
@@ -329,29 +368,12 @@
             });
         }
 
-        function createAllCards() {
-            const container = document.getElementById('cards-container');
-            container.innerHTML = '';
-
-            container.appendChild(createCardElement('Only Bangers', 'bangers'));
-            container.appendChild(createCardElement('All Fragrances', 'all'));
-            container.appendChild(createCardElement('Unrated Fragrances', 'unrated'));
-
-            Object.keys(genreMaxRatings).sort().forEach(genre => {
-                container.appendChild(createCardElement(genre, genre));
-            });
-        }
-
-        function createCardElement(title, key) {
-            const card = document.createElement('div');
-            card.className = 'random-card';
-            card.id = `card-${key.replace(/\s+/g, '-')}`;
-            return card;
-        }
-
-        function updateCard(key, fragrance, count) {
-            const card = document.getElementById(`card-${key.replace(/\s+/g, '-')}`);
-            if (!card) return;
+        function updateMainCard(fragrance, count) {
+            const card = document.getElementById('main-card');
+            if (!fragrance) {
+                card.innerHTML = '<div class="card-title">House Randomizer</div><div class="no-match">No matching fragrances found for the selected filters.</div>';
+                return;
+            }
 
             const wear = findWearStats(fragrance.House, fragrance.Name);
             const hasLink = fragrance.Link && fragrance.Link.trim() !== '' && fragrance.Link !== 'N/A';
@@ -375,8 +397,8 @@
             }
 
             card.innerHTML = 
-                '<div class="card-title">' + (key === 'bangers' ? 'Only Bangers' : key === 'all' ? 'All Fragrances' : key === 'unrated' ? 'Unrated Fragrances' : key) + '</div>' +
-                '<div class="house">' + cleanValue(fragrance.House) + '</div>' +
+                '<div class="card-title">Random from ' + currentHouseFilter + '</div>' +
+                '<div class="house">' + cleanValue(fragrance.House || fragrance.Brand) + '</div>' +
                 nameHTML +
                 '<div class="main-stats">' +
                     '<strong>Rating:</strong> ' + cleanValue(fragrance.Rating) + ' &nbsp;|&nbsp; ' +
@@ -388,29 +410,29 @@
                 (fragrance.Perfumer ? '<div class="perfume-info"><strong>Perfumer:</strong> ' + cleanValue(fragrance.Perfumer) + '</div>' : '') +
                 (fragrance.Notes && fragrance.Notes !== 'N/A' ? '<div class="wear-stat"><strong>Notes:</strong> ' + cleanValue(fragrance.Notes) + '</div>' : '') +
                 wearHTML +
-                '<div class="count">🎲 ' + count + ' qualifying</div>';
+                '<div class="count">🎲 ' + count + ' qualifying fragrances</div>';
         }
 
-        function randomizeAll() {
+        function randomizeHouse() {
             currentSeasonFilter = document.getElementById('season-filter').value;
-            const keys = ['bangers', 'all', 'unrated', ...Object.keys(genreMaxRatings)];
+            currentHouseFilter = document.getElementById('house-filter').value;
 
-            keys.forEach(key => {
-                const filtered = getFilteredFragrances(key);
-                if (filtered.length === 0) {
-                    const card = document.getElementById(`card-${key.replace(/\s+/g, '-')}`);
-                    if (card) card.innerHTML = '<div class="card-title">' + (key === 'bangers' ? 'Only Bangers' : key) + '</div><p style="color:#ffcc66;">No matching fragrances</p>';
-                    return;
-                }
-                const random = filtered[Math.floor(Math.random() * filtered.length)];
-                updateCard(key, random, filtered.length);
-            });
+            const filtered = getFilteredFragrancesForHouse();
+            
+            if (filtered.length === 0) {
+                updateMainCard(null, 0);
+                return;
+            }
+
+            const random = filtered[Math.floor(Math.random() * filtered.length)];
+            updateMainCard(random, filtered.length);
         }
 
         function cycleInspirationFilter() {
             inspirationFilter = (inspirationFilter + 1) % 3;
             updateInspirationButton();
-            randomizeAll();
+            populateHouseDropdown();
+            randomizeHouse();
         }
 
         function updateInspirationButton() {
