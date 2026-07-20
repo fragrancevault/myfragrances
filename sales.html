@@ -22,7 +22,7 @@
         header {
             background: linear-gradient(135deg, #1a1a1a, #0f0f0f);
             color: white;
-            padding: 1.6rem 1rem 1.6rem 65px; /* Adjusted for smaller icon */
+            padding: 1.6rem 1rem 1.6rem 65px;
             text-align: center;
             border-bottom: 1px solid #333;
             position: relative;
@@ -39,7 +39,6 @@
             color: #4ade80;
         }
 
-        /* Help Icon - Smaller & Subtler */
         #help-icon {
             position: absolute;
             left: 22px;
@@ -47,7 +46,7 @@
             transform: translateY(-50%);
             background: none;
             border: none;
-            font-size: 1.35rem; /* Roughly half the previous size */
+            font-size: 1.35rem;
             cursor: pointer;
             color: #60a5fa;
             padding: 6px;
@@ -320,12 +319,9 @@
         </div>
 
         <div class="control-row">
-    <button onclick="updateLocalJSON()" style="background:#d97706;color:white;padding:8px 12px;font-size:13px;border-radius:20px;min-width:85px;">🔄 Update JSON</button>
     <button onclick="startOver()" class="startover-btn" style="min-width:85px;">Start Over</button>
     <button onclick="showSelectionModal()" class="export-btn" style="min-width:85px;">Total</button>
 </div>
-        
-        
     </div>
 
     <div class="table-wrapper">
@@ -350,7 +346,7 @@
 
     <footer id="footer">Loading sales...</footer>
 
-    <!-- Detail Modal -->
+    <!-- Detail Modal, Help Modal, Selection Modal (unchanged) -->
     <div id="detail-modal">
         <div id="detail-content">
             <div class="detail-header">
@@ -393,7 +389,6 @@
         </div>
     </div>
 
-    <!-- Help Modal -->
     <div id="help-modal">
         <div id="help-content">
             <div style="text-align: right;">
@@ -431,7 +426,6 @@
         </div>
     </div>
 
-    <!-- Selection Modal -->
     <div id="selection-modal">
         <div id="modal-content">
             <h2>Copy/Paste into Chat</h2>
@@ -490,28 +484,35 @@
             document.getElementById('total-display').textContent = `Total Selected: $${total.toLocaleString()}`;
         }
 
-        // Load from local JSON
-        async function loadSales() {
-            try {
-                const res = await fetch('data/sales.json?t=' + Date.now());
-                sales = await res.json();
+        // Load directly from published Google Sheets CSV
+        function loadSales() {
+            const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=1452885969&single=true&output=csv";
+            
+            document.getElementById('footer').innerHTML = 'Loading from Google Sheets...';
 
-                sales = sales
-                    .filter(row => row.Name && row.Name.trim())
-                    .map(row => {
-                        Object.keys(row).forEach(key => {
-                            if (typeof row[key] === 'string') row[key] = row[key].trim();
+            Papa.parse(csvUrl, {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(result) {
+                    sales = result.data
+                        .filter(row => row.Name && row.Name.trim())
+                        .map(row => {
+                            Object.keys(row).forEach(key => {
+                                if (typeof row[key] === 'string') row[key] = row[key].trim();
+                            });
+                            return row;
                         });
-                        return row;
-                    });
-                
-                renderTable(sales);
-                sortTable(2, true);
-                updateFooter();
-            } catch (e) {
-                console.error("Load error:", e);
-                document.getElementById('footer').innerHTML = 'Error loading sales.json';
-            }
+                    
+                    renderTable(sales);
+                    sortTable(2, true);
+                    updateFooter();
+                },
+                error: function(error) {
+                    console.error("CSV Load Error:", error);
+                    document.getElementById('footer').innerHTML = 'Error loading CSV from Google Sheets. Check published link.';
+                }
+            });
         }
 
         function renderTable(data) {
@@ -552,6 +553,7 @@
             updateTotal();
         }
 
+        // (All other functions — showDetailModal, modals, filter, sort, etc. — remain the same as before)
         function showDetailModal(index) {
             const s = sales[index];
             if (!s) return;
@@ -764,55 +766,6 @@
             if (searchTerm) params.set('search', searchTerm);
             window.history.replaceState({}, '', window.location.pathname + (params.toString() ? '?' + params.toString() : ''));
         }
-
-         // Download fresh JSONs for all
-        async function updateLocalJSON() {
-            const sheets = [
-                { name: "sales.json", url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=1452885969&single=true&output=csv" }
-            ];
-
-            showToast('Downloading fresh JSONs...');
-
-            for (const sheet of sheets) {
-                try {
-                    const res = await fetch(sheet.url + '?t=' + Date.now());
-                    const text = await res.text();
-
-                    Papa.parse(text, {
-                        header: true,
-                        skipEmptyLines: true,
-                        complete: (result) => {
-                            const data = result.data
-                                .filter(row => Object.values(row).some(v => v && v.trim && v.trim() !== ''))
-                                .map(row => {
-                                    Object.keys(row).forEach(key => {
-                                        if (typeof row[key] === 'string') row[key] = row[key].trim();
-                                    });
-                                    return row;
-                                });
-
-                            const jsonStr = JSON.stringify(data, null, 2);
-                            const blob = new Blob([jsonStr], { type: 'application/json' });
-                            const url = URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = url;
-                            a.download = sheet.name;
-                            a.click();
-                            URL.revokeObjectURL(url);
-                        }
-                    });
-                } catch (e) {
-                    console.error("Failed to download", sheet.name, e);
-                }
-            }
-
-            setTimeout(() => {
-                showToast('✅ All JSONs downloaded (except Sales). Upload to data/ folder.');
-            }, 1500);
-        }
-
-
-
 
         window.onload = loadSales;
     </script>
