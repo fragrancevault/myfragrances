@@ -22,7 +22,7 @@ A vibe-coded mobile-friendly fragrance tracking website built with HTML, CSS, an
 3. Publish your sheet to the web as **CSV**
 4. Update the CSV links in these files:
 
-### Files You Need to Edit:
+### Files You Need to Edit (this list is incomplete as you will need to add your published csvs to all of them in the package. It only requires a couple of published Google Sheets. Your AI will help you with that ir ask me for help. its best to download mine and then add your own inventory):
 
 - `index.html` → Main collection page
 - `top10.html` → Top 10 page
