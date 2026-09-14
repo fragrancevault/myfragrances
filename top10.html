@@ -102,16 +102,17 @@
             overflow-y: auto;
         }
         table { 
-            min-width: 850px; 
             border-collapse: collapse; 
             background: #111; 
             width: 100%;
+            table-layout: fixed;
         }
         th, td { 
             padding: 13px 12px; 
             border-bottom: 1px solid #333;
             text-align: left;
         }
+        td { font-size: 13px; }
         th { 
             background: #1a1a1a; 
             color: #fff; 
@@ -125,14 +126,15 @@
         }
         tr:hover { background: #1f2a3a; }
 
-        /* Fixed pixel widths */
-        th:nth-child(1), td:nth-child(1) { width: 80px; }   /* House */
-        th:nth-child(2), td:nth-child(2) { width: 150px; }   /* Name */
-        th:nth-child(3), td:nth-child(3) { width: 35px; }    /* Rating */
-        th:nth-child(4), td:nth-child(4) { width: 65px; }    /* Usage */
+        /* ===== COLUMN WIDTHS — tune these ===== */
+        .house-col  { width: 100px; white-space: normal; word-break: break-word; }
+        .name-col   { width: 140px; white-space: normal; word-break: break-word; }
+        .rating-col { width: 48px; }
+        .usage-col  { width: 65px; }
+        .notes-col  { width: 340px; white-space: normal; word-break: break-word; }
+        /* ====================================== */
 
         .notes { 
-            min-width: 340px; 
             white-space: normal !important; 
             word-break: break-word;
         }
@@ -242,11 +244,11 @@
         <table id="fragrance-table">
             <thead>
                 <tr>
-                    <th>House</th>
-                    <th>Name</th>
-                    <th>Rating</th>
-                    <th>Usage</th>
-                    <th>Notes</th>
+                    <th class="house-col">House</th>
+                    <th class="name-col">Name</th>
+                    <th class="rating-col">Rating</th>
+                    <th class="usage-col">Usage</th>
+                    <th class="notes-col">Notes</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -359,11 +361,11 @@
                 const house = row.cells[0].textContent.trim();
                 const name = row.cells[1].textContent.trim();
                 const rating = row.cells[2].textContent.trim();
-                text += `${house} - ${name} - ${rating}\n\n`;
+                text += house + ' - ' + name + ' - ' + rating + '\n\n';
             });
 
             navigator.clipboard.writeText(text.trim()).then(() => {
-                showToast(`✅ Copied ${rows.length} fragrances!`);
+                showToast('✅ Copied ' + rows.length + ' fragrances!');
             }).catch(() => {
                 showToast('❌ Failed to copy');
             });
@@ -460,12 +462,12 @@
             for (let i = 0; i < top10Data.length; i++) {
                 const f = top10Data[i];
                 
-                html += `<tr data-index="${i}">` +
-                    '<td>' + cleanValue(f.House) + '</td>' +
-                    '<td class="name-cell">' + cleanValue(f.Name) + '</td>' +
-                    '<td>' + cleanValue(f.Rating) + '</td>' +
-                    '<td>' + cleanValue(f.Usage || f['Hours of Performance'] || f.Hours) + '</td>' +
-                    '<td class="notes">' + cleanValue(f.Notes) + '</td>' +
+                html += '<tr data-index="' + i + '">' +
+                    '<td class="house-col">' + cleanValue(f.House) + '</td>' +
+                    '<td class="name-col name-cell">' + cleanValue(f.Name) + '</td>' +
+                    '<td class="rating-col">' + cleanValue(f.Rating) + '</td>' +
+                    '<td class="usage-col">' + cleanValue(f.Usage || f['Hours of Performance'] || f.Hours) + '</td>' +
+                    '<td class="notes-col notes">' + cleanValue(f.Notes) + '</td>' +
                     '</tr>';
             }
             tbody.innerHTML = html;
