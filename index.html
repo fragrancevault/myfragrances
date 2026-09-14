@@ -176,10 +176,10 @@
             overflow-y: auto;
         }
         table { 
-            min-width: 1000px; 
             border-collapse: collapse; 
             background: #111; 
             width: 100%;
+            table-layout: fixed;
         }
         th, td { 
             padding: 10px 8px; 
@@ -196,12 +196,18 @@
             text-align: left;
         }
 
-        .name-col { width: 120px; white-space: normal; word-break: break-word; }
-        .rating-col, .hours-col, .sillage-col { text-align: center; width: 70px; }
-        .ml-col { text-align: center; width: 44px; }
-        td:nth-child(8), td:nth-child(9) {
-            text-align: center;
-        }
+        /* ===== COLUMN WIDTHS — tune these ===== */
+        .house-col    { width: 110px; white-space: normal; word-break: break-word; }
+        .name-col     { width: 120px; white-space: normal; word-break: break-word; }
+        .rating-col   { text-align: center; width: 58px; }
+        .hours-col    { text-align: center; width: 58px; }
+        .sillage-col  { text-align: center; width: 58px; }
+        .genre-col    { width: 80px; white-space: normal; word-break: break-word; }
+        .perfumer-col { width: 110px; white-space: normal; word-break: break-word; }
+        .parfumo-col  { text-align: center; width: 70px; }
+        .season-col   { text-align: center; width: 60px; }
+        .ml-col       { text-align: center; width: 44px; }
+        /* ====================================== */
 
         .toast {
             position: fixed;
@@ -367,15 +373,15 @@
         <table id="fragrance-table">
             <thead>
                 <tr>
-                    <th onclick="sortTable(0)">House</th>
+                    <th onclick="sortTable(0)" class="house-col">House</th>
                     <th onclick="sortTable(1)" class="name-col">Name</th>
                     <th onclick="sortTable(2)" class="rating-col">Rating</th>
                     <th onclick="sortTable(3)" class="hours-col">Hours</th>
                     <th onclick="sortTable(4)" class="sillage-col">Silliage</th>
-                    <th onclick="sortTable(5)">Genre</th>
-                    <th onclick="sortTable(6)">Perfumer</th>
-                    <th onclick="sortTable(7)">Parfumo</th>
-                    <th onclick="sortTable(8)">Season</th>
+                    <th onclick="sortTable(5)" class="genre-col">Genre</th>
+                    <th onclick="sortTable(6)" class="perfumer-col">Perfumer</th>
+                    <th onclick="sortTable(7)" class="parfumo-col">Parfumo</th>
+                    <th onclick="sortTable(8)" class="season-col">Season</th>
                     <th onclick="sortTable(9)" class="ml-col">ml</th>
                 </tr>
             </thead>
@@ -665,15 +671,15 @@
             for (let i = 0; i < data.length; i++) {
                 const f = data[i];
                 html += '<tr data-index="' + i + '">' +
-                    '<td>' + cleanValue(f.House) + '</td>' +
+                    '<td class="house-col">' + cleanValue(f.House) + '</td>' +
                     '<td class="name-col"><strong>' + cleanValue(f.Name) + '</strong></td>' +
                     '<td class="rating-col">' + cleanValue(f.Rating) + '</td>' +
                     '<td class="hours-col">' + cleanValue(f['Hours of Performance']) + '</td>' +
                     '<td class="sillage-col">' + cleanValue(f.Silliage) + '</td>' +
-                    '<td>' + cleanValue(f.Genre) + '</td>' +
-                    '<td>' + cleanValue(f.Perfumer) + '</td>' +
-                    '<td>' + cleanValue(f['Parfumo Rating']) + '</td>' +
-                    '<td>' + cleanValue(f.Seasons) + '</td>' +
+                    '<td class="genre-col">' + cleanValue(f.Genre) + '</td>' +
+                    '<td class="perfumer-col">' + cleanValue(f.Perfumer) + '</td>' +
+                    '<td class="parfumo-col">' + cleanValue(f['Parfumo Rating']) + '</td>' +
+                    '<td class="season-col">' + cleanValue(f.Seasons) + '</td>' +
                     '<td class="ml-col">' + cleanValue(f.Size) + '</td>' +
                     '</tr>';
             }
