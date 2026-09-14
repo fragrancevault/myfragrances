@@ -37,8 +37,8 @@
         .status-col    { width: 70px; }
         .link-col      { width: 36px; text-align: left; }
         .genre-col     { width: 60px; white-space: normal; word-break: break-word; }
-        .attribute-col { width: 90px; white-space: normal; word-break: break-word; }
-        .perfumer-col  { width: 180px; white-space: normal; word-break: break-word; }
+        .attribute-col { width: 80px; white-space: normal; word-break: break-word; }
+        .perfumer-col  { width: 190px; white-space: normal; word-break: break-word; }
         /* ====================================== */
         tr { cursor: pointer; }
         tr:hover { background: #1f1f1f; }
@@ -355,7 +355,11 @@
                 return { house, name, price: priceStr, qty };
             });
             document.getElementById('modal-count').textContent = items.length;
-            const listHtml = items.map(item => `<li><div class="item-info"><span class="house-name">\( {item.house}</span><br> \){item.name}</div><div class="price-info">${item.price} × ${item.qty}</div></li>`).join('');
+            let listHtml = '';
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                listHtml += '<li><div class="item-info"><span class="house-name">' + item.house + '</span><br>' + item.name + '</div><div class="price-info">' + item.price + ' × ' + item.qty + '</div></li>';
+            }
             document.getElementById('selection-list').innerHTML = listHtml;
             document.getElementById('modal-total').innerHTML = document.getElementById('total-display').textContent;
             document.getElementById('selection-modal').style.display = 'flex';
@@ -371,10 +375,10 @@
                 const house = row.cells[2].textContent.trim();
                 const name = row.cells[3].textContent.trim();
                 const priceStr = row.cells[4].textContent.trim();
-                text += `${house} - ${name} - ${priceStr} × ${qty}\n\n`;
+                text += house + ' - ' + name + ' - ' + priceStr + ' × ' + qty + '\n\n';
             });
             const totalText = document.getElementById('total-display').textContent;
-            text += `${totalText}`;
+            text += totalText;
             navigator.clipboard.writeText(text.trim()).then(() => {
                 const copyButton = event.currentTarget;
                 const original = copyButton.textContent;
