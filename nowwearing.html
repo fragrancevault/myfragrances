@@ -48,14 +48,15 @@
             padding-bottom: 80px;
         }
         table { 
-            min-width: 950px;   /* Reduced from 1200px - adjust as needed */
             border-collapse: collapse; 
             background: #111; 
             width: 100%;
+            table-layout: fixed;
         }
         th, td { 
             padding: 12px 10px; 
             border-bottom: 1px solid #333;
+            font-size: 13px;
         }
         th { 
             background: #1a1a1a; 
@@ -68,21 +69,21 @@
         tr { cursor: pointer; transition: all 0.2s; }
         tr:hover { background: #1f2a3a; }
 
-        /* Pixel-based column widths - easy to narrow */
-        th:nth-child(1), td:nth-child(1) { width: 110px; }   /* Date */
-        th:nth-child(2), td:nth-child(2) { width: 130px; }   /* Brand */
-        th:nth-child(3), td:nth-child(3) { width: 160px; }   /* Name */
-        th:nth-child(4), td:nth-child(4) { width: 40px; }    /* Rating */
-        th:nth-child(5), td:nth-child(5) { width: 90px; }    /* Usage */
-        th:nth-child(6), td:nth-child(6) { width: 40px; }    /* Sprays */
-        th:nth-child(7), td:nth-child(7) { width: 375px; }   /* Notes */
+        /* ===== COLUMN WIDTHS — tune these ===== */
+        .date-col    { width: 60px; }
+        .brand-col   { width: 90px; white-space: normal; word-break: break-word; }
+        .name-col    { width: 200px; white-space: normal; word-break: break-word; }
+        .rating-col  { width: 48px; text-align: center; }
+        .usage-col   { width: 60px; }
+        .sprays-col  { width: 48px; text-align: center; }
+        .notes-col   { width: 280px; white-space: normal; word-break: break-word; }
+        /* ====================================== */
 
         .date { text-align: left; font-weight: bold; white-space: nowrap; }
         .rating { text-align: center; color: #ffd700; font-weight: bold; }
         .sprays { text-align: center; }
         .notes { white-space: normal; word-break: break-word; }
 
-        /* Modal styles unchanged */
         .modal {
             display: none;
             position: fixed;
@@ -114,7 +115,8 @@
             line-height: 1;
         }
 
-        .house { font-size: 1.1rem; color: #aaa; margin-bottom: 2px; }
+        .house { font-size: 1.1rem; color: #aaa; margin-bottom: 2px; text-decoration: none; }
+        a.house:hover { color: #60a5fa; text-decoration: underline; }
         .name { font-size: 1.65rem; color: #60a5fa; margin: 4px 0 14px; font-weight: 600; }
 
         .main-stats { 
@@ -162,13 +164,13 @@
         <table id="nowwearing-table">
             <thead>
                 <tr>
-                    <th>Date</th>
-                    <th>Brand</th>
-                    <th>Name</th>
-                    <th>Rating</th>
-                    <th>Usage</th>
-                    <th class="sprays">Sprays</th>
-                    <th class="notes">Notes</th>
+                    <th class="date-col">Date</th>
+                    <th class="brand-col">Brand</th>
+                    <th class="name-col">Name</th>
+                    <th class="rating-col">Rating</th>
+                    <th class="usage-col">Usage</th>
+                    <th class="sprays-col">Sprays</th>
+                    <th class="notes-col">Notes</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -206,6 +208,13 @@
                 String(f.House || f.Brand || '').toLowerCase().trim() === h &&
                 String(f.Name || '').toLowerCase().trim() === n
             );
+        }
+
+        function getParfumoHref(frag, house, name) {
+            const parfumoLink = frag && (frag['Parfumo Link'] || frag['Parfumo URL'] || frag.ParfumoLink || '');
+            const cleaned = (parfumoLink || '').trim();
+            if (cleaned && cleaned !== 'N/A') return cleaned;
+            return 'https://www.parfumo.com/s?q=' + encodeURIComponent((house || '') + ' ' + (name || ''));
         }
 
         async function loadMainCollection() {
@@ -254,32 +263,36 @@
                             .reverse();
 
                         renderTable();
-                        document.getElementById('data-footer').innerHTML = `
-                            <strong>${currentData.length}</strong> recent wears logged
-                        `;
+                        document.getElementById('data-footer').innerHTML =
+                            '<strong>' + currentData.length + '</strong> recent wears logged';
                     }
                 });
             } catch (e) {
-                document.getElementById('data-footer').innerHTML = `<strong style="color:#ff6666;">Error loading data</strong>`;
+                document.getElementById('data-footer').innerHTML = '<strong style="color:#ff6666;">Error loading data</strong>';
             }
         }
 
         function renderTable() {
             const tbody = document.querySelector('#nowwearing-table tbody');
-            tbody.innerHTML = currentData.map((row, index) => `
-                <tr data-index="${index}">
-                    <td class="date">${cleanValue(row.Date)}</td>
-                    <td>${cleanValue(row.Brand)}</td>
-                    <td><strong>${cleanValue(row.Name)}</strong></td>
-                    <td class="rating">${cleanValue(row.Rating)}</td>
-                    <td>${cleanValue(row.Usage)}</td>
-                    <td class="sprays">${cleanValue(row.Sprays)}</td>
-                    <td class="notes">${cleanValue(row.Notes)}</td>
-                </tr>
-            `).join('');
+            let html = '';
+            for (let i = 0; i < currentData.length; i++) {
+                const row = currentData[i];
+                html += '<tr data-index="' + i + '">' +
+                    '<td class="date-col date">' + cleanValue(row.Date) + '</td>' +
+                    '<td class="brand-col">' + cleanValue(row.Brand) + '</td>' +
+                    '<td class="name-col"><strong>' + cleanValue(row.Name) + '</strong></td>' +
+                    '<td class="rating-col rating">' + cleanValue(row.Rating) + '</td>' +
+                    '<td class="usage-col">' + cleanValue(row.Usage) + '</td>' +
+                    '<td class="sprays-col sprays">' + cleanValue(row.Sprays) + '</td>' +
+                    '<td class="notes-col notes">' + cleanValue(row.Notes) + '</td>' +
+                    '</tr>';
+            }
+            tbody.innerHTML = html;
 
             document.querySelectorAll('#nowwearing-table tbody tr').forEach(row => {
-                row.addEventListener('click', () => showModal(row));
+                row.addEventListener('click', function() {
+                    showModal(row);
+                });
             });
         }
 
@@ -288,9 +301,11 @@
             const wear = currentData[index];
             const frag = findFragrance(wear.Brand || wear.House, wear.Name);
             const hasLink = frag && frag.Link && frag.Link.trim() !== '' && frag.Link !== 'N/A';
+            const houseName = wear.Brand || wear.House || '';
+            const parfumoHref = getParfumoHref(frag, houseName, wear.Name);
 
             let html = 
-                '<div class="house">' + cleanValue(wear.Brand) + '</div>';
+                '<a href="' + parfumoHref + '" target="_blank" class="house">' + cleanValue(houseName) + '</a>';
 
             if (hasLink) {
                 html += '<a href="' + frag.Link + '" target="_blank" class="name" style="display:block; text-decoration:none;">' + cleanValue(wear.Name) + '</a>';
@@ -318,14 +333,13 @@
                     '</div>';
             }
 
-            html += `
-                <hr>
-                <div style="margin-top:20px; padding-top:14px; border-top:1px solid #444;">
-                    <div class="wear-stat"><strong>Date Worn:</strong> ${cleanValue(wear.Date)}</div>
-                    <div class="wear-stat"><strong>This Month:</strong> ${cleanValue(wear.Month)} wears</div>
-                    <div class="wear-stat"><strong>This Year:</strong> ${cleanValue(wear.Year)} wears</div>
-                </div>
-            `;
+            html += 
+                '<hr>' +
+                '<div style="margin-top:20px; padding-top:14px; border-top:1px solid #444;">' +
+                    '<div class="wear-stat"><strong>Date Worn:</strong> ' + cleanValue(wear.Date) + '</div>' +
+                    '<div class="wear-stat"><strong>This Month:</strong> ' + cleanValue(wear.Month) + ' wears</div>' +
+                    '<div class="wear-stat"><strong>This Year:</strong> ' + cleanValue(wear.Year) + ' wears</div>' +
+                '</div>';
 
             document.getElementById('modal-card').innerHTML = html;
             document.getElementById('modal').style.display = 'flex';
