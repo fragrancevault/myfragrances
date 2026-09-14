@@ -138,6 +138,11 @@
             white-space: nowrap;
         }
 
+        .ml-btn {
+            padding: 9px 8px !important;
+            min-width: 0;
+        }
+
         .startover-btn { background: #d97706 !important; }
         .export-btn { background: #15803d !important; }
         .top10-btn { background: #7c3aed !important; }
@@ -193,6 +198,7 @@
 
         .name-col { width: 120px; white-space: normal; word-break: break-word; }
         .rating-col, .hours-col, .sillage-col { text-align: center; width: 70px; }
+        .ml-col { text-align: center; width: 44px; }
         td:nth-child(8), td:nth-child(9) {
             text-align: center;
         }
@@ -348,6 +354,7 @@
         <button onclick="sortTable(4)">Silliage</button>
         <button onclick="sortTable(7)">Perfumer</button>
         <button onclick="sortTable(8)">Parfumo</button>
+        <button onclick="sortTable(9)" class="ml-btn">ml</button>
 
         <button onclick="startOver()" class="startover-btn">Start Over</button>
         <button onclick="showTop10()" id="top10-btn" class="top10-btn">Top 10</button>
@@ -369,6 +376,7 @@
                     <th onclick="sortTable(6)">Perfumer</th>
                     <th onclick="sortTable(7)">Parfumo</th>
                     <th onclick="sortTable(8)">Season</th>
+                    <th onclick="sortTable(9)" class="ml-col">ml</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -395,7 +403,7 @@
         let isTop10Active = false;
         let inspirationFilter = 0; // 0: Include Dupes (all), 1: No Dupes (N), 2: Dupes Only (Y)
 
-        const highFirst = [2, 3, 4, 7];
+        const highFirst = [2, 3, 4, 7, 9];
 
         function cleanValue(val) {
             if (val === null || val === undefined || val === '' || val === '?') return 'N/A';
@@ -666,6 +674,7 @@
                     '<td>' + cleanValue(f.Perfumer) + '</td>' +
                     '<td>' + cleanValue(f['Parfumo Rating']) + '</td>' +
                     '<td>' + cleanValue(f.Seasons) + '</td>' +
+                    '<td class="ml-col">' + cleanValue(f.Size) + '</td>' +
                     '</tr>';
             }
             tbody.innerHTML = html;
@@ -903,7 +912,7 @@
             const rows = Array.from(tbody.querySelectorAll('tr'));
             if (rows.length === 0) return alert("No data to export!");
 
-            let csv = "House,Name,Rating,Hours,Silliage,Genre,Perfumer,Parfumo,Season\n";
+            let csv = "House,Name,Rating,Hours,Silliage,Genre,Perfumer,Parfumo,Season,ml\n";
             rows.forEach(row => {
                 const cells = Array.from(row.cells).map(cell => '"' + cell.textContent.trim().replace(/"/g, '""') + '"');
                 csv += cells.join(',') + '\n';
