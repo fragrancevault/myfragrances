@@ -46,21 +46,30 @@
             overflow-x: auto; 
         }
         table { 
-            min-width: 800px; 
             border-collapse: collapse; 
             background: #111; 
             width: 100%;
+            table-layout: fixed;
         }
         th, td { 
             padding: 14px 12px; 
             border-bottom: 1px solid #333;
         }
+        td { font-size: 13px; }
         th { 
             background: #1a1a1a; 
             color: #fff; 
             text-align: left;
         }
         tr:hover { background: #1f2a3a; cursor: pointer; }
+
+        /* ===== COLUMN WIDTHS — tune these ===== */
+        .frag1-col    { width: 140px; white-space: normal; word-break: break-word; }
+        .frag2-col    { width: 140px; white-space: normal; word-break: break-word; }
+        .ratio-col    { width: 70px; }
+        .rating-col   { width: 70px; }
+        .comments-col { width: 220px; white-space: normal; word-break: break-word; }
+        /* ====================================== */
 
         .ratio { 
             font-weight: bold; 
@@ -151,11 +160,11 @@
         <table id="layers-table">
             <thead>
                 <tr>
-                    <th>Fragrance 1</th>
-                    <th>Fragrance 2</th>
-                    <th>Ratio</th>
-                    <th>My Rating</th>
-                    <th>Comments</th>
+                    <th class="frag1-col">Fragrance 1</th>
+                    <th class="frag2-col">Fragrance 2</th>
+                    <th class="ratio-col">Ratio</th>
+                    <th class="rating-col">My Rating</th>
+                    <th class="comments-col">Comments</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -253,12 +262,12 @@
             const tbody = document.querySelector('#layers-table tbody');
             let html = '';
             layersData.forEach((row, index) => {
-                html += `<tr data-index="${index}">` +
-                    `<td><strong>${cleanValue(row['Fragrance 1'])}</strong></td>` +
-                    `<td><strong>${cleanValue(row['Fragrance 2'])}</strong></td>` +
-                    `<td class="ratio">${cleanValue(row.Ratio)}</td>` +
-                    `<td>${cleanValue(row.Rating)}</td>` +
-                    `<td>${cleanValue(row.Notes || row.Comments)}</td>` +
+                html += '<tr data-index="' + index + '">' +
+                    '<td class="frag1-col"><strong>' + cleanValue(row['Fragrance 1']) + '</strong></td>' +
+                    '<td class="frag2-col"><strong>' + cleanValue(row['Fragrance 2']) + '</strong></td>' +
+                    '<td class="ratio-col ratio">' + cleanValue(row.Ratio) + '</td>' +
+                    '<td class="rating-col">' + cleanValue(row.Rating) + '</td>' +
+                    '<td class="comments-col">' + cleanValue(row.Notes || row.Comments) + '</td>' +
                     '</tr>';
             });
             tbody.innerHTML = html;
@@ -275,53 +284,49 @@
             const frag1 = findFragrance(layer['Fragrance 1']);
             const frag2 = findFragrance(layer['Fragrance 2']);
 
-            let html = `
-                <div>
-                    <div class="layer-title">Fragrance 1</div>
-                    <div class="house">${cleanValue(frag1 ? frag1.House : layer['Fragrance 1'])}</div>
-                    <div class="name">${cleanValue(layer['Fragrance 1'])}</div>
-            `;
+            let html = 
+                '<div>' +
+                    '<div class="layer-title">Fragrance 1</div>' +
+                    '<div class="house">' + cleanValue(frag1 ? frag1.House : layer['Fragrance 1']) + '</div>' +
+                    '<div class="name">' + cleanValue(layer['Fragrance 1']) + '</div>';
 
             if (frag1) {
-                html += `
-                    <div class="main-stats">
-                        <strong>Rating:</strong> ${cleanValue(frag1.Rating)} | 
-                        <strong>Hours:</strong> ${cleanValue(frag1['Hours of Performance'])} | 
-                        <strong>Sillage:</strong> ${cleanValue(frag1.Silliage)}
-                    </div>
-                    <div class="perfume-info">
-                        <strong>Genre:</strong> ${cleanValue(frag1.Genre)}<br>
-                        <strong>Season:</strong> ${cleanValue(frag1.Seasons)}<br>
-                        <strong>Perfumer:</strong> ${cleanValue(frag1.Perfumer)}
-                    </div>
-                `;
+                html += 
+                    '<div class="main-stats">' +
+                        '<strong>Rating:</strong> ' + cleanValue(frag1.Rating) + ' | ' +
+                        '<strong>Hours:</strong> ' + cleanValue(frag1['Hours of Performance']) + ' | ' +
+                        '<strong>Sillage:</strong> ' + cleanValue(frag1.Silliage) +
+                    '</div>' +
+                    '<div class="perfume-info">' +
+                        '<strong>Genre:</strong> ' + cleanValue(frag1.Genre) + '<br>' +
+                        '<strong>Season:</strong> ' + cleanValue(frag1.Seasons) + '<br>' +
+                        '<strong>Perfumer:</strong> ' + cleanValue(frag1.Perfumer) +
+                    '</div>';
             }
 
-            html += `</div><hr class="separator">`;
+            html += '</div><hr class="separator">';
 
-            html += `
-                <div>
-                    <div class="layer-title">Fragrance 2</div>
-                    <div class="house">${cleanValue(frag2 ? frag2.House : layer['Fragrance 2'])}</div>
-                    <div class="name">${cleanValue(layer['Fragrance 2'])}</div>
-            `;
+            html += 
+                '<div>' +
+                    '<div class="layer-title">Fragrance 2</div>' +
+                    '<div class="house">' + cleanValue(frag2 ? frag2.House : layer['Fragrance 2']) + '</div>' +
+                    '<div class="name">' + cleanValue(layer['Fragrance 2']) + '</div>';
 
             if (frag2) {
-                html += `
-                    <div class="main-stats">
-                        <strong>Rating:</strong> ${cleanValue(frag2.Rating)} | 
-                        <strong>Hours:</strong> ${cleanValue(frag2['Hours of Performance'])} | 
-                        <strong>Sillage:</strong> ${cleanValue(frag2.Silliage)}
-                    </div>
-                    <div class="perfume-info">
-                        <strong>Genre:</strong> ${cleanValue(frag2.Genre)}<br>
-                        <strong>Season:</strong> ${cleanValue(frag2.Seasons)}<br>
-                        <strong>Perfumer:</strong> ${cleanValue(frag2.Perfumer)}
-                    </div>
-                `;
+                html += 
+                    '<div class="main-stats">' +
+                        '<strong>Rating:</strong> ' + cleanValue(frag2.Rating) + ' | ' +
+                        '<strong>Hours:</strong> ' + cleanValue(frag2['Hours of Performance']) + ' | ' +
+                        '<strong>Sillage:</strong> ' + cleanValue(frag2.Silliage) +
+                    '</div>' +
+                    '<div class="perfume-info">' +
+                        '<strong>Genre:</strong> ' + cleanValue(frag2.Genre) + '<br>' +
+                        '<strong>Season:</strong> ' + cleanValue(frag2.Seasons) + '<br>' +
+                        '<strong>Perfumer:</strong> ' + cleanValue(frag2.Perfumer) +
+                    '</div>';
             }
 
-            html += `</div>`;
+            html += '</div>';
 
             document.getElementById('modal-card').innerHTML = html;
             document.getElementById('modal').style.display = 'flex';
