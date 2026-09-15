@@ -22,7 +22,7 @@ A vibe-coded mobile-friendly fragrance tracking website built with HTML, CSS, an
 3. Publish your sheet to the web as **CSV**
 4. Update the CSV links in these files:
 
-### Files You Need to Edit (this list is incomplete as you will need to add your published csvs to all of them in the package. It only requires a couple of published Google Sheets. Your AI will help you with that ir ask me for help. its best to download mine and then add your own inventory):
+### Files You Need to Edit (this list is incomplete as you will need to add your published csvs to all of them in the package. It only requires a couple of published Google Sheets. Your AI will help you with that if ask me for help. Its best to download mine and then add your own inventory. I also use an appscript to extract an embedded URL from the Name column so you can do it like that or just add a column and paste the link there. that's the easy way. I started with just using a sheet which is why I embedded in the first place. urls can be extracted from numbers in a sheet. urls embedded in text require Javascript app. 
 
 - `index.html` → Main collection page
 - `top10.html` → Top 10 page
