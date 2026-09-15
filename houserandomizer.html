@@ -97,6 +97,8 @@
             font-weight: 600; 
         }
         .house { font-size: 1.4rem; color: #aaa; }
+        .house a { color: #aaa; text-decoration: none; }
+        .house a:hover { color: #93c5fd; text-decoration: underline; }
         .name { 
             font-size: 2.4rem; 
             color: #60a5fa; 
@@ -221,6 +223,13 @@
                 return 'N/A';
             }
             return val;
+        }
+
+        function getParfumoHref(f) {
+            const raw = ((f.ParfumoLink || f['Parfumo Link'] || f.Parfumo || '') + '').trim();
+            if (raw.indexOf('http') === 0) return raw;
+            const q = ((f.House || f.Brand || '') + ' ' + (f.Name || '')).trim();
+            return 'https://www.parfumo.com/s?q=' + encodeURIComponent(q);
         }
 
         function findWearStats(house, name) {
@@ -398,7 +407,7 @@
 
             card.innerHTML = 
                 '<div class="card-title">Random from ' + currentHouseFilter + '</div>' +
-                '<div class="house">' + cleanValue(fragrance.House || fragrance.Brand) + '</div>' +
+                '<div class="house"><a href="' + getParfumoHref(fragrance) + '" target="_blank">' + cleanValue(fragrance.House || fragrance.Brand) + '</a></div>' +
                 nameHTML +
                 '<div class="main-stats">' +
                     '<strong>Rating:</strong> ' + cleanValue(fragrance.Rating) + ' &nbsp;|&nbsp; ' +

@@ -8,7 +8,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Top 10 Fragrances</title>
+    <title>Top 10</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
         body { 
@@ -224,7 +224,7 @@
 </head>
 <body>
     <header>
-        <h1>Top 10</h1>
+        <h1>Top 10 Inspos</h1>
         <div class="nav">
             <div class="hamburger" onclick="toggleMenu()">
                 <span></span>
@@ -247,7 +247,7 @@
         
         <div class="header-buttons">
             <button onclick="copyCurrentView()" class="copy-header-btn">Copy</button>
-            <a href="top10dupes.html" class="inspos-btn">Inspos</a>
+            <a href="top10.html" class="ogs-btn">OGs</a>
         </div>
     </header>
     
@@ -398,7 +398,7 @@
 
         async function loadData() {
             try {
-                const topUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=146247773&single=true&output=csv";
+                const topUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=339033689&single=true&output=csv";
                 const topRes = await fetch(topUrl + (topUrl.includes('?') ? '&' : '?') + 't=' + Date.now());
                 const topText = await topRes.text();
 

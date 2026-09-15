@@ -184,8 +184,8 @@
         th, td { 
             padding: 10px 8px; 
             border-bottom: 1px solid #333;
-            font-size: 14px;
         }
+        td { font-size: 14px; }
         th { 
             background: #1a1a1a; 
             color: #fff; 
@@ -273,6 +273,8 @@
         }
 
         .house { font-size: 1.1rem; color: #aaa; margin-bottom: 2px; }
+        .house a { color: #aaa; text-decoration: none; }
+        .house a:hover { color: #93c5fd; text-decoration: underline; }
         .name { font-size: 1.65rem; color: #60a5fa; margin: 4px 0 14px; font-weight: 600; }
 
         .main-stats { 
@@ -358,8 +360,8 @@
         <button onclick="sortTable(2)">Rating</button>
         <button onclick="sortTable(3)">Hours</button>
         <button onclick="sortTable(4)">Silliage</button>
-        <button onclick="sortTable(7)">Perfumer</button>
-        <button onclick="sortTable(8)">Parfumo</button>
+        <button onclick="sortTable(6)">Perfumer</button>
+        <button onclick="sortTable(7)">Parfumo</button>
         <button onclick="sortTable(9)" class="ml-btn">ml</button>
 
         <button onclick="startOver()" class="startover-btn">Start Over</button>
@@ -416,6 +418,24 @@
             return val;
         }
 
+        function getParfumoHref(f) {
+            const raw = (f.ParfumoLink || f['Parfumo Link'] || f.Parfumo || '').trim();
+            if (raw && raw.indexOf('http') === 0) return raw;
+            const q = ((f.House || '') + ' ' + (f.Name || '')).trim();
+            return 'https://www.parfumo.com/s?q=' + encodeURIComponent(q);
+        }
+
+        function matchesSearch(f, term) {
+            if (!term) return true;
+            const searchableText = [f.House, f.Name, f.Perfumer, f.Notes, f.Comments, f.Link || '']
+                .filter(Boolean).join(' ').toLowerCase();
+            const words = term.split(/\s+/);
+            for (let i = 0; i < words.length; i++) {
+                if (words[i] && searchableText.indexOf(words[i]) === -1) return false;
+            }
+            return true;
+        }
+
         function findWearStats(house, name) {
             if (!house || !name || !nowWearingData.length) return null;
             const h = house.toLowerCase().trim();
@@ -430,8 +450,8 @@
             const wear = findWearStats(fragrance.House, fragrance.Name);
             const hasLink = fragrance.Link && fragrance.Link.trim() !== '' && fragrance.Link !== 'N/A';
 
-            let html = 
-                '<div class="house">' + cleanValue(fragrance.House) + '</div>';
+            let html =
+                '<div class="house"><a href="' + getParfumoHref(fragrance) + '" target="_blank">' + cleanValue(fragrance.House) + '</a></div>';
 
             if (hasLink) {
                 html += '<a href="' + fragrance.Link + '" target="_blank" class="name" style="display:block; text-decoration:none;">' + cleanValue(fragrance.Name) + '</a>';
@@ -722,12 +742,7 @@
             const ratingFilter = document.getElementById('rating-filter').value;
             
             const filtered = fragrances.filter(f => {
-                let matchSearch = true;
-                if (term) {
-                    const searchableText = [f.House, f.Name, f.Perfumer, f.Notes, f.Comments, f.Link || '']
-                        .filter(Boolean).join(' ').toLowerCase();
-                    matchSearch = searchableText.includes(term);
-                }
+                const matchSearch = matchesSearch(f, term);
                 
                 let matchSeason = true;
                 if (seasonFilter) {
@@ -850,12 +865,7 @@
             const ratingFilter = document.getElementById('rating-filter').value;
             
             let filtered = fragrances.filter(f => {
-                let matchSearch = true;
-                if (term) {
-                    const searchableText = [f.House, f.Name, f.Perfumer, f.Notes, f.Comments, f.Link || '']
-                        .filter(Boolean).join(' ').toLowerCase();
-                    matchSearch = searchableText.includes(term);
-                }
+                const matchSearch = matchesSearch(f, term);
                 
                 let matchSeason = true;
                 if (seasonFilter) {

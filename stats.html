@@ -12,19 +12,44 @@
         h1 { margin: 0; font-size: 2rem; }
         .nav { position: absolute; top: 20px; left: 20px; }
         .hamburger { display: flex; flex-direction: column; cursor: pointer; padding: 8px; }
-        .hamburger span { width: 28px; height: 3px; background: #60a5fa; margin: 4px 0; }
+        .hamburger span { width: 28px; height: 3px; background: #fbbf24; margin: 4px 0; }
         .menu { display: none; position: absolute; top: 65px; left: 20px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 12px 0; min-width: 180px; z-index: 1000; }
         .menu a { display: block; padding: 12px 20px; color: #e0e0e0; text-decoration: none; }
+        .menu a:hover { background: #b45309; color: white; }
         .menu.active { display: block; }
         .container { padding: 20px; max-width: 1200px; margin: 0 auto; }
         .stat-card { background: #111; border: 1px solid #333; border-radius: 12px; padding: 20px; margin-bottom: 25px; }
-        .section-title { color: #60a5fa; border-bottom: 2px solid #60a5fa; padding-bottom: 8px; margin-bottom: 18px; font-size: 1.4rem; }
+        .section-title { padding-bottom: 8px; margin-bottom: 18px; font-size: 1.4rem; }
+        .title-ratings { color: #fbbf24; border-bottom: 2px solid #fbbf24; }
+        .title-genres { color: #2dd4bf; border-bottom: 2px solid #2dd4bf; }
+        .title-seasons { color: #fb923c; border-bottom: 2px solid #fb923c; }
+        .title-perf { color: #c084fc; border-bottom: 2px solid #c084fc; }
+        .title-houses { color: #60a5fa; border-bottom: 2px solid #60a5fa; }
+        .title-overview { color: #e5e7eb; border-bottom: 2px solid #444; }
         .bar-container { height: 28px; background: #222; border-radius: 999px; overflow: hidden; margin: 10px 0; }
-        .bar { height: 100%; background: linear-gradient(90deg, #60a5fa, #3b82f6); display: flex; align-items: center; padding: 0 12px; color: white; font-weight: bold; font-size: 0.95rem; }
-        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
-        .overview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; text-align: center; }
+        .bar { height: 100%; display: flex; align-items: center; padding: 0 12px; color: #111; font-weight: bold; font-size: 0.95rem; min-width: 8%; }
+        .bar-gold { background: linear-gradient(90deg, #fbbf24, #d97706); }
+        .bar-teal { background: linear-gradient(90deg, #2dd4bf, #0f766e); color: #fff; }
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+        .overview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; text-align: center; }
         .overview-item { background: #1a1a1a; padding: 16px; border-radius: 10px; border: 1px solid #333; }
+        .overview-item.clickable, .tap-row, .tap-card { cursor: pointer; }
+        .overview-item.clickable:hover, .tap-row:hover, .tap-card:hover { border-color: #fbbf24; background: #1f1a12; }
+        .tap-row { padding: 12px; background: #1a1a1a; margin: 8px 0; border-radius: 8px; border: 1px solid #2a2a2a; }
+        .tap-card { background: #1a1a1a; padding: 16px; border-radius: 10px; border: 1px solid #333; margin: 0; }
         canvas { max-width: 100% !important; height: 320px !important; background: #111; border-radius: 8px; padding: 10px; }
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.92); z-index: 2000; align-items: center; justify-content: center; padding: 15px; }
+        .modal-content { background: #1f2a3a; border: 2px solid #fbbf24; border-radius: 16px; padding: 20px 18px; width: 100%; max-width: 440px; max-height: 80vh; overflow-y: auto; position: relative; }
+        .close-btn { position: absolute; top: 10px; right: 16px; font-size: 32px; color: #fbbf24; cursor: pointer; line-height: 1; }
+        .modal-title { color: #fbbf24; font-size: 1.2rem; margin: 0 28px 12px 0; }
+        .modal-note { color: #fbbf24; margin: 0 0 12px; font-size: 0.95rem; }
+        .modal-line { padding: 8px 0; border-bottom: 1px solid #333; font-size: 0.98rem; }
+        .modal-line a.house-link { color: #aaa; text-decoration: none; }
+        .modal-line a.house-link:hover { color: #93c5fd; text-decoration: underline; }
+        .modal-line a.name-link { color: #60a5fa; text-decoration: none; font-weight: 600; }
+        .modal-line a.name-link:hover { text-decoration: underline; }
+        .two-col { display: grid; grid-template-columns: 1fr; gap: 16px; }
+        @media (min-width: 800px) { .two-col { grid-template-columns: 1fr 1fr; } }
     </style>
 </head>
 <body>
@@ -35,7 +60,7 @@
                 <span></span><span></span><span></span>
             </div>
             <div class="menu" id="menu">
-                <a href="index.html"><strong>Home</strong></a>
+                <a href="index.html">Home</a>
                 <a href="nowwearing.html">Now Wearing</a>
                 <a href="top.html">The Best</a>
                 <a href="randomizer.html">Randomizer</a>
@@ -51,42 +76,179 @@
 
     <div class="container">
         <div class="stat-card">
-            <h2 class="section-title">Collection Overview</h2>
+            <h2 class="section-title title-overview">Collection Overview</h2>
             <div id="overview" class="overview-grid"></div>
         </div>
 
         <div class="stat-card">
-            <h2 class="section-title">Ratings</h2>
+            <h2 class="section-title title-ratings">Ratings</h2>
             <canvas id="ratingsChart" height="300"></canvas>
             <div id="ratingsList"></div>
         </div>
 
         <div class="stat-card">
-            <h2 class="section-title">Genres</h2>
+            <h2 class="section-title title-genres">Genres</h2>
             <canvas id="genresChart" height="300"></canvas>
             <div id="genresList" class="stat-grid"></div>
         </div>
 
         <div class="stat-card">
-            <h2 class="section-title">Seasons</h2>
+            <h2 class="section-title title-seasons">Seasons</h2>
             <div id="seasonsList" class="stat-grid"></div>
         </div>
 
-        <div class="stat-card">
-            <h2 class="section-title">Top Perfumers</h2>
-            <div id="perfumersList" style="line-height:1.8;"></div>
+        <div class="two-col">
+            <div class="stat-card">
+                <h2 class="section-title title-perf">Top Perfumers</h2>
+                <div id="perfumersList" style="line-height:1.8;"></div>
+            </div>
+            <div class="stat-card">
+                <h2 class="section-title title-houses">Top Houses</h2>
+                <div id="housesList" style="line-height:1.8;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="list-modal" class="modal">
+        <div class="modal-content" onclick="event.stopImmediatePropagation()">
+            <span class="close-btn" onclick="closeListModal()">×</span>
+            <h3 class="modal-title" id="modal-title"></h3>
+            <p class="modal-note" id="modal-note" style="display:none;"></p>
+            <div id="modal-list"></div>
         </div>
     </div>
 
     <script>
         let fragrances = [];
+        let ratingsChart = null;
+        let genresChart = null;
+
+        function esc(s) {
+            return String(s == null ? '' : s)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function ratingKey(f) {
+            var r = parseFloat(f.Rating);
+            if (isNaN(r) || r <= 0) return '0';
+            return r.toFixed(2);
+        }
+
+        function isUnrated(f) {
+            return ratingKey(f) === '0';
+        }
+
+        function getParfumoHref(f) {
+            var raw = ((f.ParfumoLink || f['Parfumo Link'] || f.Parfumo || '') + '').trim();
+            if (raw.indexOf('http') === 0) return raw;
+            var q = ((f.House || '') + ' ' + (f.Name || '')).trim();
+            return 'https://www.parfumo.com/s?q=' + encodeURIComponent(q);
+        }
+
+        function getFragHref(f) {
+            var raw = ((f.Link || '') + '').trim();
+            if (raw.indexOf('http') === 0) return raw;
+            return '';
+        }
+
+        function sortByName(a, b) {
+            var an = (a.Name || '').toLowerCase();
+            var bn = (b.Name || '').toLowerCase();
+            if (an < bn) return -1;
+            if (an > bn) return 1;
+            return 0;
+        }
+
+        function showListModal(title, items, note) {
+            document.getElementById('modal-title').textContent = title + ' (' + items.length + ')';
+            var noteEl = document.getElementById('modal-note');
+            if (note) {
+                noteEl.textContent = note;
+                noteEl.style.display = 'block';
+            } else {
+                noteEl.style.display = 'none';
+            }
+            var list = items.slice().sort(sortByName);
+            var html = '';
+            for (let i = 0; i < list.length; i++) {
+                var f = list[i];
+                var house = esc(f.House || '');
+                var name = esc(f.Name || '');
+                var pHref = getParfumoHref(f);
+                var fHref = getFragHref(f);
+                html += '<div class="modal-line">';
+                html += '<a class="name-link" href="' + fHref + '" target="_blank">' + name + '</a>';
+                html += ' — ';
+                html += '<a class="house-link" href="' + pHref + '" target="_blank">' + house + '</a>';
+                html += '</div>';
+            }
+            document.getElementById('modal-list').innerHTML = html;
+            document.getElementById('list-modal').style.display = 'flex';
+        }
+
+        function closeListModal() {
+            document.getElementById('list-modal').style.display = 'none';
+        }
+
+        function listByRating(key) {
+            var items = fragrances.filter(function(f) { return ratingKey(f) === key; });
+            var note = key === '0' ? 'These fragrances have not been rated yet' : '';
+            var label = key === '0' ? 'Unrated' : key;
+            showListModal(label, items, note);
+        }
+
+        function listByGenre(genre) {
+            var items = fragrances.filter(function(f) {
+                return ((f.Genre || 'Unknown').trim()) === genre;
+            });
+            showListModal(genre, items, '');
+        }
+
+        function listBySeason(season) {
+            var items = fragrances.filter(function(f) {
+                return ((f.Seasons || f.Season || 'Any').trim()) === season;
+            });
+            showListModal(season, items, '');
+        }
+
+        function listByPerfumer(p) {
+            var items = fragrances.filter(function(f) {
+                return ((f.Perfumer || '').trim()) === p;
+            });
+            showListModal(p, items, '');
+        }
+
+        function listByHouse(h) {
+            var items = fragrances.filter(function(f) {
+                return ((f.House || '').trim()) === h;
+            });
+            showListModal(h, items, '');
+        }
+
+        function listRated() {
+            var items = fragrances.filter(function(f) { return !isUnrated(f); });
+            showListModal('Rated', items, '');
+        }
+
+        function listUnrated() {
+            listByRating('0');
+        }
 
         Papa.parse("https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=1371140242&single=true&output=csv", {
             download: true,
             header: true,
             skipEmptyLines: true,
             complete: function(result) {
-                fragrances = result.data.filter(row => row.Name && row.Name.trim() !== '');
+                fragrances = result.data.filter(function(row) {
+                    return row.Name && row.Name.trim() !== '';
+                }).map(function(row) {
+                    Object.keys(row).forEach(function(key) {
+                        if (typeof row[key] === 'string') row[key] = row[key].trim();
+                    });
+                    return row;
+                });
                 renderAllStats();
             }
         });
@@ -96,6 +258,8 @@
             var rated = 0;
             var sumRating = 0;
             var unrated = 0;
+            var totalML = 0;
+            var sizeCount = 0;
 
             fragrances.forEach(function(f) {
                 var r = parseFloat(f.Rating || 0);
@@ -105,55 +269,71 @@
                 } else {
                     unrated++;
                 }
+                var sz = parseFloat(f.Size);
+                if (!isNaN(sz) && sz > 0) {
+                    totalML += sz;
+                    sizeCount++;
+                }
             });
 
             var avg = rated > 0 ? (sumRating / rated).toFixed(2) : '0.00';
+            var avgMl = sizeCount > 0 ? (totalML / sizeCount).toFixed(1) : '0';
 
-            document.getElementById('overview').innerHTML = 
+            document.getElementById('overview').innerHTML =
                 '<div class="overview-item"><strong>Total</strong><br>' + total + '</div>' +
-                '<div class="overview-item"><strong>Rated</strong><br>' + rated + ' (' + (total > 0 ? ((rated/total)*100).toFixed(1) : 0) + '%)</div>' +
-                '<div class="overview-item"><strong>Avg Rating</strong><br>' + avg + '</div>';
+                '<div class="overview-item clickable" onclick="listRated()"><strong>Rated</strong><br>' + rated + ' (' + (total > 0 ? ((rated/total)*100).toFixed(1) : 0) + '%)</div>' +
+                '<div class="overview-item clickable" onclick="listUnrated()"><strong>Unrated</strong><br>' + unrated + '</div>' +
+                '<div class="overview-item"><strong>Avg Rating</strong><br>' + avg + '</div>' +
+                '<div class="overview-item"><strong>Total ml</strong><br>' + totalML.toLocaleString() + '</div>' +
+                '<div class="overview-item"><strong>Avg Size</strong><br>' + avgMl + ' ml</div>';
 
-            // Ratings
             var ratingCounts = {};
             fragrances.forEach(function(f) {
-                var r = parseFloat(f.Rating || 0).toFixed(2);
+                var r = ratingKey(f);
                 ratingCounts[r] = (ratingCounts[r] || 0) + 1;
             });
 
-            var ratingsSorted = Object.keys(ratingCounts).filter(r => parseFloat(r) > 0).sort(function(a,b){ return parseFloat(b)-parseFloat(a); });
+            var ratingsSorted = Object.keys(ratingCounts).filter(function(r) {
+                return parseFloat(r) > 0;
+            }).sort(function(a,b){ return parseFloat(b)-parseFloat(a); });
+
             var ratingsHTML = '';
             ratingsSorted.forEach(function(rating) {
                 var count = ratingCounts[rating];
                 var perc = total > 0 ? ((count / total) * 100).toFixed(1) : '0';
-                ratingsHTML += '<div style="padding:12px; background:#1a1a1a; margin:8px 0; border-radius:8px;">' +
+                ratingsHTML += '<div class="tap-row" onclick="listByRating(\'' + rating + '\')">' +
                     '<strong>' + rating + '</strong> — ' + count + ' (' + perc + '%)' +
-                    '<div class="bar-container"><div class="bar" style="width:' + perc + '%">' + perc + '%</div></div></div>';
+                    '<div class="bar-container"><div class="bar bar-gold" style="width:' + perc + '%">' + perc + '%</div></div></div>';
             });
 
-            // Unrated row
             var unratedPerc = total > 0 ? ((unrated / total) * 100).toFixed(1) : '0';
-            ratingsHTML += '<div style="padding:12px; background:#1a1a1a; margin:8px 0; border-radius:8px; border: 2px dashed #f87171;">' +
+            ratingsHTML += '<div class="tap-row" style="border: 2px dashed #f87171;" onclick="listByRating(\'0\')">' +
                 '<strong>0.00 (Unrated)</strong> — ' + unrated + ' (' + unratedPerc + '%)' +
-                '<div class="bar-container"><div class="bar" style="width:' + unratedPerc + '%">' + unratedPerc + '%</div></div></div>';
+                '<div class="bar-container"><div class="bar bar-gold" style="width:' + unratedPerc + '%">' + unratedPerc + '%</div></div></div>';
 
             document.getElementById('ratingsList').innerHTML = ratingsHTML;
 
-            // Chart without 0.00
-            new Chart(document.getElementById('ratingsChart'), {
+            if (ratingsChart) ratingsChart.destroy();
+            ratingsChart = new Chart(document.getElementById('ratingsChart'), {
                 type: 'bar',
-                data: { 
-                    labels: ratingsSorted, 
-                    datasets: [{ 
-                        label: 'Count', 
-                        data: ratingsSorted.map(function(r){return ratingCounts[r];}), 
-                        backgroundColor: '#60a5fa' 
-                    }] 
+                data: {
+                    labels: ratingsSorted,
+                    datasets: [{
+                        label: 'Count',
+                        data: ratingsSorted.map(function(r){ return ratingCounts[r]; }),
+                        backgroundColor: '#fbbf24'
+                    }]
                 },
-                options: { responsive: true, plugins: { legend: { display: false } } }
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    onClick: function(evt, els) {
+                        if (!els.length) return;
+                        listByRating(ratingsSorted[els[0].index]);
+                    }
+                }
             });
 
-            // Genres
             var genreCounts = {};
             fragrances.forEach(function(f) {
                 var g = (f.Genre || 'Unknown').trim();
@@ -164,17 +344,31 @@
             genresSorted.forEach(function(genre) {
                 var count = genreCounts[genre];
                 var perc = total > 0 ? ((count / total) * 100).toFixed(1) : '0';
-                genresHTML += '<div class="stat-card" style="margin:0;"><strong>' + genre + '</strong><br>' + count + ' (' + perc + '%)' +
-                    '<div class="bar-container"><div class="bar" style="width:' + perc + '%">' + perc + '%</div></div></div>';
+                genresHTML += '<div class="tap-card" onclick="listByGenre(\'' + genre.replace(/'/g, "\\'") + '\')"><strong>' + esc(genre) + '</strong><br>' + count + ' (' + perc + '%)' +
+                    '<div class="bar-container"><div class="bar bar-teal" style="width:' + perc + '%">' + perc + '%</div></div></div>';
             });
             document.getElementById('genresList').innerHTML = genresHTML;
 
-            new Chart(document.getElementById('genresChart'), {
+            var pieLabels = genresSorted.slice(0, 10);
+            var pieColors = ['#2dd4bf','#14b8a6','#0d9488','#0f766e','#115e59','#5eead4','#99f6e4','#22d3ee','#06b6d4','#0891b2'];
+            if (genresChart) genresChart.destroy();
+            genresChart = new Chart(document.getElementById('genresChart'), {
                 type: 'pie',
-                data: { labels: genresSorted.slice(0,10), datasets: [{ data: genresSorted.slice(0,10).map(function(g){return genreCounts[g];}), backgroundColor: ['#60a5fa','#3b82f6','#2563eb','#1e40af','#1e3a8a'] }] }
+                data: {
+                    labels: pieLabels,
+                    datasets: [{
+                        data: pieLabels.map(function(g){ return genreCounts[g]; }),
+                        backgroundColor: pieColors
+                    }]
+                },
+                options: {
+                    onClick: function(evt, els) {
+                        if (!els.length) return;
+                        listByGenre(pieLabels[els[0].index]);
+                    }
+                }
             });
 
-            // Seasons
             var seasonCounts = {};
             fragrances.forEach(function(f) {
                 var s = (f.Seasons || f.Season || 'Any').trim();
@@ -184,21 +378,42 @@
             Object.keys(seasonCounts).sort(function(a,b){ return seasonCounts[b] - seasonCounts[a]; }).forEach(function(s) {
                 var c = seasonCounts[s];
                 var p = total > 0 ? ((c / total) * 100).toFixed(1) : '0';
-                seasonsHTML += '<div class="stat-card" style="margin:0;text-align:center;"><strong>' + s + '</strong><br>' + c + ' (' + p + '%)</div>';
+                seasonsHTML += '<div class="tap-card" style="text-align:center;" onclick="listBySeason(\'' + s.replace(/'/g, "\\'") + '\')"><strong>' + esc(s) + '</strong><br>' + c + ' (' + p + '%)</div>';
             });
             document.getElementById('seasonsList').innerHTML = seasonsHTML;
 
-            // Top Perfumers
+            function isUnknownPerf(p) {
+                var x = (p || '').toLowerCase();
+                return !p || x === 'unknown' || x === 'n/a' || x === 'not found' || x === '?';
+            }
+
             var perfCounts = {};
             fragrances.forEach(function(f) {
-                var p = (f.Perfumer || 'Unknown').trim();
+                var p = (f.Perfumer || '').trim();
+                if (isUnknownPerf(p)) return;
                 perfCounts[p] = (perfCounts[p] || 0) + 1;
             });
-            var topPerf = Object.keys(perfCounts).sort(function(a,b){ return perfCounts[b] - perfCounts[a]; }).slice(0,12);
+            var topPerf = Object.keys(perfCounts).sort(function(a,b){ return perfCounts[b] - perfCounts[a]; }).slice(0, 20);
             var perfHTML = '<ol>';
-            topPerf.forEach(function(p) { perfHTML += '<li><strong>' + p + '</strong> — ' + perfCounts[p] + '</li>'; });
+            topPerf.forEach(function(p) {
+                perfHTML += '<li class="tap-row" style="margin:4px 0;" onclick="listByPerfumer(\'' + p.replace(/'/g, "\\'") + '\')"><strong>' + esc(p) + '</strong> — ' + perfCounts[p] + '</li>';
+            });
             perfHTML += '</ol>';
             document.getElementById('perfumersList').innerHTML = perfHTML;
+
+            var houseCounts = {};
+            fragrances.forEach(function(f) {
+                var h = (f.House || '').trim();
+                if (!h) return;
+                houseCounts[h] = (houseCounts[h] || 0) + 1;
+            });
+            var topHouses = Object.keys(houseCounts).sort(function(a,b){ return houseCounts[b] - houseCounts[a]; }).slice(0, 20);
+            var houseHTML = '<ol>';
+            topHouses.forEach(function(h) {
+                houseHTML += '<li class="tap-row" style="margin:4px 0;" onclick="listByHouse(\'' + h.replace(/'/g, "\\'") + '\')"><strong>' + esc(h) + '</strong> — ' + houseCounts[h] + '</li>';
+            });
+            houseHTML += '</ol>';
+            document.getElementById('housesList').innerHTML = houseHTML;
         }
 
         function toggleMenu() {
@@ -207,6 +422,10 @@
 
         document.addEventListener('click', function(e) {
             if (!e.target.closest('.nav')) document.getElementById('menu').classList.remove('active');
+        });
+
+        document.getElementById('list-modal').addEventListener('click', function(e) {
+            if (e.target.id === 'list-modal') closeListModal();
         });
     </script>
 </body>

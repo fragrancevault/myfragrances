@@ -11,7 +11,7 @@
         header { background: linear-gradient(135deg, #1a1a1a, #0f0f0f); color: white; padding: 1.6rem 1rem 1.6rem 65px; text-align: center; border-bottom: 1px solid #333; position: relative; }
         h1 { margin: 0; font-size: 2.0rem; }
         #total-display { margin-top: 10px; font-size: 1.35rem; font-weight: bold; color: #4ade80; }
-        #help-icon { position: absolute; left: 22px; top: 50%; transform:Y(-50%); background: none; border: none; font-size: 1.35rem; cursor: pointer; color: #60a5fa; padding: 6px; border-radius: 50%; transition: all 0.2s ease; opacity: 0.85; }
+        #help-icon { position: absolute; left: 22px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 1.35rem; cursor: pointer; color: #60a5fa; padding: 6px; border-radius: 50%; transition: all 0.2s ease; opacity: 0.85; }
         #help-icon:hover { color: #93c5fd; opacity: 1; transform: translateY(-50%) scale(1.15); }
         .controls { padding: 18px 20px 14px; background: #111; border-bottom: 1px solid #333; }
         .control-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; margin-bottom: 12px; }
@@ -67,6 +67,25 @@
         .modal-buttons { display: flex; gap: 10px; margin-top: 15px; }
         .modal-buttons button { flex: 1; padding: 12px; }
         .close-btn { background: #f87171; }
+        .inspiration-row { width: 100%; display: flex; justify-content: center; margin: 4px 0 0; }
+        .inspiration-toggle {
+            background: #15803d;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13.5px;
+            padding: 11px 24px;
+            border-radius: 9999px;
+            white-space: nowrap;
+            min-width: 160px;
+            max-width: 220px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        }
+        .detail-house a { color: #93c5fd; text-decoration: none; }
+        .detail-house a:hover { text-decoration: underline; }
+        .detail-name a { color: #fff; text-decoration: none; }
+        .detail-name a:hover { color: #93c5fd; }
     </style>
 </head>
 <body>
@@ -97,6 +116,9 @@
             <button onclick="startOver()" class="startover-btn" style="min-width:85px;">Start Over</button>
             <button onclick="showSelectionModal()" class="export-btn" style="min-width:85px;">Total</button>
         </div>
+        <div class="inspiration-row">
+            <button id="inspiration-toggle" onclick="cycleInspirationFilter()" class="inspiration-toggle">Include Dupes</button>
+        </div>
     </div>
 
     <div class="table-wrapper">
@@ -124,8 +146,8 @@
     <div id="detail-modal">
         <div id="detail-content">
             <div class="detail-header">
-                <h2 class="detail-house" id="modal-house"></h2>
-                <h3 class="detail-name" id="modal-name"></h3>
+                <h2 class="detail-house" id="modal-house"><a id="modal-house-link" href="#" target="_blank"></a></h2>
+                <h3 class="detail-name" id="modal-name"><a id="modal-name-link" href="#" target="_blank"></a></h3>
             </div>
             <div class="detail-section"><div class="detail-label">Perfumer</div><div id="modal-perfumer"></div></div>
             <div class="detail-section"><div class="detail-label">Performance</div><div id="modal-performance" class="stars"></div></div>
@@ -168,6 +190,49 @@
     <script>
         let sales = [];
         let sortState = {};
+        let inspirationFilter = 0;
+
+        function getParfumoHref(s) {
+            const raw = ((s.ParfumoLink || s['Parfumo Link'] || s.Parfumo || '') + '').trim();
+            if (raw.indexOf('http') === 0) return raw;
+            const q = ((s.House || '') + ' ' + (s.Name || '')).trim();
+            return 'https://www.parfumo.com/s?q=' + encodeURIComponent(q);
+        }
+
+        function matchesSearch(s, term) {
+            if (!term) return true;
+            const searchableText = [s.House, s.Name, s.Perfumer, s.Notes, s.Comment, s.Comments, s.Genre, s.Attribute, s.New]
+                .filter(Boolean).join(' ').toLowerCase();
+            const words = term.split(/\s+/);
+            for (let i = 0; i < words.length; i++) {
+                if (words[i] && searchableText.indexOf(words[i]) === -1) return false;
+            }
+            return true;
+        }
+
+        function cycleInspirationFilter() {
+            inspirationFilter = (inspirationFilter + 1) % 3;
+            updateInspirationButton();
+            filterTable();
+        }
+
+        function updateInspirationButton() {
+            const btn = document.getElementById('inspiration-toggle');
+            if (!btn) return;
+            if (inspirationFilter === 0) {
+                btn.textContent = 'Include Dupes';
+                btn.style.backgroundColor = '#15803d';
+                btn.style.color = 'white';
+            } else if (inspirationFilter === 1) {
+                btn.textContent = 'No Dupes';
+                btn.style.backgroundColor = '#b91c1c';
+                btn.style.color = 'white';
+            } else {
+                btn.textContent = 'Dupes Only';
+                btn.style.backgroundColor = '#eab308';
+                btn.style.color = '#1f2937';
+            }
+        }
 
         function cleanValue(val) {
             if (val === null || val === undefined || val === '' || val === '?') return 'N/A';
@@ -205,7 +270,7 @@
                 const price = parseFloat(priceText) || 0;
                 total += qty * price;
             });
-            document.getElementById('total-display').textContent = `Total Selected: $${total.toLocaleString()}`;
+            document.getElementById('total-display').textContent = 'Total Selected: $' + total.toLocaleString();
         }
 
         function loadSales() {
@@ -238,11 +303,12 @@
             let html = '';
             for (let i = 0; i < data.length; i++) {
                 const s = data[i];
-                const link = s.Link && s.Link.trim() !== '' && s.Link !== 'N/A' ? `<a href="${s.Link}" target="_blank" title="View listing">🔗</a>` : 'N/A';
+                const link = s.Link && s.Link.trim() !== '' && s.Link !== 'N/A' ? '<a href="' + s.Link + '" target="_blank" title="View listing">🔗</a>' : 'N/A';
+                const origIndex = sales.indexOf(s);
                 const statusClass = isAvailable(s.Status) ? 'status-available' : 'status-sold';
                 const isAvail = isAvailable(s.Status);
 
-                html += '<tr data-index="' + i + '">' +
+                html += '<tr data-index="' + origIndex + '">' +
                     '<td class="check-col"><input type="checkbox" class="row-select" ' + (isAvail ? '' : 'disabled') + ' onchange="updateSelectAllState(); updateTotal()"></td>' +
                     '<td class="qty-col"><input type="number" min="1" value="1" class="quantity-input" onchange="updateTotal()" ' + (isAvail ? '' : 'disabled') + ' onfocus="this.select()"></td>' +
                     '<td class="house-col">' + cleanValue(s.House) + '</td>' +
@@ -272,8 +338,19 @@
         function showDetailModal(index) {
             const s = sales[index];
             if (!s) return;
-            document.getElementById('modal-house').textContent = cleanValue(s.House);
-            document.getElementById('modal-name').textContent = cleanValue(s.Name);
+            const houseLink = document.getElementById('modal-house-link');
+            const nameLink = document.getElementById('modal-name-link');
+            houseLink.textContent = cleanValue(s.House);
+            houseLink.href = getParfumoHref(s);
+            const fragLink = (s.Link || '').trim();
+            nameLink.textContent = cleanValue(s.Name);
+            if (fragLink && fragLink !== 'N/A' && fragLink.indexOf('http') === 0) {
+                nameLink.href = fragLink;
+                nameLink.style.pointerEvents = 'auto';
+            } else {
+                nameLink.removeAttribute('href');
+                nameLink.style.pointerEvents = 'none';
+            }
             document.getElementById('modal-perfumer').textContent = cleanValue(s.Perfumer);
             document.getElementById('modal-performance').innerHTML = createStarRating(s.Performance);
             document.getElementById('modal-rating').innerHTML = createStarRating(s.Rating);
@@ -316,9 +393,11 @@
             const clearBtn = document.getElementById('clear-search');
             clearBtn.style.display = term ? 'block' : 'none';
             const filtered = sales.filter(s => {
-                if (!term) return true;
-                const searchableText = [s.House, s.Name, s.Perfumer, s.Notes, s.Comment, s.Comments, s.Genre, s.Attribute, s.New].filter(Boolean).join(' ').toLowerCase();
-                return searchableText.includes(term);
+                if (!matchesSearch(s, term)) return false;
+                const insp = (s.Inspiration || '').trim().toUpperCase();
+                if (inspirationFilter === 1) return insp === 'N' || insp === '';
+                if (inspirationFilter === 2) return insp === 'Y';
+                return true;
             });
             renderTable(filtered);
             updateFooter(filtered);
@@ -331,13 +410,15 @@
         }
         function updateFooter(filteredData = null) {
             const data = filteredData || sales;
-            document.getElementById('footer').innerHTML = `<strong>${data.length}</strong> items listed`;
+            document.getElementById('footer').innerHTML = '<strong>' + data.length + '</strong> items listed';
         }
         function startOver() {
             document.getElementById('search').value = '';
             document.getElementById('clear-search').style.display = 'none';
             document.getElementById('select-all').checked = false;
             sortState = {};
+            inspirationFilter = 0;
+            updateInspirationButton();
             renderTable(sales);
             sortTable(2, true);
             updateFooter();
@@ -432,7 +513,10 @@
             window.history.replaceState({}, '', window.location.pathname + (params.toString() ? '?' + params.toString() : ''));
         }
 
-        window.onload = loadSales;
+        window.onload = function() {
+            updateInspirationButton();
+            loadSales();
+        };
     </script>
 </body>
 </html>

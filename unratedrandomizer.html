@@ -98,6 +98,8 @@
 
         .card-title { font-size: 1.35rem; color: #60a5fa; margin-bottom: 12px; font-weight: 600; }
         .house { font-size: 1.25rem; color: #aaa; }
+        .house a { color: #aaa; text-decoration: none; }
+        .house a:hover { color: #93c5fd; text-decoration: underline; }
         .name { 
             font-size: 2.1rem; 
             color: #60a5fa; 
@@ -205,6 +207,13 @@
                 return 'N/A';
             }
             return val;
+        }
+
+        function getParfumoHref(f) {
+            const raw = ((f.ParfumoLink || f['Parfumo Link'] || f.Parfumo || '') + '').trim();
+            if (raw.indexOf('http') === 0) return raw;
+            const q = ((f.House || '') + ' ' + (f.Name || '')).trim();
+            return 'https://www.parfumo.com/s?q=' + encodeURIComponent(q);
         }
 
         function findWearStats(house, name) {
@@ -343,12 +352,12 @@
         function createCardElement(title, key) {
             const card = document.createElement('div');
             card.className = 'random-card';
-            card.id = `card-${key.replace(/\s+/g, '-')}`;
+            card.id = 'card-' + key.replace(/\s+/g, '-');
             return card;
         }
 
         function updateCard(key, fragrance, count) {
-            const card = document.getElementById(`card-${key.replace(/\s+/g, '-')}`);
+            const card = document.getElementById('card-' + key.replace(/\s+/g, '-'));
             if (!card) return;
 
             const wear = findWearStats(fragrance.House, fragrance.Name);
@@ -374,7 +383,7 @@
 
             card.innerHTML = 
                 '<div class="card-title">' + (key === 'all' ? 'All Fragrances' : key) + '</div>' +
-                '<div class="house">' + cleanValue(fragrance.House) + '</div>' +
+                '<div class="house"><a href="' + getParfumoHref(fragrance) + '" target="_blank">' + cleanValue(fragrance.House) + '</a></div>' +
                 nameHTML +
                 '<div class="main-stats">' +
                     '<strong>Rating:</strong> ' + cleanValue(fragrance.Rating) + ' &nbsp;|&nbsp; ' +
@@ -396,7 +405,7 @@
             keys.forEach(key => {
                 const filtered = getFilteredFragrances(key);
                 if (filtered.length === 0) {
-                    const card = document.getElementById(`card-${key.replace(/\s+/g, '-')}`);
+                    const card = document.getElementById('card-' + key.replace(/\s+/g, '-'));
                     if (card) {
                         card.innerHTML = 
                             '<div class="card-title">' + (key === 'all' ? 'All Fragrances' : key) + '</div>' +
