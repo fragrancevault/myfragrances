@@ -96,7 +96,8 @@
     <textarea id="input" placeholder="citrus&#10;aromatic&#10;woody&#10;earthy&#10;fresh spicy"></textarea>
 
     <div class="row">
-      <button id="joinBtn" type="button">Join lines</button>
+      <button id="pasteBtn" type="button">Paste</button>
+      <button id="joinBtn" class="secondary" type="button">Join lines</button>
       <button id="copyBtn" class="secondary" type="button">Copy result</button>
       <button id="clearBtn" class="secondary" type="button">Clear</button>
     </div>
@@ -138,6 +139,20 @@
       }
     }
 
+    async function pasteIntoInput() {
+      try {
+        const text = await navigator.clipboard.readText();
+        input.value = text;
+        joinLines();
+        input.focus();
+        status.textContent = "Pasted";
+      } catch {
+        input.focus();
+        status.textContent = "Clipboard blocked — use Ctrl+V / tap and hold to paste";
+      }
+    }
+
+    document.getElementById("pasteBtn").addEventListener("click", pasteIntoInput);
     document.getElementById("joinBtn").addEventListener("click", joinLines);
     document.getElementById("copyBtn").addEventListener("click", copyResult);
     document.getElementById("clearBtn").addEventListener("click", () => {
