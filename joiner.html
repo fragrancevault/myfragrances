@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Line Joiner</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111318;
+      --panel: #1b1e27;
+      --border: #2d3340;
+      --text: #e8eaef;
+      --muted: #9aa3b2;
+      --accent: #7eb8ff;
+      --btn: #2a6fdb;
+      --btn-hover: #3b82f6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px 16px 40px;
+    }
+    .wrap {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 1.35rem;
+      font-weight: 650;
+      margin: 0 0 6px;
+    }
+    p.hint {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+    label {
+      display: block;
+      font-size: 0.82rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    textarea, input[type="text"] {
+      width: 100%;
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      font: 1rem/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    textarea { min-height: 220px; resize: vertical; }
+    .row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 12px 0 18px;
+    }
+    button {
+      appearance: none;
+      border: 0;
+      border-radius: 9px;
+      padding: 10px 14px;
+      font: 600 0.95rem/1 system-ui, sans-serif;
+      cursor: pointer;
+      background: var(--btn);
+      color: #fff;
+    }
+    button:hover { background: var(--btn-hover); }
+    button.secondary {
+      background: #2a2f3a;
+      color: var(--text);
+    }
+    button.secondary:hover { background: #363c49; }
+    .out-wrap { position: relative; }
+    #status {
+      min-height: 1.2em;
+      margin-top: 8px;
+      color: var(--accent);
+      font-size: 0.88rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Line Joiner</h1>
+    <p class="hint">Paste one item per line. Converts to a single line with comma + space. Empty lines are ignored.</p>
+
+    <label for="input">Input</label>
+    <textarea id="input" placeholder="citrus&#10;aromatic&#10;woody&#10;earthy&#10;fresh spicy"></textarea>
+
+    <div class="row">
+      <button id="joinBtn" type="button">Join lines</button>
+      <button id="copyBtn" class="secondary" type="button">Copy result</button>
+      <button id="clearBtn" class="secondary" type="button">Clear</button>
+    </div>
+
+    <label for="output">Result</label>
+    <div class="out-wrap">
+      <textarea id="output" readonly placeholder="Result appears here"></textarea>
+    </div>
+    <div id="status"></div>
+  </div>
+
+  <script>
+    const input = document.getElementById("input");
+    const output = document.getElementById("output");
+    const status = document.getElementById("status");
+
+    function joinLines() {
+      const joined = input.value
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .join(", ");
+      output.value = joined;
+      status.textContent = joined
+        ? joined.split(", ").length + " item(s)"
+        : "";
+    }
+
+    async function copyResult() {
+      if (!output.value) joinLines();
+      if (!output.value) return;
+      try {
+        await navigator.clipboard.writeText(output.value);
+        status.textContent = "Copied";
+      } catch {
+        output.select();
+        document.execCommand("copy");
+        status.textContent = "Copied";
+      }
+    }
+
+    document.getElementById("joinBtn").addEventListener("click", joinLines);
+    document.getElementById("copyBtn").addEventListener("click", copyResult);
+    document.getElementById("clearBtn").addEventListener("click", () => {
+      input.value = "";
+      output.value = "";
+      status.textContent = "";
+      input.focus();
+    });
+
+    input.addEventListener("paste", () => setTimeout(joinLines, 0));
+    input.addEventListener("input", joinLines);
+  </script>
+</body>
+</html>
