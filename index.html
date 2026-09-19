@@ -344,6 +344,7 @@
         <div class="rating-filter">
             <select id="rating-filter" onchange="filterTable()">
                 <option value="">Show All Ratings</option>
+                <option value="0">Unrated (0)</option>
                 <option value="10">10s</option>
                 <option value="9.5">9.5s</option>
                 <option value="9.25">9.25s</option>
@@ -756,7 +757,9 @@
                 let matchRating = true;
                 if (ratingFilter) {
                     const rating = parseFloat(f.Rating);
-                    if (!isNaN(rating)) {
+                    if (ratingFilter === "0") {
+                        matchRating = isNaN(rating) || rating === 0;
+                    } else if (!isNaN(rating)) {
                         matchRating = rating >= parseFloat(ratingFilter);
                     } else {
                         matchRating = false;
@@ -879,7 +882,9 @@
                 let matchRating = true;
                 if (ratingFilter) {
                     const rating = parseFloat(f.Rating);
-                    if (!isNaN(rating)) {
+                    if (ratingFilter === "0") {
+                        matchRating = isNaN(rating) || rating === 0;
+                    } else if (!isNaN(rating)) {
                         matchRating = rating >= parseFloat(ratingFilter);
                     } else {
                         matchRating = false;
