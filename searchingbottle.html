@@ -1,9 +1,4 @@
 <!DOCTYPE html>
-<!-- 
-    =============================================
-    FRAGVAULT - SEARCHING FOR BOTTLES
-    =============================================
--->
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -11,246 +6,46 @@
     <title>Searching For</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
-        body { 
-            font-family: 'Segoe UI', Arial, sans-serif; 
-            margin: 0; 
-            background: #0a0a0a; 
-            color: #e0e0e0;
-            line-height: 1.5;
-        }
-        
-        header {
-            background: linear-gradient(135deg, #1a1a1a, #0f0f0f);
-            color: white;
-            padding: 1.8rem 1rem 2.2rem;
-            text-align: center;
-            border-bottom: 1px solid #333;
-            position: relative;
-        }
-        h1 { 
-            margin: 0; 
-            font-size: 2.0rem;
-            padding-top: 4px;
-        }
-
-        .nav {
-            position: absolute;
-            top: 22px;
-            left: 20px;
-        }
-        .hamburger {
-            display: flex;
-            flex-direction: column;
-            cursor: pointer;
-            padding: 8px;
-        }
-        .hamburger span {
-            width: 28px;
-            height: 3px;
-            background: #60a5fa;
-            margin: 4px 0;
-            transition: 0.3s;
-        }
-
-        .header-buttons {
-            position: absolute;
-            bottom: 18px;
-            right: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            align-items: flex-end;
-        }
-
-        .copy-header-btn, .header-button { 
-            background: #0066cc; 
-            color: white; 
-            border: none; 
-            padding: 6px 10px; 
-            border-radius: 20px; 
-            font-size: 12.5px; 
-            cursor: pointer;
-            white-space: nowrap;
-            min-width: 58px;           /* Very narrow now */
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .menu {
-            display: none;
-            position: absolute;
-            top: 65px;
-            left: 20px;
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 12px 0;
-            min-width: 200px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-            z-index: 1000;
-        }
-        .menu a {
-            display: block;
-            padding: 12px 20px;
-            color: #e0e0e0;
-            text-decoration: none;
-            font-size: 15px;
-        }
-        .menu a:hover {
-            background: #0066cc;
-            color: white;
-        }
+        body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: #0a0a0a; color: #e0e0e0; line-height: 1.5; }
+        header { background: linear-gradient(135deg, #1a1a1a, #0f0f0f); color: white; padding: 1.8rem 1rem 2.2rem; text-align: center; border-bottom: 1px solid #333; position: relative; }
+        h1 { margin: 0; font-size: 2.0rem; padding-top: 4px; }
+        .nav { position: absolute; top: 22px; left: 20px; }
+        .hamburger { display: flex; flex-direction: column; cursor: pointer; padding: 8px; }
+        .hamburger span { width: 28px; height: 3px; background: #60a5fa; margin: 4px 0; transition: 0.3s; }
+        .header-buttons { position: absolute; bottom: 18px; right: 20px; display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+        .copy-header-btn, .header-button { background: #0066cc; color: white; border: none; padding: 6px 10px; border-radius: 20px; font-size: 12.5px; cursor: pointer; white-space: nowrap; min-width: 58px; text-decoration: none; display: inline-block; }
+        .menu { display: none; position: absolute; top: 65px; left: 20px; background: #1a1a1a; border: 1px solid #333; border-radius: 8px; padding: 12px 0; min-width: 200px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); z-index: 1000; }
+        .menu a { display: block; padding: 12px 20px; color: #e0e0e0; text-decoration: none; font-size: 15px; }
+        .menu a:hover { background: #0066cc; color: white; }
         .menu.active { display: block; }
-
-        .controls { 
-            padding: 18px 20px 14px; 
-            background: #111; 
-            display: flex; 
-            flex-wrap: wrap; 
-            gap: 8px; 
-            justify-content: center; 
-            align-items: center;
-            border-bottom: 1px solid #333;
-        }
-
-        input { 
-            padding: 10px 12px; 
-            font-size: 14px;
-            border-radius: 8px; 
-            background: #1f1f1f;
-            color: #e0e0e0;
-            border: 1px solid #444;
-            flex: 1;
-            min-width: 260px;
-        }
-
-        button { 
-            background: #0066cc; 
-            color: white; 
-            border: none; 
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 13.5px;
-            padding: 9px 14px;
-            border-radius: 20px;
-            white-space: nowrap;
-        }
-
+        .controls { padding: 18px 20px 14px; background: #111; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; border-bottom: 1px solid #333; }
+        input { padding: 10px 12px; font-size: 14px; border-radius: 8px; background: #1f1f1f; color: #e0e0e0; border: 1px solid #444; flex: 1; min-width: 260px; }
+        button { background: #0066cc; color: white; border: none; cursor: pointer; font-weight: bold; font-size: 13.5px; padding: 9px 14px; border-radius: 20px; white-space: nowrap; }
         .startover-btn { background: #d97706 !important; }
         .export-btn { background: #15803d !important; }
-
-        .table-wrapper { 
-            padding: 0 20px 20px; 
-            overflow-x: auto; 
-            max-height: 75vh;
-            overflow-y: auto;
-        }
-        table { 
-            min-width: 1200px;
-            border-collapse: collapse; 
-            background: #111; 
-            width: 100%;
-            table-layout: fixed;
-        }
-        th, td { 
-            padding: 10px 8px; 
-            border-bottom: 1px solid #333;
-            font-size: 14px;
-            vertical-align: top;
-            word-wrap: break-word;
-            word-break: break-word;
-            white-space: normal;
-        }
-        th { 
-            background: #1a1a1a; 
-            color: #fff; 
-            position: sticky; 
-            top: 0; 
-            z-index: 10;
-            font-size: 14.5px;
-            text-align: left;
-        }
-
-        /* Column Widths */
+        .table-wrapper { padding: 0 20px 20px; overflow-x: auto; max-height: 75vh; overflow-y: auto; }
+        table { border-collapse: collapse; background: #111; width: 100%; table-layout: fixed; }
+        th, td { padding: 10px 8px; border-bottom: 1px solid #333; vertical-align: top; word-wrap: break-word; word-break: break-word; white-space: normal; }
+        td { font-size: 13px; }
+        th { background: #1a1a1a; color: #fff; position: sticky; top: 0; z-index: 10; font-size: 13px; text-align: left; }
+        /* ===== COLUMN WIDTHS — tune these ===== */
         .house-col { width: 120px; }
         .name-col  { width: 180px; }
         .genre-col { width: 80px; }
         .notes-col { width: 220px; }
-        .link-col, .purchase-col { 
-            width: 90px; 
-            text-align: center; 
-        }
-
-        .icon-link {
-            font-size: 1.45rem;
-            text-decoration: none;
-        }
+        .link-col, .purchase-col { width: 90px; text-align: center; }
+        /* ====================================== */
+        .icon-link { font-size: 1.45rem; text-decoration: none; }
         .icon-link:hover { color: #a5d6ff; }
-
-        .toast {
-            position: fixed;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #22c55e;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 14px;
-            z-index: 3000;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-            display: none;
-        }
-
-        .genre-btn { 
-            padding: 8px 15px; 
-            margin: 4px; 
-            border: 2px solid #0066cc; 
-            background: #1f1f1f; 
-            color: #4da6ff; 
-            border-radius: 30px; 
-            cursor: pointer; 
-            font-weight: 600;
-            font-size: 13.5px;
-        }
-        .genre-btn.active { 
-            background: #0066cc; 
-            color: white; 
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.92);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-            padding: 15px;
-        }
-        .modal-content {
-            background: #1f2a3a;
-            border: 2px solid #60a5fa;
-            border-radius: 16px;
-            padding: 20px 18px;
-            width: 100%;
-            max-width: 380px;
-            text-align: center;
-            position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-        }
-        .close-btn {
-            position: absolute;
-            top: 10px;
-            right: 16px;
-            font-size: 32px;
-            color: #60a5fa;
-            cursor: pointer;
-            line-height: 1;
-        }
-
+        .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #22c55e; color: white; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px; z-index: 3000; box-shadow: 0 4px 12px rgba(0,0,0,0.5); display: none; }
+        .genre-btn { padding: 8px 15px; margin: 4px; border: 2px solid #0066cc; background: #1f1f1f; color: #4da6ff; border-radius: 30px; cursor: pointer; font-weight: 600; font-size: 13.5px; }
+        .genre-btn.active { background: #0066cc; color: white; }
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.92); z-index: 2000; align-items: center; justify-content: center; padding: 15px; }
+        .modal-content { background: #1f2a3a; border: 2px solid #60a5fa; border-radius: 16px; padding: 20px 18px; width: 100%; max-width: 380px; text-align: center; position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
+        .close-btn { position: absolute; top: 10px; right: 16px; font-size: 32px; color: #60a5fa; cursor: pointer; line-height: 1; }
         .house { font-size: 1.1rem; color: #aaa; margin-bottom: 2px; }
+        .house a { color: #aaa; text-decoration: none; }
+        .house a:hover { color: #93c5fd; text-decoration: underline; }
         .name { font-size: 1.65rem; color: #60a5fa; margin: 4px 0 14px; font-weight: 600; }
     </style>
 </head>
@@ -258,9 +53,7 @@
     <header>
         <h1>Searching</h1>
         <div class="nav">
-            <div class="hamburger" onclick="toggleMenu()">
-                <span></span><span></span><span></span>
-            </div>
+            <div class="hamburger" onclick="toggleMenu()"><span></span><span></span><span></span></div>
             <div class="menu" id="menu">
                 <a href="index.html"><strong>Home</strong></a>
                 <a href="nowwearing.html">Now Wearing</a>
@@ -274,7 +67,6 @@
                 <a href="searchingbottle.html"><strong>Searching For</strong></a>
             </div>
         </div>
-        
         <div class="header-buttons">
             <button onclick="copyCurrentView()" class="copy-header-btn">Copy</button>
             <a href="searchingsample.html" class="header-button">Sample</a>
@@ -284,11 +76,9 @@
     <div class="controls">
         <input type="text" id="search" placeholder="Search House, Name, Notes..." onkeyup="filterTable()">
         <div id="genre-filters"></div>
-        
         <button onclick="sortTable(0)">House</button>
         <button onclick="sortTable(1)">Name</button>
         <button onclick="sortTable(2)">Genre</button>
-
         <button onclick="startOver()" class="startover-btn">Start Over</button>
         <button onclick="exportToCSV()" class="export-btn">Export To CSV</button>
     </div>
@@ -310,10 +100,7 @@
     </div>
 
     <footer id="footer">Loading collection...</footer>
-
     <div id="toast" class="toast">✅ Copied!</div>
-
-    <!-- Popup Modal -->
     <div id="modal" class="modal">
         <div class="modal-content" onclick="event.stopImmediatePropagation()">
             <span class="close-btn" onclick="closeModal()">×</span>
@@ -327,118 +114,105 @@
         let sortState = {};
 
         function cleanValue(val) {
-            if (val === null || val === undefined || val === '' || val === '?') {
-                return 'N/A';
-            }
+            if (val === null || val === undefined || val === '' || val === '?') return 'N/A';
             return String(val).trim();
         }
 
         function isValidUrl(string) {
-            try {
-                new URL(string);
-                return true;
-            } catch (_) {
-                return false;
+            if (!string) return false;
+            var s = String(string).trim();
+            return s.indexOf('http://') === 0 || s.indexOf('https://') === 0;
+        }
+
+        function getParfumoHref(f) {
+            var raw = ((f.ParfumoLink || f['Parfumo Link'] || '') + '').trim();
+            if (raw.indexOf('http') === 0) return raw;
+            var house = ((f.House || '') + '').replace(/\s+[A-Z]{2,4}$/, '').trim();
+            var name = ((f.Name || '') + '').replace(/\s*\([^)]*\)/g, '').trim().toLowerCase();
+            return 'https://www.parfumo.com/Perfumes/' + house.replace(/ /g, '_') + '/' + name.replace(/ /g, '_');
+        }
+
+        function matchesSearch(f, term) {
+            if (!term) return true;
+            var searchableText = [f.House, f.Name, f.Notes, f.Genre].filter(Boolean).join(' ').toLowerCase();
+            var words = term.split(/\s+/);
+            for (var i = 0; i < words.length; i++) {
+                if (words[i] && searchableText.indexOf(words[i]) === -1) return false;
             }
+            return true;
         }
 
         function copyCurrentView() {
-            const tbody = document.querySelector('#fragrance-table tbody');
-            const rows = Array.from(tbody.querySelectorAll('tr'));
-            
-            if (rows.length === 0) {
-                showToast('No fragrances to copy!');
-                return;
-            }
-
-            let text = 'House - Name\n\n';
-            rows.forEach(row => {
-                const house = row.cells[0].textContent.trim();
-                const name = row.cells[1].textContent.trim();
-                text += `${house} - ${name}\n\n`;
+            var tbody = document.querySelector('#fragrance-table tbody');
+            var rows = Array.from(tbody.querySelectorAll('tr'));
+            if (rows.length === 0) { showToast('No fragrances to copy!'); return; }
+            var text = 'House - Name\n\n';
+            rows.forEach(function(row) {
+                text += row.cells[0].textContent.trim() + ' - ' + row.cells[1].textContent.trim() + '\n\n';
             });
-
-            navigator.clipboard.writeText(text.trim()).then(() => {
-                showToast(`✅ Copied ${rows.length} bottles!`);
-            }).catch(() => {
-                showToast('❌ Failed to copy');
-            });
+            navigator.clipboard.writeText(text.trim()).then(function() {
+                showToast('✅ Copied ' + rows.length + ' bottles!');
+            }).catch(function() { showToast('❌ Failed to copy'); });
         }
 
         function showToast(message) {
-            const toast = document.getElementById('toast');
+            var toast = document.getElementById('toast');
             toast.textContent = message;
             toast.style.display = 'block';
-            setTimeout(() => toast.style.display = 'none', 2200);
+            setTimeout(function() { toast.style.display = 'none'; }, 2200);
         }
 
         function showModal(fragrance) {
-            let html = `
-                <div class="house">${cleanValue(fragrance.House)}</div>
-                <div class="name">${cleanValue(fragrance.Name)}</div>
-                <div style="margin:16px 0; font-size:1.05rem;">
-                    <strong>Genre:</strong> ${cleanValue(fragrance.Genre)}
-                </div>
-            `;
-
-            if (fragrance.Notes && fragrance.Notes !== 'N/A') {
-                html += `<div style="text-align:left; margin:18px 0; line-height:1.5;"><strong>Notes:</strong><br>${cleanValue(fragrance.Notes)}</div>`;
+            var html = '<div class="house"><a href="' + getParfumoHref(fragrance) + '" target="_blank">' + cleanValue(fragrance.House) + '</a></div>';
+            if (isValidUrl(fragrance.Link)) {
+                html += '<a href="' + fragrance.Link + '" target="_blank" class="name" style="display:block; text-decoration:none;">' + cleanValue(fragrance.Name) + '</a>';
+            } else {
+                html += '<div class="name">' + cleanValue(fragrance.Name) + '</div>';
             }
-
-            if (fragrance.Link && isValidUrl(fragrance.Link)) {
-                html += `<div style="margin:12px 0;"><a href="${fragrance.Link}" target="_blank" class="icon-link">🔗 View Link</a></div>`;
+            html += '<div style="margin:16px 0; font-size:1.05rem;"><strong>Genre:</strong> ' + cleanValue(fragrance.Genre) + '</div>';
+            if (fragrance.Notes && fragrance.Notes !== 'N/A') {
+                html += '<div style="text-align:left; margin:18px 0; line-height:1.5;"><strong>Notes:</strong><br>' + cleanValue(fragrance.Notes) + '</div>';
+            }
+            if (isValidUrl(fragrance.Link)) {
+                html += '<div style="margin:12px 0;"><a href="' + fragrance.Link + '" target="_blank" class="icon-link">🔗 View Link</a></div>';
             }
             if (fragrance.Purchase) {
                 if (isValidUrl(fragrance.Purchase)) {
-                    html += `<div style="margin:12px 0;"><a href="${fragrance.Purchase}" target="_blank" class="icon-link">🛒 Purchase</a></div>`;
+                    html += '<div style="margin:12px 0;"><a href="' + fragrance.Purchase + '" target="_blank" class="icon-link">🛒 Purchase</a></div>';
                 } else {
-                    html += `<div style="margin:12px 0; color:#ccc;"><strong>Purchase:</strong> ${cleanValue(fragrance.Purchase)}</div>`;
+                    html += '<div style="margin:12px 0; color:#ccc;"><strong>Purchase:</strong> ' + cleanValue(fragrance.Purchase) + '</div>';
                 }
             }
-
             document.getElementById('modal-card').innerHTML = html;
             document.getElementById('modal').style.display = 'flex';
         }
 
-        function closeModal() {
-            document.getElementById('modal').style.display = 'none';
-        }
+        function closeModal() { document.getElementById('modal').style.display = 'none'; }
 
         function updateUrl() {
-            const searchTerm = document.getElementById('search').value.trim();
-            const params = new URLSearchParams();
+            var searchTerm = document.getElementById('search').value.trim();
+            var params = new URLSearchParams();
             if (searchTerm) params.set('search', searchTerm);
-            const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
-            window.history.replaceState({}, '', newUrl);
+            window.history.replaceState({}, '', window.location.pathname + (params.toString() ? '?' + params.toString() : ''));
         }
 
         async function loadCSV() {
             try {
-                const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=136278588&single=true&output=csv";
-                
-                const res = await fetch(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now());
-                const text = await res.text();
-
+                var url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=136278588&single=true&output=csv";
+                var res = await fetch(url + (url.indexOf('?') !== -1 ? '&' : '?') + 't=' + Date.now());
+                var text = await res.text();
                 Papa.parse(text, {
                     header: true,
                     skipEmptyLines: true,
-                    complete: (result) => {
-                        fragrances = result.data
-                            .filter(row => row.Name && row.Name.trim())
-                            .map(row => {
-                                Object.keys(row).forEach(key => {
-                                    if (typeof row[key] === 'string') row[key] = row[key].trim();
-                                });
-                                return row;
-                            });
-                        
-                        console.log("✅ Loaded", fragrances.length, "bottles");
+                    complete: function(result) {
+                        fragrances = result.data.filter(function(row) { return row.Name && row.Name.trim(); }).map(function(row) {
+                            Object.keys(row).forEach(function(key) { if (typeof row[key] === 'string') row[key] = row[key].trim(); });
+                            return row;
+                        });
                         renderTable(fragrances);
                         renderGenreButtons();
                         updateFooter();
-
-                        const params = new URLSearchParams(window.location.search);
-                        const urlSearch = params.get('search');
+                        var urlSearch = new URLSearchParams(window.location.search).get('search');
                         if (urlSearch) {
                             document.getElementById('search').value = urlSearch;
                             filterTable();
@@ -446,52 +220,49 @@
                     }
                 });
             } catch (e) {
-                console.error("Load error:", e);
-                document.getElementById('footer').innerHTML = `<strong style="color:#ff6666;">Error loading Google Sheet</strong>`;
+                document.getElementById('footer').innerHTML = '<strong style="color:#ff6666;">Error loading Google Sheet</strong>';
             }
         }
 
         function renderTable(data) {
-            const tbody = document.querySelector('#fragrance-table tbody');
-            let html = '';
-            for (let i = 0; i < data.length; i++) {
-                const f = data[i];
-                const linkHTML = (f.Link && isValidUrl(f.Link)) 
-                    ? `<a href="${f.Link}" target="_blank" class="icon-link">🔗</a>` 
-                    : '—';
-                const purchaseHTML = (f.Purchase && isValidUrl(f.Purchase)) 
-                    ? `<a href="${f.Purchase}" target="_blank" class="icon-link">🛒</a>` 
-                    : cleanValue(f.Purchase || '—');
-
-                html += `<tr data-index="${i}">` +
-                    `<td class="house-col">${cleanValue(f.House)}</td>` +
-                    `<td class="name-col"><strong>${cleanValue(f.Name)}</strong></td>` +
-                    `<td class="genre-col">${cleanValue(f.Genre)}</td>` +
-                    `<td class="notes-col">${cleanValue(f.Notes)}</td>` +
-                    `<td class="link-col">${linkHTML}</td>` +
-                    `<td class="purchase-col">${purchaseHTML}</td>` +
+            var tbody = document.querySelector('#fragrance-table tbody');
+            var html = '';
+            for (var i = 0; i < data.length; i++) {
+                var f = data[i];
+                var linkHTML = isValidUrl(f.Link) ? '<a href="' + f.Link + '" target="_blank" class="icon-link">🔗</a>' : '—';
+                var purchaseHTML = isValidUrl(f.Purchase) ? '<a href="' + f.Purchase + '" target="_blank" class="icon-link">🛒</a>' : cleanValue(f.Purchase || '—');
+                html += '<tr data-index="' + i + '">' +
+                    '<td class="house-col">' + cleanValue(f.House) + '</td>' +
+                    '<td class="name-col"><strong>' + cleanValue(f.Name) + '</strong></td>' +
+                    '<td class="genre-col">' + cleanValue(f.Genre) + '</td>' +
+                    '<td class="notes-col">' + cleanValue(f.Notes) + '</td>' +
+                    '<td class="link-col">' + linkHTML + '</td>' +
+                    '<td class="purchase-col">' + purchaseHTML + '</td>' +
                     '</tr>';
             }
             tbody.innerHTML = html;
-
-            document.querySelectorAll('#fragrance-table tbody tr').forEach(row => {
-                row.addEventListener('click', (e) => {
+            document.querySelectorAll('#fragrance-table tbody tr').forEach(function(row) {
+                row.addEventListener('click', function(e) {
                     if (e.target.tagName === 'A') return;
-                    const index = parseInt(row.dataset.index);
-                    showModal(data[index]);
+                    showModal(data[parseInt(row.dataset.index)]);
                 });
             });
         }
 
         function renderGenreButtons() {
-            const genres = [...new Set(fragrances.map(f => f.Genre).filter(Boolean))].sort();
-            const container = document.getElementById('genre-filters');
+            var genres = [];
+            var seen = {};
+            fragrances.forEach(function(f) {
+                if (f.Genre && !seen[f.Genre]) { seen[f.Genre] = true; genres.push(f.Genre); }
+            });
+            genres.sort();
+            var container = document.getElementById('genre-filters');
             container.innerHTML = '<strong>Genres:</strong> ';
-            genres.forEach(g => {
-                const btn = document.createElement('button');
+            genres.forEach(function(g) {
+                var btn = document.createElement('button');
                 btn.className = 'genre-btn';
                 btn.textContent = g;
-                btn.onclick = () => {
+                btn.onclick = function() {
                     if (currentGenres.has(g)) currentGenres.delete(g);
                     else currentGenres.add(g);
                     btn.classList.toggle('active');
@@ -502,35 +273,25 @@
         }
 
         function filterTable() {
-            const term = document.getElementById('search').value.toLowerCase().trim();
-            
-            const filtered = fragrances.filter(f => {
-                let matchSearch = true;
-                if (term) {
-                    const searchableText = [f.House, f.Name, f.Notes || '']
-                        .filter(Boolean).join(' ').toLowerCase();
-                    matchSearch = searchableText.includes(term);
-                }
-                const matchGenre = currentGenres.size === 0 || currentGenres.has(f.Genre);
-                return matchSearch && matchGenre;
+            var term = document.getElementById('search').value.toLowerCase().trim();
+            var filtered = fragrances.filter(function(f) {
+                if (!matchesSearch(f, term)) return false;
+                return currentGenres.size === 0 || currentGenres.has(f.Genre);
             });
-            
             renderTable(filtered);
             updateFooter(filtered);
             updateUrl();
         }
 
-        function updateFooter(filteredData = null) {
-            const data = filteredData || fragrances;
-            document.getElementById('footer').innerHTML = `
-                <strong>${data.length}</strong> bottles in view
-            `;
+        function updateFooter(filteredData) {
+            var data = filteredData || fragrances;
+            document.getElementById('footer').innerHTML = '<strong>' + data.length + '</strong> bottles in view';
         }
 
         function startOver() {
             currentGenres.clear();
             document.getElementById('search').value = '';
-            document.querySelectorAll('.genre-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.genre-btn').forEach(function(btn) { btn.classList.remove('active'); });
             sortState = {};
             renderTable(fragrances);
             updateFooter();
@@ -538,61 +299,44 @@
         }
 
         function exportToCSV() {
-            const tbody = document.querySelector('#fragrance-table tbody');
-            const rows = Array.from(tbody.querySelectorAll('tr'));
-            if (rows.length === 0) return alert("No data to export!");
-
-            let csv = "House,Name,Genre,Notes,Link,Purchase\n";
-            rows.forEach(row => {
-                const cells = Array.from(row.cells).map(cell => `"${cell.textContent.trim().replace(/"/g, '""')}"`);
+            var rows = Array.from(document.querySelectorAll('#fragrance-table tbody tr'));
+            if (rows.length === 0) return alert('No data to export!');
+            var csv = 'House,Name,Genre,Notes,Link,Purchase\n';
+            rows.forEach(function(row) {
+                var cells = Array.from(row.cells).map(function(cell) {
+                    return '"' + cell.textContent.trim().replace(/"/g, '""') + '"';
+                });
                 csv += cells.join(',') + '\n';
             });
-
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const link = document.createElement('a');
+            var blob = new Blob([csv], { type: 'text/csv' });
+            var link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = `SearchingBottles_${new Date().toISOString().slice(0,10)}.csv`;
+            link.download = 'SearchingBottles_' + new Date().toISOString().slice(0,10) + '.csv';
             link.click();
         }
 
         function sortTable(colIndex) {
-            const tbody = document.querySelector('#fragrance-table tbody');
-            let rows = Array.from(tbody.querySelectorAll('tr'));
-            
+            var tbody = document.querySelector('#fragrance-table tbody');
+            var rows = Array.from(tbody.querySelectorAll('tr'));
             if (sortState[colIndex] === undefined) sortState[colIndex] = true;
             else sortState[colIndex] = !sortState[colIndex];
-            const ascending = sortState[colIndex];
-
-            rows.sort((a, b) => {
-                let x = a.cells[colIndex].textContent.trim();
-                let y = b.cells[colIndex].textContent.trim();
-                if (!isNaN(parseFloat(x)) && !isNaN(parseFloat(y))) {
-                    return ascending ? parseFloat(x) - parseFloat(y) : parseFloat(y) - parseFloat(x);
-                }
+            var ascending = sortState[colIndex];
+            rows.sort(function(a, b) {
+                var x = a.cells[colIndex].textContent.trim();
+                var y = b.cells[colIndex].textContent.trim();
                 return ascending ? x.localeCompare(y) : y.localeCompare(x);
             });
-            
-            rows.forEach(row => tbody.appendChild(row));
+            rows.forEach(function(row) { tbody.appendChild(row); });
         }
 
-        function toggleMenu() {
-            document.getElementById('menu').classList.toggle('active');
-        }
-
+        function toggleMenu() { document.getElementById('menu').classList.toggle('active'); }
         document.addEventListener('click', function(e) {
-            if (!e.target.closest('.nav')) {
-                document.getElementById('menu').classList.remove('active');
-            }
+            if (!e.target.closest('.nav')) document.getElementById('menu').classList.remove('active');
         });
-
-        const modal = document.getElementById('modal');
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) closeModal();
+        document.getElementById('modal').addEventListener('click', function(e) {
+            if (e.target.id === 'modal') closeModal();
         });
-
-        window.onload = () => {
-            loadCSV();
-        };
+        window.onload = loadCSV;
     </script>
 </body>
 </html>
