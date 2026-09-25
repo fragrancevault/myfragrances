@@ -451,6 +451,19 @@
         </div>
     </div>
 
+    <div id="accord-picker-modal" class="modal">
+        <div class="modal-content" onclick="event.stopImmediatePropagation()">
+            <span class="close-btn" onclick="closeAccordPicker()">×</span>
+            <h3 style="color:#fbbf24; margin:0 28px 8px 0;">Filter Accords</h3>
+            <p style="color:#aaa; font-size:0.9rem; margin:0 0 10px;">Tap pills (match any selected). Apply updates the table.</p>
+            <div class="picker-pills" id="accord-picker-pills"></div>
+            <div class="picker-actions">
+                <button type="button" onclick="clearAccordPicker()">Clear</button>
+                <button type="button" class="export-btn" onclick="applyAccordPicker()">Apply</button>
+            </div>
+        </div>
+    </div>
+
     <div id="accords-modal" class="modal">
         <div class="modal-content" onclick="event.stopImmediatePropagation()">
             <span class="close-btn" onclick="closeAccordsModal()">×</span>
@@ -479,55 +492,45 @@
 
 
         const ACCORD_COLORS = {
-            'aromatic': '#2a9d8f',
-            'fresh spicy': '#8bc34a',
-            'citrus': '#f4e04d',
-            'woody': '#6d4c41',
-            'green': '#2e7d32',
-            'musky': '#b0a8c0',
-            'powdery': '#d7ccc8',
-            'fruity': '#f44336',
-            'vanilla': '#fff3a0',
-            'sweet': '#e53935',
-            'amber': '#d35400',
-            'leather': '#a1887f',
-            'ozonic': '#80deea',
-            'violet': '#9c27b0',
+            'aldehydic': '#eceff1',
+            'amber': '#c75b12',
             'animalic': '#5d4037',
-            'oud': '#4e342e',
-            'aquatic': '#29b6f6',
-            'rose': '#e91e63',
-            'patchouli': '#6b7b2a',
-            'warm spicy': '#e64a19',
-            'lavender': '#7e57c2',
-            'earthy': '#5d5346',
+            'aquatic': '#4aa3c7',
+            'aromatic': '#2a9d8f',
             'balsamic': '#a1886d',
-            'iris': '#b39ddb',
-            'mossy': '#556b2f',
-            'salty': '#90a4ae',
+            'citrus': '#f4e04d',
+            'earthy': '#5d5346',
+            'floral': '#f48fb1',
             'fresh': '#81d4fa',
+            'fresh spicy': '#8bc34a',
+            'fruity': '#f44336',
+            'green': '#2e7d32',
+            'herbal': '#689f38',
+            'iris': '#b39ddb',
+            'lactonic': '#f3e5ab',
+            'lavender': '#7e57c2',
+            'leather': '#9c6b56',
             'marine': '#1565c0',
             'metallic': '#78909c',
-            'smoky': '#616161',
+            'mossy': '#556b2f',
+            'musky': '#b0a8c0',
+            'oud': '#4e342e',
+            'ozonic': '#80deea',
+            'patchouli': '#6b7b2a',
+            'powdery': '#d7ccc8',
+            'rose': '#e91e63',
+            'salty': '#90a4ae',
+            'smoky': '#757575',
+            'soft spicy': '#e57373',
+            'sweet': '#e53935',
             'tobacco': '#8d6e63',
-            'honey': '#ffb300',
-            'floral': '#f48fb1',
-            'white floral': '#fce4ec',
-            'yellow floral': '#ffee58',
-            'aldehydic': '#eceff1',
-            'coconut': '#fff8e1',
-            'coffee': '#4e342e',
-            'chocolate': '#3e2723',
-            'gourmand': '#bf360c',
-            'herbal': '#689f38',
-            'mint': '#00bfa5',
-            'anise': '#7cb342',
-            'boozy': '#8d4e2a',
-            'cinnamon': '#c62828',
-            'incense': '#5d4037',
-            'sand': '#d7ccc8',
-            'mineral': '#90a4ae',
-            'ozone': '#80deea'
+            'tropical': '#ff9800',
+            'vanilla': '#fff3a0',
+            'violet': '#9c27b0',
+            'warm spicy': '#e64a19',
+            'white floral': '#f8bbd0',
+            'woody': '#6d4c41',
+            'yellow floral': '#ffee58'
         };
 
         function getAccordField(f) {
@@ -618,21 +621,21 @@
 
 
         var ACCORD_LIST = [
-            'Aldehydic','Amber','Animalic','Anise','Aquatic','Aromatic',
-            'Balsamic','Boozy',
-            'Chocolate','Cinnamon','Citrus','Coconut','Coffee',
+            'Aldehydic','Amber','Animalic','Aquatic','Aromatic',
+            'Balsamic',
+            'Citrus',
             'Earthy',
             'Floral','Fresh','Fresh Spicy','Fruity',
-            'Gourmand','Green',
-            'Herbal','Honey',
-            'Incense','Iris',
-            'Lavender','Leather',
-            'Marine','Metallic','Mineral','Mint','Mossy','Musky',
+            'Green',
+            'Herbal',
+            'Iris',
+            'Lactonic','Lavender','Leather',
+            'Marine','Metallic','Mossy','Musky',
             'Oud','Ozonic',
             'Patchouli','Powdery',
             'Rose',
-            'Salty','Smoky','Sweet',
-            'Tobacco',
+            'Salty','Smoky','Soft Spicy','Sweet',
+            'Tobacco','Tropical',
             'Vanilla','Violet',
             'Warm Spicy','White Floral','Woody',
             'Yellow Floral'
