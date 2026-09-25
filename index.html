@@ -346,7 +346,7 @@
             border: none; border-radius: 999px; padding: 8px 14px; font-weight: 700; font-size: 13px;
             cursor: pointer; opacity: 0.45;
         }
-        .picker-pill.on { opacity: 1; outline: 2px solid #fff; }
+        .picker-pill.on { opacity: 1; outline: 3px solid #fbbf24; transform: scale(1.06); }
         .picker-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
     </style>
 </head>
@@ -593,7 +593,7 @@
                 return;
             }
             var html = renderAccordBars(srcAccords);
-            html += '<p style="color:#aaa;font-size:0.9rem;">Also tagged with at least one of these:</p>';
+            html += '<p style="color:#aaa;font-size:0.9rem;">Also tagged with at least 3 of these:</p>';
             var hits = [];
             for (var i = 0; i < fragrances.length; i++) {
                 var f = fragrances[i];
@@ -607,11 +607,11 @@
                         if (other[b].toLowerCase() === sa && shared.indexOf(srcAccords[a]) === -1) shared.push(srcAccords[a]);
                     }
                 }
-                if (shared.length) hits.push({ f: f, n: shared.length, shared: shared });
+                if (shared.length >= 3) hits.push({ f: f, n: shared.length, shared: shared });
             }
             hits.sort(function(a, b) { return b.n - a.n; });
             if (!hits.length) {
-                html += '<p style="color:#aaa;">No other bottles share these accords yet.</p>';
+                html += '<p style="color:#aaa;">No other bottles share at least 3 of these accords yet.</p>';
             } else {
                 for (var i = 0; i < hits.length; i++) {
                     var h = hits[i];
@@ -675,6 +675,19 @@
                 }
             }
             box.innerHTML = html;
+            var pills = box.querySelectorAll('.picker-pill');
+            for (var i = 0; i < pills.length; i++) {
+                pills[i].onclick = function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    var key = (this.getAttribute('data-accord') || '').toLowerCase();
+                    var ix = pickerDraft.indexOf(key);
+                    if (ix === -1) pickerDraft.push(key);
+                    else pickerDraft.splice(ix, 1);
+                    if (pickerDraft.indexOf(key) === -1) this.classList.remove('on');
+                    else this.classList.add('on');
+                };
+            }
             document.getElementById('accord-picker-modal').style.display = 'flex';
         }
 
