@@ -459,6 +459,19 @@
         </div>
     </div>
 
+    <div id="accord-picker-modal" class="modal">
+        <div class="modal-content" onclick="event.stopImmediatePropagation()">
+            <span class="close-btn" onclick="closeAccordPicker()">×</span>
+            <h3 style="color:#fbbf24; margin:0 28px 12px 0;">Filter by Accords</h3>
+            <p style="color:#aaa;font-size:0.9rem;margin-top:0;">Tap pills to include. Match is currently OR (any selected accord).</p>
+            <div id="accord-picker-pills" class="picker-pills"></div>
+            <div class="picker-actions">
+                <button type="button" onclick="clearAccordPicker()">Clear</button>
+                <button type="button" onclick="applyAccordPicker()">Apply</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let fragrances = [];
         let nowWearingData = [];
