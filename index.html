@@ -462,7 +462,7 @@
         <div class="modal-content" onclick="event.stopImmediatePropagation()">
             <span class="close-btn" onclick="closeAccordPicker()">×</span>
             <h3 style="color:#fbbf24; margin:0 28px 8px 0;">Filter Accords</h3>
-            <p style="color:#aaa; font-size:0.9rem; margin:0 0 10px;">Tap pills (match any selected). Apply updates the table.</p>
+            <p style="color:#aaa; font-size:0.9rem; margin:0 0 10px;">Tap pills (must match ALL selected, any order). Apply updates the table.</p>
             <div class="picker-pills" id="accord-picker-pills"></div>
             <div class="picker-actions">
                 <button type="button" onclick="clearAccordPicker()">Clear</button>
@@ -714,9 +714,9 @@
             if (!selectedAccords.length) return true;
             var list = parseAccords(f).map(function(s) { return s.toLowerCase(); });
             for (var i = 0; i < selectedAccords.length; i++) {
-                if (list.indexOf(selectedAccords[i]) !== -1) return true;
+                if (list.indexOf(selectedAccords[i]) === -1) return false;
             }
-            return false;
+            return true;
         }
 
         function getParfumoHref(f) {
