@@ -131,6 +131,22 @@
             background: #444;
             margin: 16px 0;
         }
+
+        .accords-wrap { margin: 10px 0 4px; text-align: center; }
+        .accords-label { font-size: 0.8rem; color: #aaa; letter-spacing: 0.08em; text-transform: lowercase; margin-bottom: 6px; }
+        .accord-row { display: flex; justify-content: center; margin: 3px 0; }
+        .accord-bar {
+            display: flex; align-items: center; justify-content: center;
+            min-height: 26px; border-radius: 12px; font-size: 12px; font-weight: 600;
+            color: #111; padding: 3px 8px; box-sizing: border-box;
+        }
+        .accords-btn {
+            background: #334155; color: #e0e0e0; border: 1px solid #64748b;
+            padding: 7px 14px; border-radius: 20px; font-size: 12px; margin-top: 8px;
+        }
+        #accords-modal .modal-content { max-width: 440px; text-align: left; max-height: 80vh; overflow-y: auto; }
+        .alike-line { padding: 8px 0; border-bottom: 1px solid #333; font-size: 0.95rem; }
+        .alike-line .alike-house { color: #aaa; }
     </style>
 </head>
 <body>
@@ -180,9 +196,121 @@
         </div>
     </div>
 
+    <div id="accords-modal" class="modal">
+        <div class="modal-content" onclick="event.stopImmediatePropagation()">
+            <span class="close-btn" onclick="closeAccordsModal()">×</span>
+            <h3 style="color:#fbbf24; margin:0 28px 12px 0;">Shared Accords</h3>
+            <div id="accords-modal-body"></div>
+        </div>
+    </div>
+
     <script>
         let layersData = [];
         let fragrances = [];
+
+
+        const ACCORD_COLORS = {
+            'aromatic': '#2a9d8f', 'fresh spicy': '#8bc34a', 'citrus': '#f4e04d',
+            'woody': '#6d4c41', 'green': '#2e7d32', 'musky': '#b0a8c0',
+            'powdery': '#d7ccc8', 'fruity': '#f44336', 'vanilla': '#fff3a0',
+            'sweet': '#e53935', 'amber': '#d35400', 'leather': '#a1887f',
+            'ozonic': '#80deea', 'violet': '#9c27b0', 'animalic': '#5d4037',
+            'oud': '#4e342e', 'aquatic': '#29b6f6', 'rose': '#e91e63',
+            'patchouli': '#6b7b2a', 'warm spicy': '#e64a19', 'lavender': '#7e57c2',
+            'earthy': '#5d5346', 'balsamic': '#a1886d', 'iris': '#b39ddb',
+            'mossy': '#556b2f', 'salty': '#90a4ae', 'fresh': '#81d4fa',
+            'marine': '#1565c0', 'metallic': '#78909c'
+        };
+
+        function getAccordField(f) {
+            if (!f) return '';
+            return (f.MainAccord || f.MainAccords || f['Main Accord'] || f.Accords || '').toString();
+        }
+
+        function parseAccords(f) {
+            const raw = getAccordField(f);
+            if (!raw || raw === 'N/A' || raw === '?') return [];
+            return raw.split(',').map(function(s) { return s.trim(); }).filter(function(s) { return s && s !== 'N/A'; });
+        }
+
+        function accordColor(name) {
+            const key = (name || '').toLowerCase();
+            if (ACCORD_COLORS[key]) return ACCORD_COLORS[key];
+            var hash = 0;
+            for (var i = 0; i < key.length; i++) hash = ((hash << 5) - hash) + key.charCodeAt(i);
+            return 'hsl(' + (Math.abs(hash) % 360) + ', 42%, 48%)';
+        }
+
+        function renderAccordBars(list) {
+            if (!list.length) return '';
+            var html = '<div class="accords-wrap"><div class="accords-label">main accords</div>';
+            for (var i = 0; i < list.length; i++) {
+                var w = Math.max(42, 100 - i * 8);
+                var name = list[i];
+                var bg = accordColor(name);
+                var fg = '#111';
+                var low = name.toLowerCase();
+                if (low === 'oud' || low === 'woody' || low === 'green' || low === 'animalic' || low === 'earthy' || low === 'marine' || low === 'violet' || low === 'patchouli') fg = '#f5f5f5';
+                html += '<div class="accord-row"><div class="accord-bar" style="width:' + w + '%;background:' + bg + ';color:' + fg + ';">' + name + '</div></div>';
+            }
+            html += '</div>';
+            return html;
+        }
+
+        function openAccordsModal(house, name) {
+            var src = fragrances.find(function(f) {
+                return String(f.House || '').toLowerCase() === String(house || '').toLowerCase() &&
+                       String(f.Name || '').toLowerCase() === String(name || '').toLowerCase();
+            }) || findFragrance(name);
+            var body = document.getElementById('accords-modal-body');
+            var srcAccords = parseAccords(src);
+            if (!srcAccords.length) {
+                body.innerHTML = '<p style="color:#aaa;">No accords entered yet.</p>';
+                document.getElementById('accords-modal').style.display = 'flex';
+                return;
+            }
+            var html = renderAccordBars(srcAccords);
+            html += '<p style="color:#aaa;font-size:0.9rem;">Also tagged with at least one of these:</p>';
+            var hits = [];
+            for (var i = 0; i < fragrances.length; i++) {
+                var f = fragrances[i];
+                if (src && f === src) continue;
+                var other = parseAccords(f);
+                if (!other.length) continue;
+                var shared = [];
+                for (var a = 0; a < srcAccords.length; a++) {
+                    var sa = srcAccords[a].toLowerCase();
+                    for (var b = 0; b < other.length; b++) {
+                        if (other[b].toLowerCase() === sa && shared.indexOf(srcAccords[a]) === -1) shared.push(srcAccords[a]);
+                    }
+                }
+                if (shared.length) hits.push({ f: f, shared: shared });
+            }
+            hits.sort(function(a, b) { return b.shared.length - a.shared.length; });
+            if (!hits.length) html += '<p style="color:#aaa;">No other bottles share these accords yet.</p>';
+            else {
+                for (var i = 0; i < hits.length; i++) {
+                    var h = hits[i];
+                    html += '<div class="alike-line"><span class="alike-house">' + cleanValue(h.f.House) + '</span> — ' + cleanValue(h.f.Name) + '<br><span style="color:#888;font-size:0.85rem;">' + h.shared.join(', ') + '</span></div>';
+                }
+            }
+            body.innerHTML = html;
+            document.getElementById('accords-modal').style.display = 'flex';
+        }
+
+        function closeAccordsModal() {
+            document.getElementById('accords-modal').style.display = 'none';
+        }
+
+        function fragAccordBlock(frag) {
+            if (!frag) return '';
+            var list = parseAccords(frag);
+            var html = renderAccordBars(list);
+            if (list.length) {
+                html += '<button type="button" class="accords-btn" data-house="' + String(frag.House || '').replace(/"/g, '') + '" data-name="' + String(frag.Name || '').replace(/"/g, '') + '">Accords</button>';
+            }
+            return html;
+        }
 
         function cleanValue(val) {
             if (val === null || val === undefined || val === '' || val === '?') {
@@ -302,7 +430,8 @@
                         '<strong>Genre:</strong> ' + cleanValue(frag1.Genre) + '<br>' +
                         '<strong>Season:</strong> ' + cleanValue(frag1.Seasons) + '<br>' +
                         '<strong>Perfumer:</strong> ' + cleanValue(frag1.Perfumer) +
-                    '</div>';
+                    '</div>' +
+                    fragAccordBlock(frag1);
             }
 
             html += '</div><hr class="separator">';
@@ -324,7 +453,8 @@
                         '<strong>Genre:</strong> ' + cleanValue(frag2.Genre) + '<br>' +
                         '<strong>Season:</strong> ' + cleanValue(frag2.Seasons) + '<br>' +
                         '<strong>Perfumer:</strong> ' + cleanValue(frag2.Perfumer) +
-                    '</div>';
+                    '</div>' +
+                    fragAccordBlock(frag2);
             }
 
             html += '</div>';
@@ -350,6 +480,17 @@
         const modal = document.getElementById('modal');
         modal.addEventListener('click', function(e) {
             if (e.target === modal) closeModal();
+        });
+
+
+        document.addEventListener('click', function(e) {
+            var btn = e.target.closest && e.target.closest('.accords-btn');
+            if (btn) {
+                e.preventDefault();
+                openAccordsModal(btn.getAttribute('data-house'), btn.getAttribute('data-name'));
+                return;
+            }
+            if (e.target.id === 'accords-modal') closeAccordsModal();
         });
 
         window.onload = () => {

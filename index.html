@@ -294,6 +294,35 @@
             font-size: 1.02rem; 
             color: #ccc; 
         }
+
+        .accords-wrap { margin: 16px 0 8px; text-align: center; }
+        .accords-label { font-size: 0.85rem; color: #aaa; letter-spacing: 0.08em; text-transform: lowercase; margin-bottom: 8px; }
+        .accord-row { display: flex; justify-content: center; margin: 3px 0; }
+        .accord-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 28px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #111;
+            padding: 4px 10px;
+            box-sizing: border-box;
+        }
+        .accords-btn {
+            background: #334155;
+            color: #e0e0e0;
+            border: 1px solid #64748b;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+        #accords-modal .modal-content { max-width: 440px; text-align: left; max-height: 80vh; overflow-y: auto; }
+        .alike-line { padding: 8px 0; border-bottom: 1px solid #333; font-size: 0.98rem; }
+        .alike-line a { color: #60a5fa; text-decoration: none; font-weight: 600; }
+        .alike-line .alike-house { color: #aaa; font-weight: 400; }
     </style>
 </head>
 <body>
@@ -403,6 +432,14 @@
         </div>
     </div>
 
+    <div id="accords-modal" class="modal">
+        <div class="modal-content" onclick="event.stopImmediatePropagation()">
+            <span class="close-btn" onclick="closeAccordsModal()">×</span>
+            <h3 style="color:#fbbf24; margin:0 28px 12px 0;">Shared Accords</h3>
+            <div id="accords-modal-body"></div>
+        </div>
+    </div>
+
     <script>
         let fragrances = [];
         let nowWearingData = [];
@@ -417,6 +454,145 @@
         function cleanValue(val) {
             if (val === null || val === undefined || val === '' || val === '?') return 'N/A';
             return val;
+        }
+
+
+        const ACCORD_COLORS = {
+            'aromatic': '#2a9d8f',
+            'fresh spicy': '#8bc34a',
+            'citrus': '#f4e04d',
+            'woody': '#6d4c41',
+            'green': '#2e7d32',
+            'musky': '#b0a8c0',
+            'powdery': '#d7ccc8',
+            'fruity': '#f44336',
+            'vanilla': '#fff3a0',
+            'sweet': '#e53935',
+            'amber': '#d35400',
+            'leather': '#a1887f',
+            'ozonic': '#80deea',
+            'violet': '#9c27b0',
+            'animalic': '#5d4037',
+            'oud': '#4e342e',
+            'aquatic': '#29b6f6',
+            'rose': '#e91e63',
+            'patchouli': '#6b7b2a',
+            'warm spicy': '#e64a19',
+            'lavender': '#7e57c2',
+            'earthy': '#5d5346',
+            'balsamic': '#a1886d',
+            'iris': '#b39ddb',
+            'mossy': '#556b2f',
+            'salty': '#90a4ae',
+            'fresh': '#81d4fa',
+            'marine': '#1565c0',
+            'metallic': '#78909c',
+            'smoky': '#616161',
+            'tobacco': '#8d6e63',
+            'honey': '#ffb300',
+            'floral': '#f48fb1',
+            'white floral': '#fce4ec',
+            'yellow floral': '#ffee58',
+            'aldehydic': '#eceff1',
+            'coconut': '#fff8e1',
+            'coffee': '#4e342e',
+            'chocolate': '#3e2723',
+            'gourmand': '#bf360c',
+            'herbal': '#689f38',
+            'mint': '#00bfa5',
+            'anise': '#7cb342',
+            'boozy': '#8d4e2a',
+            'cinnamon': '#c62828',
+            'incense': '#5d4037',
+            'sand': '#d7ccc8',
+            'mineral': '#90a4ae',
+            'ozone': '#80deea'
+        };
+
+        function getAccordField(f) {
+            return (f.MainAccord || f.MainAccords || f['Main Accord'] || f.Accords || '').toString();
+        }
+
+        function parseAccords(f) {
+            const raw = getAccordField(f);
+            if (!raw || raw === 'N/A' || raw === '?') return [];
+            return raw.split(',').map(function(s) { return s.trim(); }).filter(function(s) { return s && s !== 'N/A'; });
+        }
+
+        function accordColor(name) {
+            const key = (name || '').toLowerCase();
+            if (ACCORD_COLORS[key]) return ACCORD_COLORS[key];
+            var hash = 0;
+            for (var i = 0; i < key.length; i++) hash = ((hash << 5) - hash) + key.charCodeAt(i);
+            var hue = Math.abs(hash) % 360;
+            return 'hsl(' + hue + ', 42%, 48%)';
+        }
+
+        function accordTextColor(bg) {
+            const darks = ['woody','green','oud','animalic','earthy','marine','violet','rose','sweet','fruity','warm spicy','amber','lavender','patchouli','leather'];
+            return '#111';
+        }
+
+        function renderAccordBars(list) {
+            if (!list.length) return '';
+            var html = '<div class="accords-wrap"><div class="accords-label">main accords</div>';
+            for (var i = 0; i < list.length; i++) {
+                var w = Math.max(42, 100 - i * 8);
+                var name = list[i];
+                var bg = accordColor(name);
+                var fg = '#111';
+                var low = name.toLowerCase();
+                if (low === 'oud' || low === 'woody' || low === 'green' || low === 'animalic' || low === 'earthy' || low === 'marine' || low === 'violet' || low === 'patchouli') fg = '#f5f5f5';
+                html += '<div class="accord-row"><div class="accord-bar" style="width:' + w + '%;background:' + bg + ';color:' + fg + ';">' + name + '</div></div>';
+            }
+            html += '</div>';
+            return html;
+        }
+
+        function openAccordsModal(house, name) {
+            var src = fragrances.find(function(f) {
+                return (f.House || '') === house && (f.Name || '') === name;
+            });
+            if (!src) return;
+            var srcAccords = parseAccords(src);
+            var body = document.getElementById('accords-modal-body');
+            if (!srcAccords.length) {
+                body.innerHTML = '<p style="color:#aaa;">No accords entered yet.</p>';
+                document.getElementById('accords-modal').style.display = 'flex';
+                return;
+            }
+            var html = renderAccordBars(srcAccords);
+            html += '<p style="color:#aaa;font-size:0.9rem;">Also tagged with at least one of these:</p>';
+            var hits = [];
+            for (var i = 0; i < fragrances.length; i++) {
+                var f = fragrances[i];
+                if (f === src) continue;
+                var other = parseAccords(f);
+                if (!other.length) continue;
+                var shared = [];
+                for (var a = 0; a < srcAccords.length; a++) {
+                    var sa = srcAccords[a].toLowerCase();
+                    for (var b = 0; b < other.length; b++) {
+                        if (other[b].toLowerCase() === sa && shared.indexOf(srcAccords[a]) === -1) shared.push(srcAccords[a]);
+                    }
+                }
+                if (shared.length) hits.push({ f: f, n: shared.length, shared: shared });
+            }
+            hits.sort(function(a, b) { return b.n - a.n; });
+            if (!hits.length) {
+                html += '<p style="color:#aaa;">No other bottles share these accords yet.</p>';
+            } else {
+                for (var i = 0; i < hits.length; i++) {
+                    var h = hits[i];
+                    html += '<div class="alike-line"><span class="alike-house">' + cleanValue(h.f.House) + '</span> — ' + cleanValue(h.f.Name) + '<br><span style="color:#888;font-size:0.85rem;">' + h.shared.join(', ') + '</span></div>';
+                }
+            }
+            body.innerHTML = html;
+            document.getElementById('accords-modal').style.display = 'flex';
+        }
+
+        function closeAccordsModal() {
+            document.getElementById('accords-modal').style.display = 'none';
         }
 
         function getParfumoHref(f) {
@@ -475,6 +651,12 @@
                     '<strong>Size:</strong> ' + cleanValue(fragrance.Size) + ' ml' +
                 '</div>';
 
+            var accordList = parseAccords(fragrance);
+            html += renderAccordBars(accordList);
+            if (accordList.length) {
+                html += '<button type="button" class="accords-btn" id="open-accords-btn">Accords</button>';
+            }
+
             if (fragrance.Notes && fragrance.Notes !== 'N/A' && fragrance.Notes.trim() !== '') {
                 html += '<hr><div class="wear-stat"><strong>Notes:</strong> ' + cleanValue(fragrance.Notes) + '</div>';
             }
@@ -496,6 +678,12 @@
 
             document.getElementById('modal-card').innerHTML = html;
             document.getElementById('modal').style.display = 'flex';
+            var ab = document.getElementById('open-accords-btn');
+            if (ab) {
+                ab.onclick = function() {
+                    openAccordsModal(fragrance.House, fragrance.Name);
+                };
+            }
         }
 
         function closeModal() {
@@ -983,6 +1171,12 @@
         modal.addEventListener('click', function(e) {
             if (e.target === modal) closeModal();
         });
+        const accordsModal = document.getElementById('accords-modal');
+        if (accordsModal) {
+            accordsModal.addEventListener('click', function(e) {
+                if (e.target === accordsModal) closeAccordsModal();
+            });
+        }
 
         window.onload = () => {
             loadCSV();
