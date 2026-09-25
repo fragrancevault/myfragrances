@@ -25,6 +25,8 @@
         .title-seasons { color: #fb923c; border-bottom: 2px solid #fb923c; }
         .title-perf { color: #c084fc; border-bottom: 2px solid #c084fc; }
         .title-houses { color: #60a5fa; border-bottom: 2px solid #60a5fa; }
+        .title-accords { color: #34d399; border-bottom: 2px solid #34d399; }
+        .accord-stat-pill { display:inline-block; border-radius:999px; padding:6px 12px; margin:4px; font-weight:700; font-size:13px; color:#111; cursor:pointer; }
         .title-overview { color: #e5e7eb; border-bottom: 2px solid #444; }
         .bar-container { height: 28px; background: #222; border-radius: 999px; overflow: hidden; margin: 10px 0; }
         .bar { height: 100%; display: flex; align-items: center; padding: 0 12px; color: #111; font-weight: bold; font-size: 0.95rem; min-width: 8%; }
@@ -107,6 +109,11 @@
                 <div id="housesList" style="line-height:1.8;"></div>
             </div>
         </div>
+
+        <div class="stat-card">
+            <h2 class="section-title title-accords">Main Accords</h2>
+            <div id="accordsList"></div>
+        </div>
     </div>
 
     <div id="list-modal" class="modal">
@@ -138,6 +145,46 @@
 
         function isUnrated(f) {
             return ratingKey(f) === '0';
+        }
+
+
+        const ACCORD_COLORS = {
+            'aromatic': '#2a9d8f', 'fresh spicy': '#8bc34a', 'citrus': '#f4e04d',
+            'woody': '#6d4c41', 'green': '#2e7d32', 'musky': '#b0a8c0',
+            'powdery': '#d7ccc8', 'fruity': '#f44336', 'vanilla': '#fff3a0',
+            'sweet': '#e53935', 'amber': '#d35400', 'leather': '#a1887f',
+            'ozonic': '#80deea', 'violet': '#9c27b0', 'animalic': '#5d4037',
+            'oud': '#4e342e', 'aquatic': '#29b6f6', 'rose': '#e91e63',
+            'patchouli': '#6b7b2a', 'warm spicy': '#e64a19', 'lavender': '#7e57c2',
+            'earthy': '#5d5346', 'balsamic': '#a1886d', 'iris': '#b39ddb',
+            'mossy': '#556b2f', 'salty': '#90a4ae', 'fresh': '#81d4fa',
+            'marine': '#1565c0', 'metallic': '#78909c'
+        };
+
+        function parseAccords(f) {
+            var raw = (f.MainAccord || f.MainAccords || f['Main Accord'] || f.Accords || '').toString();
+            if (!raw || raw === 'N/A' || raw === '?') return [];
+            return raw.split(',').map(function(s) { return s.trim(); }).filter(function(s) { return s && s !== 'N/A'; });
+        }
+
+        function accordColor(name) {
+            var key = (name || '').toLowerCase();
+            if (ACCORD_COLORS[key]) return ACCORD_COLORS[key];
+            var hash = 0;
+            for (var i = 0; i < key.length; i++) hash = ((hash << 5) - hash) + key.charCodeAt(i);
+            return 'hsl(' + (Math.abs(hash) % 360) + ', 42%, 48%)';
+        }
+
+        function listByAccord(name) {
+            var key = (name || '').toLowerCase();
+            var items = fragrances.filter(function(f) {
+                var list = parseAccords(f);
+                for (var i = 0; i < list.length; i++) {
+                    if (list[i].toLowerCase() === key) return true;
+                }
+                return false;
+            });
+            showListModal(name, items, '');
         }
 
         function getParfumoHref(f) {
@@ -414,6 +461,30 @@
             });
             houseHTML += '</ol>';
             document.getElementById('housesList').innerHTML = houseHTML;
+
+            var accordCounts = {};
+            var tagged = 0;
+            fragrances.forEach(function(f) {
+                var list = parseAccords(f);
+                if (list.length) tagged++;
+                list.forEach(function(a) {
+                    var k = a.toLowerCase();
+                    if (!accordCounts[k]) accordCounts[k] = { name: a, n: 0 };
+                    accordCounts[k].n++;
+                });
+            });
+            var aKeys = Object.keys(accordCounts).sort(function(a,b){ return accordCounts[b].n - accordCounts[a].n; });
+            var aHTML = '<p style="color:#888;margin:0 0 10px;">' + tagged + ' bottles tagged so far</p>';
+            aKeys.forEach(function(k) {
+                var row = accordCounts[k];
+                var perc = total > 0 ? ((row.n / total) * 100).toFixed(1) : '0';
+                aHTML += '<div class="tap-row" onclick="listByAccord(\'' + row.name.replace(/'/g, "\\'") + '\')">' +
+                    '<span class="accord-stat-pill" style="background:' + accordColor(row.name) + ';">' + esc(row.name) + '</span> ' +
+                    row.n + ' (' + perc + '% of collection)</div>';
+            });
+            if (!aKeys.length) aHTML += '<p style="color:#888;">No MainAccord values yet.</p>';
+            document.getElementById('accordsList').innerHTML = aHTML;
+
         }
 
         function toggleMenu() {

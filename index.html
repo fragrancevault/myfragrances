@@ -323,6 +323,24 @@
         .alike-line { padding: 8px 0; border-bottom: 1px solid #333; font-size: 0.98rem; }
         .alike-line a { color: #60a5fa; text-decoration: none; font-weight: 600; }
         .alike-line .alike-house { color: #aaa; font-weight: 400; }
+
+        .accord-search-btn {
+            background: #0f766e !important;
+            margin: 8px auto 0;
+            display: block;
+            min-width: 160px;
+            max-width: 220px;
+            border-radius: 9999px;
+            padding: 11px 24px;
+        }
+        #accord-picker-modal .modal-content { max-width: 440px; text-align: center; max-height: 82vh; overflow-y: auto; }
+        .picker-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 10px 0 16px; }
+        .picker-pill {
+            border: none; border-radius: 999px; padding: 8px 14px; font-weight: 700; font-size: 13px;
+            cursor: pointer; opacity: 0.45;
+        }
+        .picker-pill.on { opacity: 1; outline: 2px solid #fff; }
+        .picker-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
     </style>
 </head>
 <body>
@@ -398,6 +416,7 @@
         <button onclick="showTop10()" id="top10-btn" class="top10-btn">Top 10</button>
         <button onclick="exportToCSV()" class="export-btn">Export To CSV</button>
 
+        <button type="button" id="accord-search-btn" class="accord-search-btn" onclick="openAccordPicker()">Accords</button>
         <button id="inspiration-toggle" onclick="cycleInspirationFilter()" class="inspiration-toggle">Include Dupes</button>
     </div>
 
@@ -448,6 +467,8 @@
         let currentSortCol = null;
         let isTop10Active = false;
         let inspirationFilter = 0; // 0: Include Dupes (all), 1: No Dupes (N), 2: Dupes Only (Y)
+        let selectedAccords = [];
+        let pickerDraft = [];
 
         const highFirst = [2, 3, 4, 7, 9];
 
@@ -593,6 +614,71 @@
 
         function closeAccordsModal() {
             document.getElementById('accords-modal').style.display = 'none';
+        }
+
+
+        function allAccordNames() {
+            var set = {};
+            for (var i = 0; i < fragrances.length; i++) {
+                var list = parseAccords(fragrances[i]);
+                for (var j = 0; j < list.length; j++) set[list[j].toLowerCase()] = list[j];
+            }
+            var keys = Object.keys(set).sort();
+            return keys.map(function(k) { return set[k]; });
+        }
+
+        function updateAccordSearchBtn() {
+            var btn = document.getElementById('accord-search-btn');
+            if (!btn) return;
+            if (selectedAccords.length) btn.textContent = 'Accords (' + selectedAccords.length + ')';
+            else btn.textContent = 'Accords';
+        }
+
+        function openAccordPicker() {
+            pickerDraft = selectedAccords.slice();
+            var names = allAccordNames();
+            var box = document.getElementById('accord-picker-pills');
+            var html = '';
+            if (!names.length) {
+                html = '<p style="color:#aaa;">No MainAccord values in the sheet yet.</p>';
+            } else {
+                for (var i = 0; i < names.length; i++) {
+                    var n = names[i];
+                    var on = pickerDraft.indexOf(n.toLowerCase()) !== -1 ? ' on' : '';
+                    var bg = accordColor(n);
+                    html += '<button type="button" class="picker-pill' + on + '" data-accord="' + n.replace(/"/g, '') + '" style="background:' + bg + ';color:#111;">' + n + '</button>';
+                }
+            }
+            box.innerHTML = html;
+            document.getElementById('accord-picker-modal').style.display = 'flex';
+        }
+
+        function closeAccordPicker() {
+            document.getElementById('accord-picker-modal').style.display = 'none';
+        }
+
+        function clearAccordPicker() {
+            pickerDraft = [];
+            selectedAccords = [];
+            updateAccordSearchBtn();
+            closeAccordPicker();
+            filterTable();
+        }
+
+        function applyAccordPicker() {
+            selectedAccords = pickerDraft.slice();
+            updateAccordSearchBtn();
+            closeAccordPicker();
+            filterTable();
+        }
+
+        function matchesAccords(f) {
+            if (!selectedAccords.length) return true;
+            var list = parseAccords(f).map(function(s) { return s.toLowerCase(); });
+            for (var i = 0; i < selectedAccords.length; i++) {
+                if (list.indexOf(selectedAccords[i]) !== -1) return true;
+            }
+            return false;
         }
 
         function getParfumoHref(f) {
@@ -966,7 +1052,7 @@
                 }
                 // 0 = all
 
-                return matchSearch && matchSeason && matchRating && matchGenre && matchInspiration;
+                return matchSearch && matchSeason && matchRating && matchGenre && matchInspiration && matchesAccords(f);
             });
             
             renderTable(filtered);
@@ -1034,6 +1120,9 @@
             sortState = {};
             currentSortCol = null;
             inspirationFilter = 0;
+            selectedAccords = [];
+            pickerDraft = [];
+            updateAccordSearchBtn();
             updateInspirationButton();
             renderTable(fragrances);
             updateFooter();
@@ -1089,7 +1178,7 @@
                     matchInspiration = insp === 'Y';
                 }
 
-                return matchSearch && matchSeason && matchRating && matchGenre && matchInspiration;
+                return matchSearch && matchSeason && matchRating && matchGenre && matchInspiration && matchesAccords(f);
             });
 
             if (filtered.length === 0) {
@@ -1175,6 +1264,22 @@
         if (accordsModal) {
             accordsModal.addEventListener('click', function(e) {
                 if (e.target === accordsModal) closeAccordsModal();
+            });
+        }
+
+
+        var apm = document.getElementById('accord-picker-modal');
+        if (apm) {
+            apm.addEventListener('click', function(e) {
+                if (e.target === apm) closeAccordPicker();
+                var pill = e.target.closest && e.target.closest('.picker-pill');
+                if (pill) {
+                    var key = (pill.getAttribute('data-accord') || '').toLowerCase();
+                    var i = pickerDraft.indexOf(key);
+                    if (i === -1) pickerDraft.push(key);
+                    else pickerDraft.splice(i, 1);
+                    pill.classList.toggle('on');
+                }
             });
         }
 
