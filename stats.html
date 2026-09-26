@@ -240,14 +240,24 @@
 
         function listByAccord(name) {
             var key = (name || '').toLowerCase();
-            var items = fragrances.filter(function(f) {
+            var items = [];
+            fragrances.forEach(function(f) {
                 var list = parseMainAccords(f);
+                var rank = -1;
                 for (var i = 0; i < list.length; i++) {
-                    if (list[i].toLowerCase() === key) return true;
+                    if (list[i].toLowerCase() === key) { rank = i; break; }
                 }
-                return false;
+                if (rank !== -1) {
+                    var row = Object.assign({}, f);
+                    row._accordRank = rank;
+                    items.push(row);
+                }
             });
-            showListModal(name, items, '');
+            items.sort(function(a, b) {
+                if (a._accordRank !== b._accordRank) return a._accordRank - b._accordRank;
+                return sortByName(a, b);
+            });
+            showListModal(name, items, 'Sorted by strength in the mix (1st listed = strongest), then name');
         }
 
         function getParfumoHref(f) {
@@ -280,7 +290,9 @@
             } else {
                 noteEl.style.display = 'none';
             }
-            var list = items.slice().sort(sortByName);
+            var list = items.slice();
+            var hasRank = list.length && list[0]._accordRank !== undefined;
+            if (!hasRank) list.sort(sortByName);
             var html = '';
             for (let i = 0; i < list.length; i++) {
                 var f = list[i];
@@ -289,6 +301,7 @@
                 var pHref = getParfumoHref(f);
                 var fHref = getFragHref(f);
                 html += '<div class="modal-line">';
+                if (hasRank) html += '<span style="color:#fbbf24;font-weight:700;margin-right:8px;">#' + (f._accordRank + 1) + '</span>';
                 html += '<a class="name-link" href="' + fHref + '" target="_blank">' + name + '</a>';
                 html += ' — ';
                 html += '<a class="house-link" href="' + pHref + '" target="_blank">' + house + '</a>';
