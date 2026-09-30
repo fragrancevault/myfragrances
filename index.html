@@ -498,56 +498,77 @@
         }
 
 
-        const ACCORD_COLORS = {
-            'aldehydic': '#eceff1',
-            'amber': '#c75b12',
-            'animalic': '#5d4037',
-            'aquatic': '#4aa3c7',
-            'aromatic': '#2a9d8f',
-            'balsamic': '#a1886d',
-            'citrus': '#f4e04d',
-            'earthy': '#5d5346',
-            'floral': '#f48fb1',
-            'fresh': '#81d4fa',
-            'fresh spicy': '#8bc34a',
-            'fruity': '#f44336',
-            'green': '#2e7d32',
-            'herbal': '#689f38',
-            'iris': '#b39ddb',
-            'lactonic': '#f3e5ab',
-            'lavender': '#7e57c2',
-            'leather': '#9c6b56',
-            'marine': '#1565c0',
-            'metallic': '#78909c',
-            'mossy': '#556b2f',
-            'musky': '#b0a8c0',
-            'oud': '#4e342e',
-            'ozonic': '#80deea',
-            'patchouli': '#6b7b2a',
-            'powdery': '#d7ccc8',
-            'rose': '#e91e63',
-            'salty': '#90a4ae',
-            'smoky': '#757575',
-            'soft spicy': '#e57373',
-            'sweet': '#e53935',
-            'tobacco': '#8d6e63',
-            'tropical': '#ff9800',
-            'vanilla': '#fff3a0',
-            'violet': '#9c27b0',
-            'warm spicy': '#e64a19',
-            'white floral': '#f8bbd0',
-            'woody': '#6d4c41',
-            'yellow floral': '#ffee58'
-        };
+        // ACCORD_COLORS + ACCORD_LIST + NOTE_STOP live in shared.js
 
-        function getAccordField(f) {
-            return (f.MainAccord || f.MainAccords || f['Main Accord'] || f.Accords || '').toString();
+        function emptyCell(v) {
+            v = (v == null ? '' : v).toString().trim();
+            return !v || v === 'N/A' || v === '?';
+        }
+
+        function getMainAccordField(f) {
+            return (f.MainAccords || f.MainAccord || f['Main Accord'] || '').toString();
+        }
+
+        function getTypeField(f) {
+            return (f.Accords || f.Accord || f.Type || '').toString();
         }
 
         function parseAccords(f) {
-            const raw = getAccordField(f);
-            if (!raw || raw === 'N/A' || raw === '?') return [];
-            return raw.split(',').map(function(s) { return s.trim(); }).filter(function(s) { return s && s !== 'N/A'; });
+            const raw = getMainAccordField(f);
+            if (emptyCell(raw)) return [];
+            return raw.split(/[,;/]+/).map(function(s) { return s.trim(); }).filter(function(s) { return s && s !== 'N/A'; });
+        }
+
+        function parseType(f) {
+            const raw = getTypeField(f);
+            if (emptyCell(raw)) return [];
+            return raw.split(/[,;/]+/).map(function(s) { return s.trim(); }).filter(function(s) { return s && s !== 'N/A'; });
+        }
+
+        function normTypeToken(s) {
+            s = (s || '').toLowerCase().trim();
+            if (s.length > 4 && s.charAt(s.length - 1) === 'y') s = s.slice(0, -1);
+            return s;
+        }
+
+        function typeTokenSet(f) {
+            var set = {};
+            var parts = parseType(f);
+            for (var i = 0; i < parts.length; i++) {
+                var chunks = parts[i].split(/[-/&+]+/);
+                for (var j = 0; j < chunks.length; j++) {
+                    var tok = normTypeToken(chunks[j]);
+                    if (tok) set[tok] = true;
+                }
+            }
+            return Object.keys(set).sort();
+        }
+
+        function typeSetsEqual(a, b) {
+            if (a.length !== b.length || !a.length) return false;
+            for (var i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+            return true;
+        }
+
+        // NOTE_STOP lives in shared.js — edit shared.js only
+
+        function parseNotes(f) {
+            var raw = (f.Notes || '').toString();
+            if (emptyCell(raw)) return [];
+            raw = raw.toLowerCase();
+            var stop = {};
+            for (var i = 0; i < NOTE_STOP.length; i++) stop[NOTE_STOP[i]] = true;
+            raw = raw.replace(/[^a-z0-9]+/g, ' ');
+            var out = [];
+            var seen = {};
+            raw.split(/\s+/).forEach(function(s) {
+                s = s.trim();
+                if (!s || stop[s] || s.length < 2) return;
+                if (seen[s]) return;
+                seen[s] = true;
+                out.push(s);
+            });
+            return out;
         }
 
         function accordColor(name) {
@@ -564,9 +585,10 @@
             return '#111';
         }
 
-        function renderAccordBars(list) {
+        function renderAccordBars(list, label) {
             if (!list.length) return '';
-            var html = '<div class="accords-wrap"><div class="accords-label">main accords</div>';
+            label = label || 'main accords';
+            var html = '<div class="accords-wrap"><div class="accords-label">' + label + '</div>';
             for (var i = 0; i < list.length; i++) {
                 var w = Math.max(42, 100 - i * 8);
                 var name = list[i];
@@ -580,10 +602,14 @@
             return html;
         }
 
-        function openAccordsModal(house, name) {
-            var src = fragrances.find(function(f) {
+        function findFrag(house, name) {
+            return fragrances.find(function(f) {
                 return (f.House || '') === house && (f.Name || '') === name;
             });
+        }
+
+        function openAccordsModal(house, name) {
+            var src = findFrag(house, name);
             if (!src) return;
             var srcAccords = parseAccords(src);
             var body = document.getElementById('accords-modal-body');
@@ -620,33 +646,75 @@
             }
             body.innerHTML = html;
             document.getElementById('accords-modal').style.display = 'flex';
+            document.querySelector('#accords-modal h3').textContent = 'Shared Accords';
         }
 
         function closeAccordsModal() {
             document.getElementById('accords-modal').style.display = 'none';
         }
 
+        function openTypeModal(house, name) {
+            var src = findFrag(house, name);
+            if (!src) return;
+            var srcSet = typeTokenSet(src);
+            var body = document.getElementById('accords-modal-body');
+            var html = renderAccordBars(parseType(src), 'type');
+            html += '<p style="color:#aaa;font-size:0.9rem;">Same type tokens (order does not matter): ' + srcSet.join(', ') + '</p>';
+            var hits = [];
+            for (var i = 0; i < fragrances.length; i++) {
+                var f = fragrances[i];
+                if (f === src) continue;
+                if (typeSetsEqual(srcSet, typeTokenSet(f))) hits.push(f);
+            }
+            hits.sort(function(a, b) { return String(a.Name||'').localeCompare(String(b.Name||'')); });
+            if (!hits.length) html += '<p style="color:#aaa;">No other bottles share this type.</p>';
+            else {
+                for (var i = 0; i < hits.length; i++) {
+                    var f = hits[i];
+                    html += '<div class="alike-line"><span class="alike-house">' + cleanValue(f.House) + '</span> — ' + cleanValue(f.Name) + '<br><span style="color:#888;font-size:0.85rem;">' + cleanValue(getTypeField(f)) + '</span></div>';
+                }
+            }
+            body.innerHTML = html;
+            document.getElementById('accords-modal').style.display = 'flex';
+            document.querySelector('#accords-modal h3').textContent = 'Same Type';
+        }
 
-        var ACCORD_LIST = [
-            'Aldehydic','Amber','Animalic','Aquatic','Aromatic',
-            'Balsamic',
-            'Citrus',
-            'Earthy',
-            'Floral','Fresh','Fresh Spicy','Fruity',
-            'Green',
-            'Herbal',
-            'Iris',
-            'Lactonic','Lavender','Leather',
-            'Marine','Metallic','Mossy','Musky',
-            'Oud','Ozonic',
-            'Patchouli','Powdery',
-            'Rose',
-            'Salty','Smoky','Soft Spicy','Sweet',
-            'Tobacco','Tropical',
-            'Vanilla','Violet',
-            'Warm Spicy','White Floral','Woody',
-            'Yellow Floral'
-        ];
+        function openNotesModal(house, name) {
+            var src = findFrag(house, name);
+            if (!src) return;
+            var srcNotes = parseNotes(src);
+            var body = document.getElementById('accords-modal-body');
+            var html = '<p style="color:#aaa;font-size:0.9rem;">Also lists at least 4 of these notes:</p>';
+            var hits = [];
+            for (var i = 0; i < fragrances.length; i++) {
+                var f = fragrances[i];
+                if (f === src) continue;
+                var other = parseNotes(f);
+                if (!other.length) continue;
+                var shared = [];
+                for (var a = 0; a < srcNotes.length; a++) {
+                    var sa = srcNotes[a].toLowerCase();
+                    for (var b = 0; b < other.length; b++) {
+                        if (other[b].toLowerCase() === sa && shared.indexOf(srcNotes[a]) === -1) shared.push(srcNotes[a]);
+                    }
+                }
+                if (shared.length >= 4) hits.push({ f: f, n: shared.length, shared: shared });
+            }
+            hits.sort(function(a, b) { return b.n - a.n; });
+            if (!hits.length) html += '<p style="color:#aaa;">No other bottles share at least 4 notes.</p>';
+            else {
+                for (var i = 0; i < hits.length; i++) {
+                    var h = hits[i];
+                    html += '<div class="alike-line"><span class="alike-house">' + cleanValue(h.f.House) + '</span> — ' + cleanValue(h.f.Name) + '<br><span style="color:#888;font-size:0.85rem;">' + h.shared.join(', ') + '</span></div>';
+                }
+            }
+            body.innerHTML = html;
+            document.getElementById('accords-modal').style.display = 'flex';
+            document.querySelector('#accords-modal h3').textContent = 'Shared Notes';
+        }
+
+
+        // ACCORD_LIST lives in shared.js
 
         function allAccordNames() {
             return ACCORD_LIST.slice();
@@ -775,10 +843,18 @@
                     '<strong>Size:</strong> ' + cleanValue(fragrance.Size) + ' ml' +
                 '</div>';
 
-            var accordList = parseAccords(fragrance);
-            html += renderAccordBars(accordList);
-            if (accordList.length) {
-                html += '<button type="button" class="accords-btn" id="open-accords-btn">Accords</button>';
+            var mainList = parseAccords(fragrance);
+            var typeList = parseType(fragrance);
+            var noteList = parseNotes(fragrance);
+            if (typeList.length) html += renderAccordBars(typeList, 'type');
+            if (mainList.length) html += renderAccordBars(mainList, 'main accords');
+            if (typeList.length || mainList.length || noteList.length) {
+                html += '<div class="accords-label" style="margin-top:14px;">Similar Matches</div>';
+                html += '<div class="picker-actions" style="margin-top:8px;">';
+                if (typeList.length) html += '<button type="button" class="accords-btn" id="open-type-btn">Type</button>';
+                if (mainList.length) html += '<button type="button" class="accords-btn" id="open-accords-btn">Main Accords</button>';
+                if (noteList.length) html += '<button type="button" class="accords-btn" id="open-notes-btn">Notes</button>';
+                html += '</div>';
             }
 
             if (fragrance.Notes && fragrance.Notes !== 'N/A' && fragrance.Notes.trim() !== '') {
@@ -803,11 +879,11 @@
             document.getElementById('modal-card').innerHTML = html;
             document.getElementById('modal').style.display = 'flex';
             var ab = document.getElementById('open-accords-btn');
-            if (ab) {
-                ab.onclick = function() {
-                    openAccordsModal(fragrance.House, fragrance.Name);
-                };
-            }
+            if (ab) ab.onclick = function() { openAccordsModal(fragrance.House, fragrance.Name); };
+            var nb = document.getElementById('open-notes-btn');
+            if (nb) nb.onclick = function() { openNotesModal(fragrance.House, fragrance.Name); };
+            var tb = document.getElementById('open-type-btn');
+            if (tb) tb.onclick = function() { openTypeModal(fragrance.House, fragrance.Name); };
         }
 
         function closeModal() {
