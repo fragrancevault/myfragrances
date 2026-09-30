@@ -10,6 +10,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FragVault</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="shared.js"></script>
     <style>
         body { 
             font-family: 'Segoe UI', Arial, sans-serif; 
@@ -499,6 +500,10 @@
 
 
         // ACCORD_COLORS + ACCORD_LIST + NOTE_STOP live in shared.js
+        if (typeof NOTE_STOP === 'undefined') NOTE_STOP = [];
+        if (typeof ACCORD_COLORS === 'undefined') ACCORD_COLORS = {};
+        if (typeof ACCORD_LIST === 'undefined') ACCORD_LIST = [];
+
 
         function emptyCell(v) {
             v = (v == null ? '' : v).toString().trim();
