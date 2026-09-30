@@ -664,7 +664,7 @@
             var srcSet = typeTokenSet(src);
             var body = document.getElementById('accords-modal-body');
             var html = renderAccordBars(parseType(src), 'type');
-            html += '<p style="color:#aaa;font-size:0.9rem;">Same type tokens (order does not matter): ' + srcSet.join(', ') + '</p>';
+            html += '<p style="color:#aaa;font-size:0.9rem;">' + cleanValue(getTypeField(src)) + '</p>';
             var hits = [];
             for (var i = 0; i < fragrances.length; i++) {
                 var f = fragrances[i];
