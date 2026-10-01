@@ -93,7 +93,7 @@
         #type-picker-modal, #accord-picker-modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); z-index: 1300; align-items: center; justify-content: center; padding: 15px; }
         .picker-box { background: #1a1a1a; padding: 24px 18px; border-radius: 16px; max-width: 440px; width: 100%; max-height: 82vh; overflow-y: auto; border: 1px solid #444; text-align: center; }
         .picker-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 12px 0 16px; }
-        .picker-pill { border: none; border-radius: 999px; padding: 8px 14px; font-weight: 700; font-size: 13px; cursor: pointer; opacity: 0.45; color: #111; }
+        .picker-pill { border: none; border-radius: 999px; padding: 8px 14px; font-weight: 700; font-size: 13px; cursor: pointer; opacity: 0.95; color: #111; }
         .picker-pill.on { opacity: 1; outline: 3px solid #fbbf24; transform: scale(1.05); }
         .picker-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
         .accords-wrap { margin: 12px 0 6px; text-align: center; }
@@ -214,11 +214,10 @@
     <div id="type-picker-modal">
         <div class="picker-box" onclick="event.stopImmediatePropagation()">
             <h3 style="color:#fbbf24;margin:0 0 8px;">Filter Type</h3>
-            <p style="color:#aaa;font-size:0.9rem;margin:0 0 8px;">Pick one type from this sales list.</p>
+            <p style="color:#aaa;font-size:0.9rem;margin:0 0 8px;">Tap one type. It applies and closes.</p>
             <div class="picker-pills" id="type-picker-pills"></div>
             <div class="picker-actions">
                 <button type="button" onclick="clearTypePicker()">Clear</button>
-                <button type="button" class="export-btn" onclick="applyTypePicker()">Apply</button>
             </div>
         </div>
     </div>
@@ -226,11 +225,10 @@
     <div id="accord-picker-modal">
         <div class="picker-box" onclick="event.stopImmediatePropagation()">
             <h3 style="color:#fbbf24;margin:0 0 8px;">Filter Main Accords</h3>
-            <p style="color:#aaa;font-size:0.9rem;margin:0 0 8px;">Pick any from this sales list. Must match ALL selected.</p>
+            <p style="color:#aaa;font-size:0.9rem;margin:0 0 8px;">Tap one main accord. It applies and closes.</p>
             <div class="picker-pills" id="accord-picker-pills"></div>
             <div class="picker-actions">
                 <button type="button" onclick="clearAccordPicker()">Clear</button>
-                <button type="button" class="export-btn" onclick="applyAccordPicker()">Apply</button>
             </div>
         </div>
     </div>
@@ -350,49 +348,50 @@
             }
         }
         function openTypePicker() {
-            typeDraft = selectedType;
             var types = uniqueTypesFromSales();
             var box = document.getElementById('type-picker-pills');
             if (!types.length) {
                 box.innerHTML = '<p style="color:#aaa;">No types on this sales list yet. Designer join may still be loading, or Accords is empty for these bottles.</p>';
             } else {
                 box.innerHTML = types.map(function(tp) {
-                    var on = typeDraft && typeDraft.toLowerCase() === tp.toLowerCase() ? ' on' : '';
-                    return '<button type="button" class="picker-pill' + on + '" data-type="' + tp.replace(/"/g,'') + '" style="background:' + accordColor(tp.split(/[-/]/)[0]) + ';">' + tp + '</button>';
+                    var on = selectedType && selectedType.toLowerCase() === tp.toLowerCase() ? ' on' : '';
+                    return '<button type="button" class="picker-pill' + on + '" data-type="' + String(tp).replace(/"/g,'"') + '" onclick="pickType(this)" style="background:' + accordColor(tp.split(/[-/]/)[0]) + ';">' + tp + '</button>';
                 }).join('');
             }
             document.getElementById('type-picker-modal').style.display = 'flex';
         }
         function openAccordPicker() {
-            accordDraft = selectedAccords.slice();
             var list = uniqueMainAccordsFromSales();
             var box = document.getElementById('accord-picker-pills');
             if (!list.length) {
                 box.innerHTML = '<p style="color:#aaa;">No main accords on this sales list yet. They are pulled from Designer via MatchKey.</p>';
             } else {
                 box.innerHTML = list.map(function(a) {
-                    var on = accordDraft.indexOf(a.toLowerCase()) !== -1 ? ' on' : '';
-                    return '<button type="button" class="picker-pill' + on + '" data-accord="' + a.replace(/"/g,'') + '" style="background:' + accordColor(a) + ';">' + a + '</button>';
+                    var on = selectedAccords.indexOf(a.toLowerCase()) !== -1 ? ' on' : '';
+                    return '<button type="button" class="picker-pill' + on + '" data-accord="' + String(a).replace(/"/g,'"') + '" onclick="pickAccord(this)" style="background:' + accordColor(a) + ';">' + a + '</button>';
                 }).join('');
             }
             document.getElementById('accord-picker-modal').style.display = 'flex';
         }
         function closeTypePicker() { document.getElementById('type-picker-modal').style.display = 'none'; }
         function closeAccordPicker() { document.getElementById('accord-picker-modal').style.display = 'none'; }
-        function clearTypePicker() { typeDraft = ''; selectedType = ''; updatePickerButtons(); closeTypePicker(); filterTable(); }
-        function clearAccordPicker() { accordDraft = []; selectedAccords = []; updatePickerButtons(); closeAccordPicker(); filterTable(); }
-        function applyTypePicker() {
-            selectedType = typeDraft;
+        function pickType(btn) {
+            selectedType = (btn.getAttribute('data-type') || '').trim();
+            typeDraft = selectedType;
             updatePickerButtons();
             closeTypePicker();
             filterTable();
         }
-        function applyAccordPicker() {
-            selectedAccords = accordDraft.slice();
+        function pickAccord(btn) {
+            var key = (btn.getAttribute('data-accord') || '').trim().toLowerCase();
+            selectedAccords = key ? [key] : [];
+            accordDraft = selectedAccords.slice();
             updatePickerButtons();
             closeAccordPicker();
             filterTable();
         }
+        function clearTypePicker() { typeDraft = ''; selectedType = ''; updatePickerButtons(); closeTypePicker(); filterTable(); }
+        function clearAccordPicker() { accordDraft = []; selectedAccords = []; updatePickerButtons(); closeAccordPicker(); filterTable(); }
         function matchesTypeFilter(s) {
             if (!selectedType) return true;
             return parseTypeValue(s).toLowerCase() === selectedType.toLowerCase();
@@ -764,22 +763,6 @@
         document.addEventListener('click', function(e) {
             if (e.target.id === 'type-picker-modal') closeTypePicker();
             if (e.target.id === 'accord-picker-modal') closeAccordPicker();
-            var tp = e.target.closest && e.target.closest('#type-picker-pills .picker-pill');
-            if (tp) {
-                var val = tp.getAttribute('data-type') || '';
-                typeDraft = (typeDraft.toLowerCase() === val.toLowerCase()) ? '' : val;
-                document.querySelectorAll('#type-picker-pills .picker-pill').forEach(function(p){
-                    p.classList.toggle('on', (p.getAttribute('data-type') || '').toLowerCase() === typeDraft.toLowerCase() && typeDraft);
-                });
-            }
-            var ap = e.target.closest && e.target.closest('#accord-picker-pills .picker-pill');
-            if (ap) {
-                var key = (ap.getAttribute('data-accord') || '').toLowerCase();
-                var i = accordDraft.indexOf(key);
-                if (i === -1) accordDraft.push(key);
-                else accordDraft.splice(i, 1);
-                ap.classList.toggle('on');
-            }
         });
 
         window.onload = function() {
