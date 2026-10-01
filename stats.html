@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FragVault - Stats</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="shared.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: #0a0a0a; color: #e0e0e0; line-height: 1.5; }
@@ -26,6 +27,7 @@
         .title-perf { color: #c084fc; border-bottom: 2px solid #c084fc; }
         .title-houses { color: #60a5fa; border-bottom: 2px solid #60a5fa; }
         .title-accords { color: #34d399; border-bottom: 2px solid #34d399; }
+        .title-notes { color: #f472b6; border-bottom: 2px solid #f472b6; }
         .title-mainaccords { color: #a78bfa; border-bottom: 2px solid #a78bfa; }
         .accord-stat-pill { display:inline-block; border-radius:999px; padding:6px 12px; margin:4px; font-weight:700; font-size:13px; color:#111; cursor:pointer; }
         .title-overview { color: #e5e7eb; border-bottom: 2px solid #444; }
@@ -112,13 +114,18 @@
         </div>
 
         <div class="stat-card">
-            <h2 class="section-title title-accords">Accords</h2>
+            <h2 class="section-title title-accords">Type</h2>
             <div id="accordsList"></div>
         </div>
 
         <div class="stat-card">
             <h2 class="section-title title-mainaccords">Main Accords</h2>
             <div id="mainAccordsList"></div>
+        </div>
+
+        <div class="stat-card">
+            <h2 class="section-title title-notes">Notes</h2>
+            <div id="notesList"></div>
         </div>
     </div>
 
@@ -154,47 +161,13 @@
         }
 
 
-        const ACCORD_COLORS = {
-            'aldehydic': '#eceff1',
-            'amber': '#c75b12',
-            'animalic': '#5d4037',
-            'aquatic': '#4aa3c7',
-            'aromatic': '#2a9d8f',
-            'balsamic': '#a1886d',
-            'citrus': '#f4e04d',
-            'earthy': '#5d5346',
-            'floral': '#f48fb1',
-            'fresh': '#81d4fa',
-            'fresh spicy': '#8bc34a',
-            'fruity': '#f44336',
-            'green': '#2e7d32',
-            'herbal': '#689f38',
-            'iris': '#b39ddb',
-            'lactonic': '#f3e5ab',
-            'lavender': '#7e57c2',
-            'leather': '#9c6b56',
-            'marine': '#1565c0',
-            'metallic': '#78909c',
-            'mossy': '#556b2f',
-            'musky': '#b0a8c0',
-            'oud': '#4e342e',
-            'ozonic': '#80deea',
-            'patchouli': '#6b7b2a',
-            'powdery': '#d7ccc8',
-            'rose': '#e91e63',
-            'salty': '#90a4ae',
-            'smoky': '#757575',
-            'soft spicy': '#e57373',
-            'sweet': '#e53935',
-            'tobacco': '#8d6e63',
-            'tropical': '#ff9800',
-            'vanilla': '#fff3a0',
-            'violet': '#9c27b0',
-            'warm spicy': '#e64a19',
-            'white floral': '#f8bbd0',
-            'woody': '#6d4c41',
-            'yellow floral': '#ffee58'
+        if (typeof NOTE_STOP === 'undefined') NOTE_STOP = [
+            'top','middle','base','heart','notes','note','are','is','and','with','the','a','an','of','in','on'
+        ];
+        if (typeof ACCORD_COLORS === 'undefined') ACCORD_COLORS = {
+            'aldehydic':'#eceff1','amber':'#c75b12','animalic':'#5d4037','aquatic':'#4aa3c7','aromatic':'#2a9d8f','balsamic':'#a1886d','citrus':'#f4e04d','earthy':'#5d5346','floral':'#f48fb1','fresh':'#81d4fa','fresh spicy':'#8bc34a','fruity':'#f44336','green':'#2e7d32','herbal':'#689f38','iris':'#b39ddb','lactonic':'#f3e5ab','lavender':'#7e57c2','leather':'#9c6b56','marine':'#1565c0','metallic':'#78909c','mossy':'#556b2f','musky':'#b0a8c0','oud':'#4e342e','ozonic':'#80deea','patchouli':'#6b7b2a','powdery':'#d7ccc8','rose':'#e91e63','salty':'#90a4ae','smoky':'#757575','soft spicy':'#e57373','sweet':'#e53935','tobacco':'#8d6e63','tropical':'#ff9800','vanilla':'#fff3a0','violet':'#9c27b0','warm spicy':'#e64a19','white floral':'#f8bbd0','woody':'#6d4c41','yellow floral':'#ffee58'
         };
+
 
         function splitTokens(raw) {
             raw = (raw == null ? '' : raw).toString();
@@ -202,6 +175,41 @@
             return raw.split(/[,;/|\n]+/).map(function(s) { return s.trim(); }).filter(function(s) {
                 return s && s !== 'N/A' && s !== '?';
             });
+        }
+
+
+        function parseNotes(f) {
+            var raw = (f.Notes || '').toString();
+            if (!raw || raw === 'N/A' || raw === '?') return [];
+            raw = raw.toLowerCase();
+            var stop = {};
+            for (var i = 0; i < NOTE_STOP.length; i++) stop[NOTE_STOP[i]] = true;
+            raw = raw.replace(/[^a-z0-9]+/g, ' ');
+            var out = [];
+            var seen = {};
+            raw.split(/\s+/).forEach(function(s) {
+                s = s.trim();
+                if (!s || stop[s] || s.length < 3) return;
+                if (seen[s]) return;
+                seen[s] = true;
+                out.push(s);
+            });
+            return out;
+        }
+        function listByNote(note) {
+            var key = (note || '').toLowerCase();
+            var items = fragrances.filter(function(f) {
+                return parseNotes(f).indexOf(key) !== -1;
+            });
+            showListModal(note, items, 'Note token after stripping Top/Heart/Base junk');
+        }
+        function listByInspiration(flag) {
+            var items = fragrances.filter(function(f) {
+                var insp = (f.Inspiration || '').trim().toUpperCase();
+                if (flag === 'Y') return insp === 'Y';
+                return insp !== 'Y';
+            });
+            showListModal(flag === 'Y' ? 'Inspirations' : 'Originals', items, '');
         }
 
         function parseSheetAccords(f) {
@@ -407,6 +415,12 @@
                 if (parseMainAccords(f).length) taggedMain++;
             });
 
+            var dupes = 0, ogs = 0;
+            fragrances.forEach(function(f) {
+                if ((f.Inspiration || '').trim().toUpperCase() === 'Y') dupes++;
+                else ogs++;
+            });
+
             document.getElementById('overview').innerHTML =
                 '<div class="overview-item"><strong>Total</strong><br>' + total + '</div>' +
                 '<div class="overview-item clickable" onclick="listRated()"><strong>Rated</strong><br>' + rated + ' (' + (total > 0 ? ((rated/total)*100).toFixed(1) : 0) + '%)</div>' +
@@ -414,7 +428,9 @@
                 '<div class="overview-item"><strong>Avg Rating</strong><br>' + avg + '</div>' +
                 '<div class="overview-item"><strong>Total ml</strong><br>' + totalML.toLocaleString() + '</div>' +
                 '<div class="overview-item"><strong>Avg Size</strong><br>' + avgMl + ' ml</div>' +
-                '<div class="overview-item"><strong>Main Accords</strong><br>' + taggedMain + ' tagged</div>';
+                '<div class="overview-item"><strong>Main Accords</strong><br>' + taggedMain + ' tagged</div>' +
+                '<div class="overview-item clickable" onclick="listByInspiration('N')"><strong>Originals</strong><br>' + ogs + '</div>' +
+                '<div class="overview-item clickable" onclick="listByInspiration('Y')"><strong>Inspirations</strong><br>' + dupes + '</div>';
 
             var ratingCounts = {};
             fragrances.forEach(function(f) {
@@ -561,7 +577,7 @@
 
             var sheetAcc = countTokens(parseSheetAccords);
             var sKeys = Object.keys(sheetAcc.counts).sort(function(a,b){ return sheetAcc.counts[b].n - sheetAcc.counts[a].n; });
-            var sHTML = '<p style="color:#888;margin:0 0 10px;">Accords column — ' + sheetAcc.tagged + ' bottles tagged</p>';
+            var sHTML = '<p style="color:#888;margin:0 0 10px;">Type (Accords column) — ' + sheetAcc.tagged + ' bottles tagged</p>';
             sKeys.forEach(function(k) {
                 var row = sheetAcc.counts[k];
                 var perc = total > 0 ? ((row.n / total) * 100).toFixed(1) : '0';
@@ -586,6 +602,23 @@
             });
             if (!mKeys.length) mHTML += '<p style="color:#888;">No MainAccords values yet.</p>';
             document.getElementById('mainAccordsList').innerHTML = mHTML;
+
+
+            var noteAcc = countTokens(parseNotes);
+            var nKeys = Object.keys(noteAcc.counts).sort(function(a,b){ return noteAcc.counts[b].n - noteAcc.counts[a].n; });
+            var nHTML = '<p style="color:#888;margin:0 0 10px;">Cleaned note tokens — tap a note to list bottles. Stop words live in shared.js</p>';
+            var shown = 0;
+            nKeys.forEach(function(k) {
+                var row = noteAcc.counts[k];
+                if (row.n < 4) return;
+                shown++;
+                var perc = total > 0 ? ((row.n / total) * 100).toFixed(1) : '0';
+                nHTML += '<div class="tap-row" onclick="listByNote(\'' + row.name.replace(/'/g, "\\'") + '\')">' +
+                    '<span class="accord-stat-pill" style="background:' + accordColor(row.name) + ';">' + esc(row.name) + '</span> ' +
+                    row.n + ' (' + perc + '% of collection)</div>';
+            });
+            if (!shown) nHTML += '<p style="color:#888;">No note tokens with at least 4 bottles yet.</p>';
+            document.getElementById('notesList').innerHTML = nHTML;
 
 
         }
