@@ -89,6 +89,8 @@
         .detail-name a:hover { color: #93c5fd; }
 
         .picker-btn { min-width: 160px; max-width: 240px; }
+        #type-picker-btn { background: #0d9488 !important; color: #fff; }
+        #accord-picker-btn { background: #7c3aed !important; color: #fff; }
         .picker-btn.active { outline: 2px solid #fbbf24; }
         #type-picker-modal, #accord-picker-modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.95); z-index: 1300; align-items: center; justify-content: center; padding: 15px; }
         .picker-box { background: #1a1a1a; padding: 24px 18px; border-radius: 16px; max-width: 440px; width: 100%; max-height: 82vh; overflow-y: auto; border: 1px solid #444; text-align: center; }
@@ -212,7 +214,7 @@
     <div id="toast" class="toast"></div>
 
     <div id="type-picker-modal">
-        <div class="picker-box" onclick="event.stopImmediatePropagation()">
+        <div class="picker-box">
             <h3 style="color:#fbbf24;margin:0 0 8px;">Filter Type</h3>
             <p style="color:#aaa;font-size:0.9rem;margin:0 0 8px;">Tap one type. It applies and closes.</p>
             <div class="picker-pills" id="type-picker-pills"></div>
@@ -223,12 +225,13 @@
     </div>
 
     <div id="accord-picker-modal">
-        <div class="picker-box" onclick="event.stopImmediatePropagation()">
+        <div class="picker-box">
             <h3 style="color:#fbbf24;margin:0 0 8px;">Filter Main Accords</h3>
             <p style="color:#aaa;font-size:0.9rem;margin:0 0 8px;">Tap one main accord. It applies and closes.</p>
             <div class="picker-pills" id="accord-picker-pills"></div>
             <div class="picker-actions">
                 <button type="button" onclick="clearAccordPicker()">Clear</button>
+                <button type="button" class="export-btn" onclick="applyAccordPicker()">Apply</button>
             </div>
         </div>
     </div>
@@ -355,7 +358,7 @@
             } else {
                 box.innerHTML = types.map(function(tp) {
                     var on = selectedType && selectedType.toLowerCase() === tp.toLowerCase() ? ' on' : '';
-                    return '<button type="button" class="picker-pill' + on + '" data-type="' + String(tp).replace(/"/g,'"') + '" onclick="pickType(this)" style="background:' + accordColor(tp.split(/[-/]/)[0]) + ';">' + tp + '</button>';
+                    return '<button type="button" class="picker-pill' + on + '" data-type="' + String(tp).replace(/"/g,'"') + '" style="background:' + accordColor(tp.split(/[-/]/)[0]) + ';">' + tp + '</button>';
                 }).join('');
             }
             document.getElementById('type-picker-modal').style.display = 'flex';
@@ -368,7 +371,7 @@
             } else {
                 box.innerHTML = list.map(function(a) {
                     var on = selectedAccords.indexOf(a.toLowerCase()) !== -1 ? ' on' : '';
-                    return '<button type="button" class="picker-pill' + on + '" data-accord="' + String(a).replace(/"/g,'"') + '" onclick="pickAccord(this)" style="background:' + accordColor(a) + ';">' + a + '</button>';
+                    return '<button type="button" class="picker-pill' + on + '" data-accord="' + String(a).replace(/"/g,'"') + '" style="background:' + accordColor(a) + ';">' + a + '</button>';
                 }).join('');
             }
             document.getElementById('accord-picker-modal').style.display = 'flex';
@@ -651,7 +654,13 @@
         }
         function updateFooter(filteredData = null) {
             const data = filteredData || sales;
-            document.getElementById('footer').innerHTML = '<strong>' + data.length + '</strong> items listed';
+            var typed = 0, according = 0;
+            sales.forEach(function(s) {
+                if (parseTypeValue(s)) typed++;
+                if (parseMainAccords(s).length) according++;
+            });
+            document.getElementById('footer').innerHTML = '<strong>' + data.length + '</strong> items listed'
+                + ' · ' + typed + ' with Type · ' + according + ' with Main Accords';
         }
         function startOver() {
             document.getElementById('search').value = '';
@@ -766,6 +775,22 @@
         });
 
         window.onload = function() {
+            var typePills = document.getElementById('type-picker-pills');
+            var accordPills = document.getElementById('accord-picker-pills');
+            typePills.addEventListener('click', function(e) {
+                var btn = e.target.closest('.picker-pill');
+                if (!btn) return;
+                e.preventDefault();
+                e.stopPropagation();
+                pickType(btn);
+            });
+            accordPills.addEventListener('click', function(e) {
+                var btn = e.target.closest('.picker-pill');
+                if (!btn) return;
+                e.preventDefault();
+                e.stopPropagation();
+                pickAccord(btn);
+            });
             updateInspirationButton();
             updatePickerButtons();
             loadSales();
