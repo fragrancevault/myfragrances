@@ -387,8 +387,14 @@
         }
         function pickAccord(btn) {
             var key = (btn.getAttribute('data-accord') || '').trim().toLowerCase();
-            selectedAccords = key ? [key] : [];
-            accordDraft = selectedAccords.slice();
+            if (!key) return;
+            var i = accordDraft.indexOf(key);
+            if (i === -1) accordDraft.push(key);
+            else accordDraft.splice(i, 1);
+            btn.classList.toggle('on', i === -1);
+        }
+        function applyAccordPicker() {
+            selectedAccords = accordDraft.slice();
             updatePickerButtons();
             closeAccordPicker();
             filterTable();
