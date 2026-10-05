@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FanOfFrags Trades</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="shared.js"></script>
+    <style>
+        body { font-family: Georgia, 'Segoe UI', serif; margin: 0; background: #140e0a; color: #f3e6d4; line-height: 1.5; }
+        header { background: linear-gradient(160deg, #3a2416, #1a120c 60%); color: #f8efe2; padding: 1.4rem 1rem 1.2rem; text-align: center; border-bottom: 3px solid #c4843a; position: relative; }
+        .mark { letter-spacing: 0.28em; font-size: 0.72rem; color: #e8b56a; text-transform: uppercase; margin: 0 0 6px; }
+        h1 { margin: 0; font-size: 1.85rem; font-weight: 700; letter-spacing: 0.02em; }
+        #total-display { margin-top: 8px; font-size: 1.25rem; font-weight: bold; color: #f0c27a; font-family: 'Segoe UI', sans-serif; }
+        #help-icon { position: absolute; left: 16px; top: 18px; background: none; border: 1px solid #c4843a; font-size: 1.1rem; cursor: pointer; color: #f0c27a; padding: 4px 9px; border-radius: 50%; min-width: 0; }
+        .controls { padding: 16px 14px 10px; background: #1c1410; border-bottom: 1px solid #3a2a1c; }
+        .control-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; margin-bottom: 10px; }
+        .search-row { position: relative; max-width: 640px; width: 100%; margin-left: auto; margin-right: auto; }
+        #search { padding: 10px 40px 10px 12px; font-size: 14px; border-radius: 8px; background: #261911; color: #f3e6d4; border: 1px solid #6b4a2a; width: 100%; font-family: 'Segoe UI', sans-serif; }
+        .clear-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #c9a27a; font-size: 20px; cursor: pointer; min-width: 0; padding: 4px 8px; display: none; }
+        button { background: #8a4b1f; color: #fff8ee; border: none; cursor: pointer; font-weight: 700; font-size: 13px; padding: 9px 14px; border-radius: 999px; white-space: nowrap; min-width: 92px; font-family: 'Segoe UI', sans-serif; }
+        .startover-btn { background: #b45309 !important; }
+        .export-btn { background: #3f6b3a !important; }
+        .table-wrapper { padding: 0 12px 16px; overflow-x: auto; max-height: 72vh; overflow-y: auto; }
+        table { border-collapse: collapse; background: #1a120e; width: 100%; table-layout: fixed; font-family: 'Segoe UI', sans-serif; }
+        th, td { padding: 10px 8px; border-bottom: 1px solid #3a2a1c; vertical-align: top; text-align: left; }
+        td { font-size: 13px; }
+        th { background: #2a1c14; color: #f0c27a; position: sticky; top: 0; z-index: 10; font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; }
+        .check-col { width: 28px; text-align: center; }
+        .qty-col { width: 44px; text-align: center; }
+        .house-col { width: 110px; white-space: normal; word-break: break-word; }
+        .name-col { width: 120px; white-space: normal; word-break: break-word; }
+        .price-col { width: 52px; text-align: right; }
+        .status-col { width: 78px; }
+        .link-col { width: 36px; text-align: center; }
+        .genre-col { width: 70px; white-space: normal; word-break: break-word; }
+        .attribute-col { width: 72px; }
+        .perfumer-col { width: 140px; white-space: normal; word-break: break-word; }
+        tr { cursor: pointer; }
+        tr:hover { background: #261911; }
+        input.quantity-input { width: 48px; text-align: center; background: #261911; color: #f3e6d4; border: 1px solid #6b4a2a; border-radius: 4px; padding: 4px; }
+        .link-cell a { color: #f0c27a; font-size: 1.3rem; text-decoration: none; }
+        input[type="checkbox"] { width: 18px; height: 18px; accent-color: #c4843a; }
+        .status-available { color: #86efac; font-weight: 700; }
+        .status-sold { color: #fca5a5; font-weight: 700; }
+        .stars { color: #f0c27a; font-size: 1.4rem; letter-spacing: 2px; }
+        footer { text-align: center; color: #c9a27a; padding: 8px 12px 20px; font-family: 'Segoe UI', sans-serif; font-size: 0.92rem; }
+        #detail-modal, #help-modal, #selection-modal { display: none; position: fixed; inset: 0; background: rgba(10,6,4,0.94); z-index: 1200; align-items: center; justify-content: center; padding: 15px; }
+        #help-content, #detail-content, #modal-content { background: #24180f; padding: 26px 22px; border-radius: 16px; max-width: 720px; width: 100%; max-height: 85vh; overflow-y: auto; border: 1px solid #c4843a; }
+        .detail-header { text-align: center; margin-bottom: 16px; }
+        .detail-house { color: #f0c27a; font-size: 1.25rem; margin: 0; }
+        .detail-name { font-size: 1.45rem; font-weight: bold; margin: 6px 0 12px; }
+        .detail-section { margin-bottom: 16px; }
+        .detail-label { font-weight: bold; color: #c9a27a; font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 4px; }
+        .detail-link { text-align: center; margin-top: 18px; }
+        .detail-link a { font-size: 1.6rem; color: #f0c27a; text-decoration: none; }
+        .detail-house a, .detail-name a { color: inherit; text-decoration: none; }
+        .selection-list { list-style: none; padding: 0; }
+        .selection-list li { padding: 12px 0; border-bottom: 1px solid #3a2a1c; display: flex; justify-content: space-between; gap: 12px; }
+        .house-name { font-weight: bold; color: #f0c27a; }
+        .price-info { text-align: right; color: #86efac; min-width: 110px; }
+        .modal-total { margin-top: 16px; padding-top: 12px; border-top: 2px solid #6b4a2a; font-size: 1.25em; font-weight: bold; color: #f0c27a; text-align: right; }
+        .modal-buttons { display: flex; gap: 10px; margin-top: 14px; }
+        .modal-buttons button { flex: 1; }
+        .close-btn { background: #9f3a32 !important; }
+        .picker-row { width: 100%; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin: 4px 0 6px; }
+        #type-picker-btn { background: #0f766e !important; }
+        #accord-picker-btn { background: #6d28d9 !important; }
+        .picker-btn.active { outline: 2px solid #f0c27a; }
+        #type-picker-modal, #accord-picker-modal { display: none; position: fixed; inset: 0; background: rgba(10,6,4,0.94); z-index: 1300; align-items: center; justify-content: center; padding: 15px; }
+        .picker-box { background: #24180f; padding: 22px 16px; border-radius: 16px; max-width: 460px; width: 100%; max-height: 82vh; overflow-y: auto; border: 1px solid #c4843a; text-align: center; }
+        .picker-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 12px 0 16px; }
+        .picker-pill { border: none; border-radius: 999px; padding: 8px 14px; font-weight: 700; font-size: 13px; cursor: pointer; color: #111; }
+        .picker-pill.on { outline: 3px solid #f0c27a; transform: scale(1.05); }
+        .picker-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .accords-wrap { margin: 10px 0 4px; text-align: center; }
+        .accords-label { font-size: 0.75rem; color: #c9a27a; letter-spacing: 0.08em; text-transform: lowercase; margin-bottom: 6px; }
+        .accord-row { display: flex; justify-content: center; margin: 3px 0; }
+        .accord-bar { display: flex; align-items: center; justify-content: center; min-height: 24px; border-radius: 12px; font-size: 12px; font-weight: 700; color: #111; padding: 3px 10px; }
+        .toast { position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%); background: #b45309; color: white; padding: 12px 20px; border-radius: 8px; font-weight: 700; z-index: 3000; display: none; font-family: 'Segoe UI', sans-serif; }
+    </style>
+</head>
+<body>
+    <header>
+        <button id="help-icon" onclick="showHelpModal()" title="How to use">?</button>
+        <p class="mark">Decants · Direct</p>
+        <h1>FanOfFrags Trades</h1>
+        <div id="total-display">Total Selected: $0</div>
+    </header>
+
+    <div class="controls">
+        <div class="control-row search-row">
+            <input type="text" id="search" placeholder="Search house, name, perfumer, notes..." onkeyup="filterTable()">
+            <button class="clear-btn" id="clear-search" onclick="clearSearch()">×</button>
+        </div>
+        <div class="control-row">
+            <button onclick="sortTable(2)">House</button>
+            <button onclick="sortTable(3)">Name</button>
+            <button onclick="sortTable(4)">5ml</button>
+            <button onclick="sortTable(5)">Status</button>
+            <button onclick="sortTable(7)">Genre</button>
+            <button onclick="sortTable(8)">Attribute</button>
+            <button onclick="sortTable(9)">Perfumer</button>
+            <button onclick="sortByNew()">New</button>
+        </div>
+        <div class="control-row">
+            <button onclick="startOver()" class="startover-btn">Start Over</button>
+            <button onclick="showSelectionModal()" class="export-btn">Total</button>
+        </div>
+        <div class="picker-row">
+            <button type="button" id="type-picker-btn" class="picker-btn" onclick="openTypePicker()">Type</button>
+            <button type="button" id="accord-picker-btn" class="picker-btn" onclick="openAccordPicker()">Main Accords</button>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table id="trade-table">
+            <thead>
+                <tr>
+                    <th class="check-col"><input type="checkbox" id="select-all" onchange="toggleSelectAll()"></th>
+                    <th class="qty-col">Qty</th>
+                    <th class="house-col" onclick="sortTable(2)">House</th>
+                    <th class="name-col" onclick="sortTable(3)">Name</th>
+                    <th class="price-col" onclick="sortTable(4)">5ml</th>
+                    <th class="status-col" onclick="sortTable(5)">Status</th>
+                    <th class="link-col">Link</th>
+                    <th class="genre-col">Genre</th>
+                    <th class="attribute-col">Attr</th>
+                    <th class="perfumer-col">Perfumer</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <footer id="footer">Loading trades...</footer>
+
+    <div id="detail-modal">
+        <div id="detail-content">
+            <div class="detail-header">
+                <h2 class="detail-house"><a id="modal-house-link" href="#" target="_blank"></a></h2>
+                <h3 class="detail-name"><a id="modal-name-link" href="#" target="_blank"></a></h3>
+            </div>
+            <div class="detail-section"><div class="detail-label">Perfumer</div><div id="modal-perfumer"></div></div>
+            <div class="detail-section"><div class="detail-label">Performance</div><div id="modal-performance" class="stars"></div></div>
+            <div class="detail-section"><div class="detail-label">Rating</div><div id="modal-rating" class="stars"></div></div>
+            <div id="modal-accords"></div>
+            <div class="detail-section"><div class="detail-label">Notes</div><div id="modal-notes"></div></div>
+            <div class="detail-section"><div class="detail-label">Comments</div><div id="modal-comments"></div></div>
+            <div class="detail-link"><a href="#" id="modal-link" target="_blank">Fragrantica</a></div>
+            <div style="text-align:center;margin-top:22px;"><button onclick="closeDetailModal()" class="close-btn" style="min-width:140px;">Close</button></div>
+        </div>
+    </div>
+
+    <div id="help-modal">
+        <div id="help-content">
+            <div style="text-align:right;"><button onclick="closeHelpModal()" class="close-btn">Close</button></div>
+            <h2 style="text-align:center;color:#f0c27a;">How to trade</h2>
+            <ul>
+                <li>Search and sort the decant list.</li>
+                <li>Check available bottles and set quantity.</li>
+                <li>Total copies a paste-ready list.</li>
+                <li>Tap a row for notes, type, and main accords.</li>
+                <li>House opens Parfumo. Name opens Fragrantica.</li>
+                <li>Type is one pick. Main Accords is multi, then Apply.</li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="selection-modal">
+        <div id="modal-content">
+            <h2>Copy into chat</h2>
+            <h3>Selected (<span id="modal-count">0</span>)</h3>
+            <ul id="selection-list" class="selection-list"></ul>
+            <div id="modal-total" class="modal-total">Total: $0</div>
+            <div class="modal-buttons">
+                <button onclick="copySelectionToClipboard()" class="export-btn">Copy</button>
+                <button onclick="closeModal()" class="close-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+    <div id="type-picker-modal">
+        <div class="picker-box">
+            <h3 style="color:#f0c27a;margin:0 0 6px;">Type</h3>
+            <p style="color:#c9a27a;font-size:0.9rem;">Tap one. It applies and closes.</p>
+            <div class="picker-pills" id="type-picker-pills"></div>
+            <div class="picker-actions"><button type="button" onclick="clearTypePicker()">Clear</button></div>
+        </div>
+    </div>
+    <div id="accord-picker-modal">
+        <div class="picker-box">
+            <h3 style="color:#f0c27a;margin:0 0 6px;">Main Accords</h3>
+            <p style="color:#c9a27a;font-size:0.9rem;">Tap several, then Apply. Must match all.</p>
+            <div class="picker-pills" id="accord-picker-pills"></div>
+            <div class="picker-actions">
+                <button type="button" onclick="clearAccordPicker()">Clear</button>
+                <button type="button" class="export-btn" onclick="applyAccordPicker()">Apply</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=1389110265&single=true&output=csv";
+        var trades = [];
+        var sortState = {};
+        var newSortAsc = false;
+        var selectedType = '';
+        var selectedAccords = [];
+        var accordDraft = [];
+
+        if (typeof ACCORD_COLORS === 'undefined') ACCORD_COLORS = {
+            'aldehydic':'#eceff1','amber':'#c75b12','animalic':'#5d4037','aquatic':'#4aa3c7','aromatic':'#2a9d8f','balsamic':'#a1886d','citrus':'#f4e04d','earthy':'#5d5346','floral':'#f48fb1','fresh':'#81d4fa','fresh spicy':'#8bc34a','fruity':'#f44336','green':'#2e7d32','herbal':'#689f38','iris':'#b39ddb','lactonic':'#f3e5ab','lavender':'#7e57c2','leather':'#9c6b56','marine':'#1565c0','metallic':'#78909c','mossy':'#556b2f','musky':'#b0a8c0','oud':'#4e342e','ozonic':'#80deea','patchouli':'#6b7b2a','powdery':'#d7ccc8','rose':'#e91e63','salty':'#90a4ae','smoky':'#757575','soft spicy':'#e57373','sweet':'#e53935','tobacco':'#8d6e63','tropical':'#ff9800','vanilla':'#fff3a0','violet':'#9c27b0','warm spicy':'#e64a19','white floral':'#f8bbd0','woody':'#6d4c41','yellow floral':'#ffee58'
+        };
+
+        function emptyCell(v) {
+            v = (v == null ? '' : String(v)).trim();
+            return !v || v === 'N/A' || v === '?';
+        }
+        function cleanValue(val) {
+            if (val == null || val === '' || val === '?') return 'N/A';
+            return String(val).trim();
+        }
+        function parseTypeValue(s) {
+            var raw = ((s.Accords || s.Type || '') + '').trim();
+            return emptyCell(raw) ? '' : raw;
+        }
+        function parseMainAccords(s) {
+            var raw = ((s.MainAccords || s.MainAccord || '') + '');
+            if (emptyCell(raw)) return [];
+            return raw.split(/[,;/]+/).map(function(x){ return x.trim(); }).filter(function(x){ return x && x !== '?'; });
+        }
+        function accordColor(name) {
+            var key = (name || '').toLowerCase();
+            if (ACCORD_COLORS[key]) return ACCORD_COLORS[key];
+            var hash = 0;
+            for (var i = 0; i < key.length; i++) hash = ((hash << 5) - hash) + key.charCodeAt(i);
+            return 'hsl(' + (Math.abs(hash) % 360) + ', 42%, 48%)';
+        }
+        function renderAccordBars(list, label) {
+            if (!list.length) return '';
+            var html = '<div class="accords-wrap"><div class="accords-label">' + label + '</div>';
+            for (var i = 0; i < list.length; i++) {
+                var w = Math.max(42, 100 - i * 8);
+                var name = list[i];
+                var low = name.toLowerCase();
+                var fg = (low === 'oud' || low === 'woody' || low === 'green' || low === 'animalic' || low === 'earthy' || low === 'marine' || low === 'violet') ? '#f5f5f5' : '#111';
+                html += '<div class="accord-row"><div class="accord-bar" style="width:' + w + '%;background:' + accordColor(name) + ';color:' + fg + ';">' + name + '</div></div>';
+            }
+            return html + '</div>';
+        }
+        function formatPrice(val) {
+            var cleaned = cleanValue(val);
+            if (cleaned === 'N/A') return 'N/A';
+            if (!isNaN(parseFloat(cleaned))) return '$' + cleaned;
+            return cleaned;
+        }
+        function isAvailable(status) {
+            return status && String(status).toLowerCase().indexOf('available') !== -1;
+        }
+        function createStarRating(rating) {
+            var num = Math.round(parseFloat(rating) || 0);
+            var stars = '';
+            for (var i = 1; i <= 10; i++) stars += i <= num ? '★' : '☆';
+            return stars;
+        }
+        function getParfumoHref(s) {
+            var raw = ((s.ParfumoLink || '') + '').trim();
+            if (raw.indexOf('http') === 0) return raw;
+            return 'https://www.parfumo.com/s?q=' + encodeURIComponent(((s.House || '') + ' ' + (s.Name || '')).trim());
+        }
+        function showToast(msg) {
+            var el = document.getElementById('toast');
+            el.textContent = msg;
+            el.style.display = 'block';
+            setTimeout(function(){ el.style.display = 'none'; }, 2600);
+        }
+        function uniqueTypes() {
+            var set = {};
+            trades.forEach(function(s){ var t = parseTypeValue(s); if (t) set[t] = true; });
+            return Object.keys(set).sort(function(a,b){ return a.toLowerCase().localeCompare(b.toLowerCase()); });
+        }
+        function uniqueMains() {
+            var set = {};
+            trades.forEach(function(s){ parseMainAccords(s).forEach(function(a){ set[a.toLowerCase()] = a; }); });
+            return Object.keys(set).sort().map(function(k){ return set[k]; });
+        }
+        function updatePickerButtons() {
+            var tb = document.getElementById('type-picker-btn');
+            var ab = document.getElementById('accord-picker-btn');
+            tb.textContent = selectedType ? ('Type: ' + selectedType) : 'Type';
+            tb.classList.toggle('active', !!selectedType);
+            ab.textContent = selectedAccords.length ? ('Main Accords (' + selectedAccords.length + ')') : 'Main Accords';
+            ab.classList.toggle('active', selectedAccords.length > 0);
+        }
+        function openTypePicker() {
+            var types = uniqueTypes();
+            var box = document.getElementById('type-picker-pills');
+            box.innerHTML = types.length ? types.map(function(tp){
+                var on = selectedType && selectedType.toLowerCase() === tp.toLowerCase() ? ' on' : '';
+                return '<button type="button" class="picker-pill' + on + '" data-type="' + tp.replace(/"/g,'"') + '" style="background:' + accordColor(tp.split(/[-/]/)[0]) + ';">' + tp + '</button>';
+            }).join('') : '<p style="color:#c9a27a;">No types in this list yet.</p>';
+            document.getElementById('type-picker-modal').style.display = 'flex';
+        }
+        function openAccordPicker() {
+            accordDraft = selectedAccords.slice();
+            var list = uniqueMains();
+            var box = document.getElementById('accord-picker-pills');
+            box.innerHTML = list.length ? list.map(function(a){
+                var on = accordDraft.indexOf(a.toLowerCase()) !== -1 ? ' on' : '';
+                return '<button type="button" class="picker-pill' + on + '" data-accord="' + a.replace(/"/g,'"') + '" style="background:' + accordColor(a) + ';">' + a + '</button>';
+            }).join('') : '<p style="color:#c9a27a;">No main accords in this list yet.</p>';
+            document.getElementById('accord-picker-modal').style.display = 'flex';
+        }
+        function closeTypePicker() { document.getElementById('type-picker-modal').style.display = 'none'; }
+        function closeAccordPicker() { document.getElementById('accord-picker-modal').style.display = 'none'; }
+        function pickType(btn) {
+            selectedType = (btn.getAttribute('data-type') || '').trim();
+            updatePickerButtons();
+            closeTypePicker();
+            filterTable();
+        }
+        function pickAccord(btn) {
+            var key = (btn.getAttribute('data-accord') || '').trim().toLowerCase();
+            if (!key) return;
+            var i = accordDraft.indexOf(key);
+            if (i === -1) accordDraft.push(key);
+            else accordDraft.splice(i, 1);
+            btn.classList.toggle('on', i === -1);
+        }
+        function applyAccordPicker() {
+            selectedAccords = accordDraft.slice();
+            updatePickerButtons();
+            closeAccordPicker();
+            filterTable();
+        }
+        function clearTypePicker() { selectedType = ''; updatePickerButtons(); closeTypePicker(); filterTable(); }
+        function clearAccordPicker() { accordDraft = []; selectedAccords = []; updatePickerButtons(); closeAccordPicker(); filterTable(); }
+        function matchesType(s) { return !selectedType || parseTypeValue(s).toLowerCase() === selectedType.toLowerCase(); }
+        function matchesAccords(s) {
+            if (!selectedAccords.length) return true;
+            var have = parseMainAccords(s).map(function(a){ return a.toLowerCase(); });
+            return selectedAccords.every(function(sel){ return have.indexOf(sel) !== -1; });
+        }
+        function matchesSearch(s, term) {
+            if (!term) return true;
+            var text = [s.House, s.Name, s.Perfumer, s.Notes, s.Comment, s.Genre, s.Attribute, s.Accords, s.MainAccords].filter(Boolean).join(' ').toLowerCase();
+            return term.split(/\s+/).every(function(w){ return !w || text.indexOf(w) !== -1; });
+        }
+        function updateTotal() {
+            var total = 0;
+            getSelectedRows().forEach(function(row){
+                var qty = parseInt(row.querySelector('.quantity-input').value) || 1;
+                var price = parseFloat(row.cells[4].textContent.replace(/[$,]/g,'')) || 0;
+                total += qty * price;
+            });
+            document.getElementById('total-display').textContent = 'Total Selected: $' + total.toLocaleString();
+        }
+        function updateFooter(data) {
+            data = data || trades;
+            document.getElementById('footer').innerHTML = '<strong>' + data.length + '</strong> decants listed';
+        }
+        function renderTable(data) {
+            var tbody = document.querySelector('#trade-table tbody');
+            var html = '';
+            for (var i = 0; i < data.length; i++) {
+                var s = data[i];
+                var link = (s.FragranticaLink && s.FragranticaLink.indexOf('http') === 0) ? '<a href="' + s.FragranticaLink + '" target="_blank" title="Fragrantica">&#128279;</a>' : '';
+                var orig = trades.indexOf(s);
+                var avail = isAvailable(s.Status);
+                html += '<tr data-index="' + orig + '">' +
+                    '<td class="check-col"><input type="checkbox" class="row-select" ' + (avail ? '' : 'disabled') + ' onchange="updateSelectAllState(); updateTotal()"></td>' +
+                    '<td class="qty-col"><input type="number" min="1" value="1" class="quantity-input" onchange="updateTotal()" ' + (avail ? '' : 'disabled') + '></td>' +
+                    '<td class="house-col">' + cleanValue(s.House) + '</td>' +
+                    '<td class="name-col"><strong>' + cleanValue(s.Name) + '</strong></td>' +
+                    '<td class="price-col">' + formatPrice(s['5ml']) + '</td>' +
+                    '<td class="status-col ' + (avail ? 'status-available' : 'status-sold') + '">' + cleanValue(s.Status) + '</td>' +
+                    '<td class="link-col">' + link + '</td>' +
+                    '<td class="genre-col">' + cleanValue(s.Genre) + '</td>' +
+                    '<td class="attribute-col">' + cleanValue(s.Attribute) + '</td>' +
+                    '<td class="perfumer-col">' + cleanValue(s.Perfumer) + '</td></tr>';
+            }
+            tbody.innerHTML = html;
+            tbody.querySelectorAll('tr').forEach(function(row){
+                row.addEventListener('click', function(e){
+                    if (e.target.type === 'checkbox' || e.target.classList.contains('quantity-input')) return;
+                    showDetailModal(parseInt(this.getAttribute('data-index'), 10));
+                });
+            });
+            updateTotal();
+        }
+        function showDetailModal(index) {
+            var s = trades[index];
+            if (!s) return;
+            var house = document.getElementById('modal-house-link');
+            var name = document.getElementById('modal-name-link');
+            house.textContent = cleanValue(s.House);
+            house.href = getParfumoHref(s);
+            name.textContent = cleanValue(s.Name);
+            var frag = (s.FragranticaLink || '').trim();
+            if (frag.indexOf('http') === 0) { name.href = frag; name.style.pointerEvents = 'auto'; }
+            else { name.removeAttribute('href'); name.style.pointerEvents = 'none'; }
+            document.getElementById('modal-perfumer').textContent = cleanValue(s.Perfumer);
+            document.getElementById('modal-performance').innerHTML = createStarRating(s.Performance);
+            document.getElementById('modal-rating').innerHTML = createStarRating(s.Rating);
+            var tp = parseTypeValue(s);
+            var mains = parseMainAccords(s);
+            document.getElementById('modal-accords').innerHTML = (tp ? renderAccordBars([tp], 'type') : '') + (mains.length ? renderAccordBars(mains, 'main accords') : '');
+            document.getElementById('modal-notes').textContent = cleanValue(s.Notes);
+            document.getElementById('modal-comments').textContent = cleanValue(s.Comment || s.Comments);
+            var linkEl = document.getElementById('modal-link');
+            if (frag.indexOf('http') === 0) { linkEl.href = frag; linkEl.style.display = 'inline'; }
+            else linkEl.style.display = 'none';
+            document.getElementById('detail-modal').style.display = 'flex';
+        }
+        function closeDetailModal() { document.getElementById('detail-modal').style.display = 'none'; }
+        function showHelpModal() { document.getElementById('help-modal').style.display = 'flex'; }
+        function closeHelpModal() { document.getElementById('help-modal').style.display = 'none'; }
+        function toggleSelectAll() {
+            var on = document.getElementById('select-all').checked;
+            document.querySelectorAll('.row-select:not([disabled])').forEach(function(cb){ cb.checked = on; });
+            updateTotal();
+        }
+        function updateSelectAllState() {
+            var boxes = Array.from(document.querySelectorAll('.row-select:not([disabled])'));
+            document.getElementById('select-all').checked = boxes.length > 0 && boxes.every(function(cb){ return cb.checked; });
+        }
+        function getSelectedRows() {
+            return Array.from(document.querySelectorAll('#trade-table tbody tr')).filter(function(row){
+                var cb = row.querySelector('.row-select');
+                return cb && cb.checked;
+            });
+        }
+        function filterTable() {
+            var term = document.getElementById('search').value.toLowerCase().trim();
+            document.getElementById('clear-search').style.display = term ? 'block' : 'none';
+            var filtered = trades.filter(function(s){
+                return matchesSearch(s, term) && matchesType(s) && matchesAccords(s);
+            });
+            if (selectedAccords.length && !filtered.length) showToast('No decants match those main accords.');
+            renderTable(filtered);
+            updateFooter(filtered);
+        }
+        function clearSearch() {
+            document.getElementById('search').value = '';
+            document.getElementById('clear-search').style.display = 'none';
+            filterTable();
+        }
+        function startOver() {
+            document.getElementById('search').value = '';
+            document.getElementById('clear-search').style.display = 'none';
+            document.getElementById('select-all').checked = false;
+            sortState = {};
+            selectedType = '';
+            selectedAccords = [];
+            accordDraft = [];
+            updatePickerButtons();
+            renderTable(trades);
+            sortTable(2, true);
+            updateFooter();
+        }
+        function showSelectionModal() {
+            var rows = getSelectedRows();
+            if (!rows.length) { alert('Select at least one available decant.'); return; }
+            var html = '';
+            rows.forEach(function(row){
+                var qty = parseInt(row.querySelector('.quantity-input').value) || 1;
+                html += '<li><div><span class="house-name">' + row.cells[2].textContent.trim() + '</span><br>' + row.cells[3].textContent.trim() + '</div><div class="price-info">' + row.cells[4].textContent.trim() + ' × ' + qty + '</div></li>';
+            });
+            document.getElementById('modal-count').textContent = rows.length;
+            document.getElementById('selection-list').innerHTML = html;
+            document.getElementById('modal-total').textContent = document.getElementById('total-display').textContent;
+            document.getElementById('selection-modal').style.display = 'flex';
+        }
+        function closeModal() { document.getElementById('selection-modal').style.display = 'none'; }
+        function copySelectionToClipboard() {
+            var rows = getSelectedRows();
+            if (!rows.length) return;
+            var text = '';
+            rows.forEach(function(row){
+                var qty = parseInt(row.querySelector('.quantity-input').value) || 1;
+                text += row.cells[2].textContent.trim() + ' - ' + row.cells[3].textContent.trim() + ' - ' + row.cells[4].textContent.trim() + ' × ' + qty + '\n\n';
+            });
+            text += document.getElementById('total-display').textContent;
+            navigator.clipboard.writeText(text.trim());
+            showToast('Copied');
+        }
+        function sortTable(colIndex, forceInitial) {
+            var tbody = document.querySelector('#trade-table tbody');
+            var rows = Array.from(tbody.querySelectorAll('tr'));
+            if (forceInitial) {
+                rows.sort(function(a,b){
+                    return a.cells[2].textContent.trim().localeCompare(b.cells[2].textContent.trim()) || a.cells[3].textContent.trim().localeCompare(b.cells[3].textContent.trim());
+                });
+            } else {
+                sortState[colIndex] = sortState[colIndex] === undefined ? (colIndex === 4) : !sortState[colIndex];
+                var asc = sortState[colIndex];
+                rows.sort(function(a,b){
+                    var x = a.cells[colIndex].textContent.trim();
+                    var y = b.cells[colIndex].textContent.trim();
+                    var nx = parseFloat(x.replace(/[$,]/g,''));
+                    var ny = parseFloat(y.replace(/[$,]/g,''));
+                    if (!isNaN(nx) && !isNaN(ny)) return asc ? nx - ny : ny - nx;
+                    return asc ? x.localeCompare(y) : y.localeCompare(x);
+                });
+            }
+            rows.forEach(function(row){ tbody.appendChild(row); });
+            updateTotal();
+        }
+        function sortByNew() {
+            newSortAsc = !newSortAsc;
+            var tbody = document.querySelector('#trade-table tbody');
+            var rows = Array.from(tbody.querySelectorAll('tr'));
+            rows.sort(function(a,b){
+                var da = new Date(trades[parseInt(a.getAttribute('data-index'),10)].New || '').getTime() || 0;
+                var db = new Date(trades[parseInt(b.getAttribute('data-index'),10)].New || '').getTime() || 0;
+                return newSortAsc ? da - db : db - da;
+            });
+            rows.forEach(function(row){ tbody.appendChild(row); });
+        }
+        function loadTrades() {
+            Papa.parse(CSV + '&t=' + Date.now(), {
+                download: true,
+                header: true,
+                skipEmptyLines: true,
+                complete: function(result) {
+                    trades = (result.data || []).filter(function(row){ return row.Name && row.Name.trim(); }).map(function(row){
+                        Object.keys(row).forEach(function(k){ if (typeof row[k] === 'string') row[k] = row[k].trim(); });
+                        return row;
+                    });
+                    renderTable(trades);
+                    sortTable(2, true);
+                    updateFooter();
+                },
+                error: function() {
+                    document.getElementById('footer').textContent = 'Could not load TradeCSV.';
+                }
+            });
+        }
+        document.getElementById('type-picker-pills').addEventListener('click', function(e){
+            var btn = e.target.closest('.picker-pill');
+            if (!btn) return;
+            e.preventDefault();
+            pickType(btn);
+        });
+        document.getElementById('accord-picker-pills').addEventListener('click', function(e){
+            var btn = e.target.closest('.picker-pill');
+            if (!btn) return;
+            e.preventDefault();
+            pickAccord(btn);
+        });
+        document.getElementById('type-picker-modal').addEventListener('click', function(e){ if (e.target.id === 'type-picker-modal') closeTypePicker(); });
+        document.getElementById('accord-picker-modal').addEventListener('click', function(e){ if (e.target.id === 'accord-picker-modal') closeAccordPicker(); });
+        updatePickerButtons();
+        loadTrades();
+    </script>
+</body>
+</html>
