@@ -157,7 +157,10 @@
             <div id="modal-accords"></div>
             <div class="detail-section"><div class="detail-label">Notes</div><div id="modal-notes"></div></div>
             <div class="detail-section"><div class="detail-label">Comments</div><div id="modal-comments"></div></div>
-            <div class="detail-link"><a href="#" id="modal-link" target="_blank">Fragrantica</a></div>
+            <div class="detail-link">
+                <a href="#" id="modal-frag-link" target="_blank">Fragrantica Link</a>
+                <a href="#" id="modal-parfumo-link" target="_blank" style="display:block;margin-top:8px;">Parfumo Link</a>
+            </div>
             <div style="text-align:center;margin-top:22px;"><button onclick="closeDetailModal()" class="close-btn" style="min-width:140px;">Close</button></div>
         </div>
     </div>
@@ -408,14 +411,16 @@
         function showDetailModal(index) {
             var s = trades[index];
             if (!s) return;
-            var house = document.getElementById('modal-house-link');
-            var name = document.getElementById('modal-name-link');
-            house.textContent = cleanValue(s.House);
-            house.href = getParfumoHref(s);
-            name.textContent = cleanValue(s.Name);
+            document.getElementById('modal-house').textContent = cleanValue(s.House);
+            document.getElementById('modal-name').textContent = cleanValue(s.Name);
             var frag = (s.FragranticaLink || '').trim();
-            if (frag.indexOf('http') === 0) { name.href = frag; name.style.pointerEvents = 'auto'; }
-            else { name.removeAttribute('href'); name.style.pointerEvents = 'none'; }
+            var parf = ((s.ParfumoLink || '') + '').trim();
+            var fragEl = document.getElementById('modal-frag-link');
+            var parfEl = document.getElementById('modal-parfumo-link');
+            if (frag.indexOf('http') === 0) { fragEl.href = frag; fragEl.style.display = 'block'; }
+            else fragEl.style.display = 'none';
+            if (parf.indexOf('http') === 0) { parfEl.href = parf; parfEl.style.display = 'block'; }
+            else parfEl.style.display = 'none';
             document.getElementById('modal-perfumer').textContent = cleanValue(s.Perfumer);
             document.getElementById('modal-performance').innerHTML = createStarRating(s.Performance);
             document.getElementById('modal-rating').innerHTML = createStarRating(s.Rating);
@@ -424,9 +429,6 @@
             document.getElementById('modal-accords').innerHTML = (tp ? renderAccordBars([tp], 'type') : '') + (mains.length ? renderAccordBars(mains, 'main accords') : '');
             document.getElementById('modal-notes').textContent = cleanValue(s.Notes);
             document.getElementById('modal-comments').textContent = cleanValue(s.Comment || s.Comments);
-            var linkEl = document.getElementById('modal-link');
-            if (frag.indexOf('http') === 0) { linkEl.href = frag; linkEl.style.display = 'inline'; }
-            else linkEl.style.display = 'none';
             document.getElementById('detail-modal').style.display = 'flex';
         }
         function closeDetailModal() { document.getElementById('detail-modal').style.display = 'none'; }
