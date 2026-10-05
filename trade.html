@@ -96,11 +96,11 @@
         <div class="control-row">
             <button onclick="sortTable(2)">House</button>
             <button onclick="sortTable(3)">Name</button>
-            <button onclick="sortTable(4)">5ml</button>
+            <button onclick="sortTable(4)">5ml$</button>
             <button onclick="sortTable(5)">Status</button>
-            <button onclick="sortTable(7)">Genre</button>
-            <button onclick="sortTable(8)">Attribute</button>
-            <button onclick="sortTable(9)">Perfumer</button>
+            <button onclick="sortTable(6)">Genre</button>
+            <button onclick="sortTable(7)">Type</button>
+            <button onclick="sortTable(8)">Perfumer</button>
             <button onclick="sortByNew()">New</button>
         </div>
         <div class="control-row">
@@ -108,7 +108,7 @@
             <button onclick="showSelectionModal()" class="export-btn">Total</button>
         </div>
         <div class="picker-row">
-            <button type="button" id="type-picker-btn" class="picker-btn" onclick="openTypePicker()">Type</button>
+            <button type="button" id="type-picker-btn" class="picker-btn" onclick="openTypePicker()">Accords</button>
             <button type="button" id="accord-picker-btn" class="picker-btn" onclick="openAccordPicker()">Main Accords</button>
         </div>
     </div>
@@ -121,12 +121,11 @@
                     <th class="qty-col">Qty</th>
                     <th class="house-col" onclick="sortTable(2)">House</th>
                     <th class="name-col" onclick="sortTable(3)">Name</th>
-                    <th class="price-col" onclick="sortTable(4)">5ml</th>
+                    <th class="price-col" onclick="sortTable(4)">5ml$</th>
                     <th class="status-col" onclick="sortTable(5)">Status</th>
-                    <th class="link-col">Link</th>
-                    <th class="genre-col">Genre</th>
-                    <th class="attribute-col">Attr</th>
-                    <th class="perfumer-col">Perfumer</th>
+                    <th class="genre-col" onclick="sortTable(6)">Genre</th>
+                    <th class="attribute-col" onclick="sortTable(7)">Type</th>
+                    <th class="perfumer-col" onclick="sortTable(8)">Perfumer</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -161,7 +160,7 @@
                 <li>Total copies a paste-ready list.</li>
                 <li>Tap a row for notes, type, and main accords.</li>
                 <li>House opens Parfumo. Name opens Fragrantica.</li>
-                <li>Type is one pick. Main Accords is multi, then Apply.</li>
+                <li>Accords is one pick. Main Accords is multi, then Apply.</li>
             </ul>
         </div>
     </div>
@@ -182,7 +181,7 @@
     <div id="toast" class="toast"></div>
     <div id="type-picker-modal">
         <div class="picker-box">
-            <h3 style="color:#f0c27a;margin:0 0 6px;">Type</h3>
+            <h3 style="color:#f0c27a;margin:0 0 6px;">Accords</h3>
             <p style="color:#c9a27a;font-size:0.9rem;">Tap one. It applies and closes.</p>
             <div class="picker-pills" id="type-picker-pills"></div>
             <div class="picker-actions"><button type="button" onclick="clearTypePicker()">Clear</button></div>
@@ -222,7 +221,7 @@
             return String(val).trim();
         }
         function parseTypeValue(s) {
-            var raw = ((s.Accords || s.Type || '') + '').trim();
+            var raw = ((s.Accords || '') + '').trim();
             return emptyCell(raw) ? '' : raw;
         }
         function parseMainAccords(s) {
@@ -288,7 +287,7 @@
         function updatePickerButtons() {
             var tb = document.getElementById('type-picker-btn');
             var ab = document.getElementById('accord-picker-btn');
-            tb.textContent = selectedType ? ('Type: ' + selectedType) : 'Type';
+            tb.textContent = selectedType ? ('Accords: ' + selectedType) : 'Accords';
             tb.classList.toggle('active', !!selectedType);
             ab.textContent = selectedAccords.length ? ('Main Accords (' + selectedAccords.length + ')') : 'Main Accords';
             ab.classList.toggle('active', selectedAccords.length > 0);
@@ -344,7 +343,7 @@
         }
         function matchesSearch(s, term) {
             if (!term) return true;
-            var text = [s.House, s.Name, s.Perfumer, s.Notes, s.Comment, s.Genre, s.Attribute, s.Accords, s.MainAccords].filter(Boolean).join(' ').toLowerCase();
+            var text = [s.House, s.Name, s.Perfumer, s.Notes, s.Comment, s.Genre, s.Type || s.Attribute, s.Accords, s.MainAccords].filter(Boolean).join(' ').toLowerCase();
             return term.split(/\s+/).every(function(w){ return !w || text.indexOf(w) !== -1; });
         }
         function updateTotal() {
@@ -365,7 +364,6 @@
             var html = '';
             for (var i = 0; i < data.length; i++) {
                 var s = data[i];
-                var link = (s.FragranticaLink && s.FragranticaLink.indexOf('http') === 0) ? '<a href="' + s.FragranticaLink + '" target="_blank" title="Fragrantica">&#128279;</a>' : '';
                 var orig = trades.indexOf(s);
                 var avail = isAvailable(s.Status);
                 html += '<tr data-index="' + orig + '">' +
@@ -373,11 +371,10 @@
                     '<td class="qty-col"><input type="number" min="1" value="1" class="quantity-input" onchange="updateTotal()" ' + (avail ? '' : 'disabled') + '></td>' +
                     '<td class="house-col">' + cleanValue(s.House) + '</td>' +
                     '<td class="name-col"><strong>' + cleanValue(s.Name) + '</strong></td>' +
-                    '<td class="price-col">' + formatPrice(s['5ml']) + '</td>' +
+                    '<td class="price-col">' + formatPrice(s['5ml$'] || s['5ml']) + '</td>' +
                     '<td class="status-col ' + (avail ? 'status-available' : 'status-sold') + '">' + cleanValue(s.Status) + '</td>' +
-                    '<td class="link-col">' + link + '</td>' +
                     '<td class="genre-col">' + cleanValue(s.Genre) + '</td>' +
-                    '<td class="attribute-col">' + cleanValue(s.Attribute) + '</td>' +
+                    '<td class="attribute-col">' + cleanValue(s.Type || s.Attribute) + '</td>' +
                     '<td class="perfumer-col">' + cleanValue(s.Perfumer) + '</td></tr>';
             }
             tbody.innerHTML = html;
