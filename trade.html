@@ -20,10 +20,11 @@
         .clear-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #c9a27a; font-size: 20px; cursor: pointer; min-width: 0; padding: 4px 8px; display: none; }
         button { background: #8a4b1f; color: #fff8ee; border: none; cursor: pointer; font-weight: 700; font-size: 13px; padding: 9px 14px; border-radius: 999px; white-space: nowrap; min-width: 92px; font-family: 'Segoe UI', sans-serif; }
         .sort-wrap { position: relative; display: flex; justify-content: center; margin-bottom: 10px; }
-        #sort-btn { min-width: 200px; background: #3a2416; border: 1px solid #c4843a; }
-        #sort-menu { display: none; position: absolute; top: 44px; left: 50%; transform: translateX(-50%); background: #24180f; border: 1px solid #c4843a; border-radius: 12px; min-width: 200px; z-index: 30; overflow: hidden; }
-        #sort-menu button { display: block; width: 100%; border-radius: 0; background: transparent; text-align: left; min-width: 0; }
-        #sort-menu button.on { background: #3a2416; color: #f0c27a; }
+        #sort-btn, #picker-btn { min-width: 200px; background: #3a2416; border: 1px solid #c4843a; }
+        #sort-menu, #picker-menu { display: none; position: absolute; top: 44px; left: 50%; transform: translateX(-50%); background: #24180f; border: 1px solid #c4843a; border-radius: 12px; min-width: 200px; z-index: 30; overflow: hidden; }
+        #sort-menu button, #picker-menu button { display: block; width: 100%; border-radius: 0; background: transparent; text-align: left; min-width: 0; }
+        #sort-menu button.on, #picker-menu button.on { background: #3a2416; color: #f0c27a; }
+        .bottom-actions { display: flex; justify-content: center; gap: 10px; padding: 8px 12px 18px; }
         .startover-btn { background: #b45309 !important; }
         .export-btn { background: #3f6b3a !important; }
         .table-wrapper { padding: 0 12px 16px; overflow-x: auto; max-height: 72vh; overflow-y: auto; }
@@ -71,7 +72,7 @@
         .picker-row { width: 100%; display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin: 4px 0 6px; }
         #type-picker-btn { background: #0f766e !important; }
         #accord-picker-btn { background: #6d28d9 !important; }
-        .picker-btn.active { outline: 2px solid #f0c27a; }
+        #picker-btn.active { outline: 2px solid #f0c27a; }
         #type-picker-modal, #accord-picker-modal { display: none; position: fixed; inset: 0; background: rgba(10,6,4,0.94); z-index: 1300; align-items: center; justify-content: center; padding: 15px; }
         .picker-box { background: #24180f; padding: 22px 16px; border-radius: 16px; max-width: 460px; width: 100%; max-height: 82vh; overflow-y: auto; border: 1px solid #c4843a; text-align: center; }
         .picker-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 12px 0 16px; }
@@ -111,13 +112,16 @@
                 <button type="button" data-sort="new" onclick="pickSort('new')">New</button>
             </div>
         </div>
-        <div class="control-row">
+        <div class="sort-wrap">
+            <button type="button" id="picker-btn" onclick="togglePickerMenu()">Picker</button>
+            <div id="picker-menu">
+                <button type="button" id="type-picker-btn" onclick="openTypePicker()">Accords</button>
+                <button type="button" id="accord-picker-btn" onclick="openAccordPicker()">Main Accords</button>
+            </div>
+        </div>
+        <div class="bottom-actions">
             <button onclick="startOver()" class="startover-btn">Start Over</button>
             <button onclick="showSelectionModal()" class="export-btn">Total</button>
-        </div>
-        <div class="picker-row">
-            <button type="button" id="type-picker-btn" class="picker-btn" onclick="openTypePicker()">Accords</button>
-            <button type="button" id="accord-picker-btn" class="picker-btn" onclick="openAccordPicker()">Main Accords</button>
         </div>
     </div>
 
@@ -299,6 +303,11 @@
             tb.classList.toggle('active', !!selectedType);
             ab.textContent = selectedAccords.length ? ('Main Accords (' + selectedAccords.length + ')') : 'Main Accords';
             ab.classList.toggle('active', selectedAccords.length > 0);
+            var pb = document.getElementById('picker-btn');
+            if (selectedType && selectedAccords.length) pb.textContent = 'Picker · 2';
+            else if (selectedType || selectedAccords.length) pb.textContent = 'Picker · 1';
+            else pb.textContent = 'Picker';
+            pb.classList.toggle('active', !!(selectedType || selectedAccords.length));
         }
         function openTypePicker() {
             var types = uniqueTypes();
@@ -307,6 +316,7 @@
                 var on = selectedType && selectedType.toLowerCase() === tp.toLowerCase() ? ' on' : '';
                 return '<button type="button" class="picker-pill' + on + '" data-type="' + tp.replace(/"/g,'"') + '" style="background:' + accordColor(tp.split(/[-/]/)[0]) + ';">' + tp + '</button>';
             }).join('') : '<p style="color:#c9a27a;">No types in this list yet.</p>';
+            document.getElementById('picker-menu').style.display = 'none';
             document.getElementById('type-picker-modal').style.display = 'flex';
         }
         function openAccordPicker() {
@@ -317,6 +327,7 @@
                 var on = accordDraft.indexOf(a.toLowerCase()) !== -1 ? ' on' : '';
                 return '<button type="button" class="picker-pill' + on + '" data-accord="' + a.replace(/"/g,'"') + '" style="background:' + accordColor(a) + ';">' + a + '</button>';
             }).join('') : '<p style="color:#c9a27a;">No main accords in this list yet.</p>';
+            document.getElementById('picker-menu').style.display = 'none';
             document.getElementById('accord-picker-modal').style.display = 'flex';
         }
         function closeTypePicker() { document.getElementById('type-picker-modal').style.display = 'none'; }
@@ -491,9 +502,17 @@
             navigator.clipboard.writeText(text.trim());
             showToast('Copied');
         }
+        function togglePickerMenu() {
+            var menu = document.getElementById('picker-menu');
+            var open = menu.style.display === 'block';
+            document.getElementById('sort-menu').style.display = 'none';
+            menu.style.display = open ? 'none' : 'block';
+        }
         function toggleSortMenu() {
             var menu = document.getElementById('sort-menu');
-            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            var open = menu.style.display === 'block';
+            document.getElementById('picker-menu').style.display = 'none';
+            menu.style.display = open ? 'none' : 'block';
         }
         function updateSortButton() {
             var labels = { house:'House', name:'Name', price:'5ml$', status:'Status', genre:'Genre', type:'Type', perfumer:'Perfumer', new:'New' };
@@ -564,7 +583,10 @@
         document.getElementById('type-picker-modal').addEventListener('click', function(e){ if (e.target.id === 'type-picker-modal') closeTypePicker(); });
         document.getElementById('accord-picker-modal').addEventListener('click', function(e){ if (e.target.id === 'accord-picker-modal') closeAccordPicker(); });
         document.addEventListener('click', function(e) {
-            if (!e.target.closest('.sort-wrap')) document.getElementById('sort-menu').style.display = 'none';
+            if (!e.target.closest('.sort-wrap')) {
+                document.getElementById('sort-menu').style.display = 'none';
+                document.getElementById('picker-menu').style.display = 'none';
+            }
         });
         updatePickerButtons();
         loadTrades();
