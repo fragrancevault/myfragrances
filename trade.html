@@ -19,6 +19,11 @@
         #search { padding: 10px 40px 10px 12px; font-size: 14px; border-radius: 8px; background: #261911; color: #f3e6d4; border: 1px solid #6b4a2a; width: 100%; font-family: 'Segoe UI', sans-serif; }
         .clear-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #c9a27a; font-size: 20px; cursor: pointer; min-width: 0; padding: 4px 8px; display: none; }
         button { background: #8a4b1f; color: #fff8ee; border: none; cursor: pointer; font-weight: 700; font-size: 13px; padding: 9px 14px; border-radius: 999px; white-space: nowrap; min-width: 92px; font-family: 'Segoe UI', sans-serif; }
+        .sort-wrap { position: relative; display: flex; justify-content: center; margin-bottom: 10px; }
+        #sort-btn { min-width: 200px; background: #3a2416; border: 1px solid #c4843a; }
+        #sort-menu { display: none; position: absolute; top: 44px; left: 50%; transform: translateX(-50%); background: #24180f; border: 1px solid #c4843a; border-radius: 12px; min-width: 200px; z-index: 30; overflow: hidden; }
+        #sort-menu button { display: block; width: 100%; border-radius: 0; background: transparent; text-align: left; min-width: 0; }
+        #sort-menu button.on { background: #3a2416; color: #f0c27a; }
         .startover-btn { background: #b45309 !important; }
         .export-btn { background: #3f6b3a !important; }
         .table-wrapper { padding: 0 12px 16px; overflow-x: auto; max-height: 72vh; overflow-y: auto; }
@@ -93,15 +98,18 @@
             <input type="text" id="search" placeholder="Search house, name, perfumer, notes..." onkeyup="filterTable()">
             <button class="clear-btn" id="clear-search" onclick="clearSearch()">×</button>
         </div>
-        <div class="control-row">
-            <button onclick="sortTable(2)">House</button>
-            <button onclick="sortTable(3)">Name</button>
-            <button onclick="sortTable(4)">5ml$</button>
-            <button onclick="sortTable(5)">Status</button>
-            <button onclick="sortTable(6)">Genre</button>
-            <button onclick="sortTable(7)">Type</button>
-            <button onclick="sortTable(8)">Perfumer</button>
-            <button onclick="sortByNew()">New</button>
+        <div class="sort-wrap">
+            <button type="button" id="sort-btn" onclick="toggleSortMenu()">Sort</button>
+            <div id="sort-menu">
+                <button type="button" data-sort="house" onclick="pickSort('house')">House</button>
+                <button type="button" data-sort="name" onclick="pickSort('name')">Name</button>
+                <button type="button" data-sort="price" onclick="pickSort('price')">5ml$</button>
+                <button type="button" data-sort="status" onclick="pickSort('status')">Status</button>
+                <button type="button" data-sort="genre" onclick="pickSort('genre')">Genre</button>
+                <button type="button" data-sort="type" onclick="pickSort('type')">Type</button>
+                <button type="button" data-sort="perfumer" onclick="pickSort('perfumer')">Perfumer</button>
+                <button type="button" data-sort="new" onclick="pickSort('new')">New</button>
+            </div>
         </div>
         <div class="control-row">
             <button onclick="startOver()" class="startover-btn">Start Over</button>
@@ -119,13 +127,13 @@
                 <tr>
                     <th class="check-col"><input type="checkbox" id="select-all" onchange="toggleSelectAll()"></th>
                     <th class="qty-col">Qty</th>
-                    <th class="house-col" onclick="sortTable(2)">House</th>
-                    <th class="name-col" onclick="sortTable(3)">Name</th>
-                    <th class="price-col" onclick="sortTable(4)">5ml$</th>
-                    <th class="status-col" onclick="sortTable(5)">Status</th>
-                    <th class="genre-col" onclick="sortTable(6)">Genre</th>
-                    <th class="attribute-col" onclick="sortTable(7)">Type</th>
-                    <th class="perfumer-col" onclick="sortTable(8)">Perfumer</th>
+                    <th class="house-col">House</th>
+                    <th class="name-col">Name</th>
+                    <th class="price-col">5ml$</th>
+                    <th class="status-col">Status</th>
+                    <th class="genre-col">Genre</th>
+                    <th class="attribute-col">Type</th>
+                    <th class="perfumer-col">Perfumer</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -202,8 +210,8 @@
     <script>
         var CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRU5S6orMQ6ZMdAkt8lFoFgaSAd9hfM1F9BMipKg1pxxjgxNfIczP5j598EwO8TkqG3yN60u9IjKGrN/pub?gid=1389110265&single=true&output=csv";
         var trades = [];
-        var sortState = {};
-        var newSortAsc = false;
+        var sortKey = '';
+        var sortAsc = true;
         var selectedType = '';
         var selectedAccords = [];
         var accordDraft = [];
@@ -447,13 +455,14 @@
             document.getElementById('search').value = '';
             document.getElementById('clear-search').style.display = 'none';
             document.getElementById('select-all').checked = false;
-            sortState = {};
+            sortKey = '';
+            sortAsc = true;
+            updateSortButton();
             selectedType = '';
             selectedAccords = [];
             accordDraft = [];
             updatePickerButtons();
             renderTable(trades);
-            sortTable(2, true);
             updateFooter();
         }
         function showSelectionModal() {
@@ -482,38 +491,45 @@
             navigator.clipboard.writeText(text.trim());
             showToast('Copied');
         }
-        function sortTable(colIndex, forceInitial) {
-            var tbody = document.querySelector('#trade-table tbody');
-            var rows = Array.from(tbody.querySelectorAll('tr'));
-            if (forceInitial) {
-                rows.sort(function(a,b){
-                    return a.cells[2].textContent.trim().localeCompare(b.cells[2].textContent.trim()) || a.cells[3].textContent.trim().localeCompare(b.cells[3].textContent.trim());
-                });
-            } else {
-                sortState[colIndex] = sortState[colIndex] === undefined ? (colIndex === 4) : !sortState[colIndex];
-                var asc = sortState[colIndex];
-                rows.sort(function(a,b){
-                    var x = a.cells[colIndex].textContent.trim();
-                    var y = b.cells[colIndex].textContent.trim();
-                    var nx = parseFloat(x.replace(/[$,]/g,''));
-                    var ny = parseFloat(y.replace(/[$,]/g,''));
-                    if (!isNaN(nx) && !isNaN(ny)) return asc ? nx - ny : ny - nx;
-                    return asc ? x.localeCompare(y) : y.localeCompare(x);
-                });
-            }
-            rows.forEach(function(row){ tbody.appendChild(row); });
-            updateTotal();
+        function toggleSortMenu() {
+            var menu = document.getElementById('sort-menu');
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
         }
-        function sortByNew() {
-            newSortAsc = !newSortAsc;
+        function updateSortButton() {
+            var labels = { house:'House', name:'Name', price:'5ml$', status:'Status', genre:'Genre', type:'Type', perfumer:'Perfumer', new:'New' };
+            var btn = document.getElementById('sort-btn');
+            btn.textContent = sortKey ? (labels[sortKey] + (sortAsc ? ' ↑' : ' ↓')) : 'Sort';
+            document.querySelectorAll('#sort-menu button').forEach(function(b){
+                b.classList.toggle('on', b.getAttribute('data-sort') === sortKey);
+            });
+        }
+        function pickSort(key) {
+            if (sortKey === key) sortAsc = !sortAsc;
+            else { sortKey = key; sortAsc = key === 'price' || key === 'new' ? false : true; }
+            document.getElementById('sort-menu').style.display = 'none';
+            updateSortButton();
+            applySort();
+        }
+        function applySort() {
+            if (!sortKey) return;
+            var cols = { house:2, name:3, price:4, status:5, genre:6, type:7, perfumer:8 };
             var tbody = document.querySelector('#trade-table tbody');
             var rows = Array.from(tbody.querySelectorAll('tr'));
-            rows.sort(function(a,b){
-                var da = new Date(trades[parseInt(a.getAttribute('data-index'),10)].New || '').getTime() || 0;
-                var db = new Date(trades[parseInt(b.getAttribute('data-index'),10)].New || '').getTime() || 0;
-                return newSortAsc ? da - db : db - da;
+            rows.sort(function(a, b) {
+                if (sortKey === 'new') {
+                    var da = new Date(trades[parseInt(a.getAttribute('data-index'), 10)].New || '').getTime() || 0;
+                    var db = new Date(trades[parseInt(b.getAttribute('data-index'), 10)].New || '').getTime() || 0;
+                    return sortAsc ? da - db : db - da;
+                }
+                var x = a.cells[cols[sortKey]].textContent.trim();
+                var y = b.cells[cols[sortKey]].textContent.trim();
+                var nx = parseFloat(x.replace(/[$,]/g, ''));
+                var ny = parseFloat(y.replace(/[$,]/g, ''));
+                if (!isNaN(nx) && !isNaN(ny) && x !== 'N/A' && y !== 'N/A') return sortAsc ? nx - ny : ny - nx;
+                return sortAsc ? x.localeCompare(y) : y.localeCompare(x);
             });
             rows.forEach(function(row){ tbody.appendChild(row); });
+            updateTotal();
         }
         function loadTrades() {
             Papa.parse(CSV + '&t=' + Date.now(), {
@@ -526,7 +542,6 @@
                         return row;
                     });
                     renderTable(trades);
-                    sortTable(2, true);
                     updateFooter();
                 },
                 error: function() {
@@ -548,6 +563,9 @@
         });
         document.getElementById('type-picker-modal').addEventListener('click', function(e){ if (e.target.id === 'type-picker-modal') closeTypePicker(); });
         document.getElementById('accord-picker-modal').addEventListener('click', function(e){ if (e.target.id === 'accord-picker-modal') closeAccordPicker(); });
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.sort-wrap')) document.getElementById('sort-menu').style.display = 'none';
+        });
         updatePickerButtons();
         loadTrades();
     </script>
