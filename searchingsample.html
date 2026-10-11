@@ -30,12 +30,21 @@
         td { font-size: 13px; }
         th { background: #1a1a1a; color: #fff; position: sticky; top: 0; z-index: 10; font-size: 13px; text-align: left; }
         /* ===== COLUMN WIDTHS — tune these ===== */
-        .house-col { width: 120px; }
-        .name-col  { width: 180px; }
-        .genre-col { width: 80px; }
-        .notes-col { width: 220px; }
-        .link-col, .purchase-col { width: 90px; text-align: center; }
+        .house-col    { width: 120px; }
+        .name-col     { width: 180px; }
+        .genre-col    { width: 80px; }
+        .priority-col { width: 90px; }
+        .notes-col    { width: 220px; }
+        .link-col     { width: 70px; text-align: center; }
+        .purchase-col { width: 90px; text-align: center; }
         /* ====================================== */
+
+        .pill-row { width: 100%; display: flex; justify-content: center; margin: 6px 0; }
+        #sort-btn, #genre-btn { min-width: 180px; }
+        .pill-wrap { position: relative; }
+        #sort-menu, #genre-menu { display: none; position: absolute; top: 42px; left: 50%; transform: translateX(-50%); background: #1a1a1a; border: 1px solid #444; border-radius: 12px; min-width: 180px; z-index: 40; max-height: 50vh; overflow-y: auto; }
+        #sort-menu button, #genre-menu button { display: block; width: 100%; border-radius: 0; background: transparent; text-align: left; min-width: 0; }
+        #sort-menu button.on, #genre-menu button.on { background: #0066cc; color: #fff; }
         .icon-link { font-size: 1.45rem; text-decoration: none; }
         .icon-link:hover { color: #a5d6ff; }
         .toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: #22c55e; color: white; padding: 12px 24px; border-radius: 8px; font-weight: 600; font-size: 14px; z-index: 3000; box-shadow: 0 4px 12px rgba(0,0,0,0.5); display: none; }
@@ -76,10 +85,23 @@
     
     <div class="controls">
         <input type="text" id="search" placeholder="Search House, Name, Notes..." onkeyup="filterTable()">
-        <div id="genre-filters"></div>
-        <button onclick="sortTable(0)">House</button>
-        <button onclick="sortTable(1)">Name</button>
-        <button onclick="sortTable(2)">Genre</button>
+        <div class="pill-row">
+            <div class="pill-wrap">
+                <button type="button" id="sort-btn" onclick="toggleSortMenu()">Sort</button>
+                <div id="sort-menu">
+                    <button type="button" data-sort="house" onclick="pickSort('house')">House</button>
+                    <button type="button" data-sort="name" onclick="pickSort('name')">Name</button>
+                    <button type="button" data-sort="genre" onclick="pickSort('genre')">Genre</button>
+                    <button type="button" data-sort="priority" onclick="pickSort('priority')">Priority</button>
+                </div>
+            </div>
+        </div>
+        <div class="pill-row">
+            <div class="pill-wrap">
+                <button type="button" id="genre-btn" onclick="toggleGenreMenu()">Genre</button>
+                <div id="genre-menu"></div>
+            </div>
+        </div>
         <button onclick="startOver()" class="startover-btn">Start Over</button>
         <button onclick="exportToCSV()" class="export-btn">Export To CSV</button>
     </div>
@@ -88,9 +110,10 @@
         <table id="fragrance-table">
             <thead>
                 <tr>
-                    <th onclick="sortTable(0)" class="house-col">House</th>
-                    <th onclick="sortTable(1)" class="name-col">Name</th>
-                    <th onclick="sortTable(2)" class="genre-col">Genre</th>
+                    <th class="house-col">House</th>
+                    <th class="name-col">Name</th>
+                    <th class="genre-col">Genre</th>
+                    <th class="priority-col">Priority</th>
                     <th class="notes-col">Notes</th>
                     <th class="link-col">Link</th>
                     <th class="purchase-col">Purchase</th>
@@ -260,6 +283,7 @@
                     '<td class="house-col">' + cleanValue(f.House) + '</td>' +
                     '<td class="name-col"><strong>' + cleanValue(f.Name) + '</strong></td>' +
                     '<td class="genre-col">' + cleanValue(f.Genre) + '</td>' +
+                    '<td class="priority-col">' + cleanValue(f.Priority) + '</td>' +
                     '<td class="notes-col">' + cleanValue(f.Notes) + '</td>' +
                     '<td class="link-col">' + linkHTML + '</td>' +
                     '<td class="purchase-col">' + purchaseHTML + '</td>' +
@@ -274,6 +298,58 @@
             });
         }
 
+        var sortKey = '';
+        var sortAsc = true;
+        function toggleSortMenu() {
+            var menu = document.getElementById('sort-menu');
+            var open = menu.style.display === 'block';
+            document.getElementById('genre-menu').style.display = 'none';
+            menu.style.display = open ? 'none' : 'block';
+        }
+        function toggleGenreMenu() {
+            var menu = document.getElementById('genre-menu');
+            var open = menu.style.display === 'block';
+            document.getElementById('sort-menu').style.display = 'none';
+            menu.style.display = open ? 'none' : 'block';
+        }
+        function updateSortButton() {
+            var labels = { house:'House', name:'Name', genre:'Genre', priority:'Priority' };
+            document.getElementById('sort-btn').textContent = sortKey ? (labels[sortKey] + (sortAsc ? ' ↑' : ' ↓')) : 'Sort';
+            document.querySelectorAll('#sort-menu button').forEach(function(b){
+                b.classList.toggle('on', b.getAttribute('data-sort') === sortKey);
+            });
+        }
+        function updateGenreButton() {
+            document.getElementById('genre-btn').textContent = currentGenres.size ? ('Genre · ' + currentGenres.size) : 'Genre';
+        }
+        function pickSort(key) {
+            if (sortKey === key) sortAsc = !sortAsc;
+            else { sortKey = key; sortAsc = key === 'priority' ? false : true; }
+            document.getElementById('sort-menu').style.display = 'none';
+            updateSortButton();
+            applySort();
+        }
+        function priorityNum(v) {
+            var m = String(v || '').match(/(\d+)/);
+            return m ? parseInt(m[1], 10) : 999;
+        }
+        function applySort() {
+            if (!sortKey) return;
+            var cols = { house:0, name:1, genre:2, priority:3 };
+            var tbody = document.querySelector('#fragrance-table tbody');
+            var rows = Array.from(tbody.querySelectorAll('tr'));
+            rows.sort(function(a, b) {
+                if (sortKey === 'priority') {
+                    var na = priorityNum(a.cells[3].textContent);
+                    var nb = priorityNum(b.cells[3].textContent);
+                    return sortAsc ? na - nb : nb - na;
+                }
+                var x = a.cells[cols[sortKey]].textContent.trim();
+                var y = b.cells[cols[sortKey]].textContent.trim();
+                return sortAsc ? x.localeCompare(y) : y.localeCompare(x);
+            });
+            rows.forEach(function(row){ tbody.appendChild(row); });
+        }
         function renderGenreButtons() {
             var genres = [];
             var seen = {};
@@ -281,20 +357,24 @@
                 if (f.Genre && !seen[f.Genre]) { seen[f.Genre] = true; genres.push(f.Genre); }
             });
             genres.sort();
-            var container = document.getElementById('genre-filters');
-            container.innerHTML = '<strong>Genres:</strong> ';
+            var container = document.getElementById('genre-menu');
+            container.innerHTML = '';
             genres.forEach(function(g) {
                 var btn = document.createElement('button');
-                btn.className = 'genre-btn';
+                btn.type = 'button';
                 btn.textContent = g;
-                btn.onclick = function() {
+                if (currentGenres.has(g)) btn.classList.add('on');
+                btn.onclick = function(e) {
+                    e.stopPropagation();
                     if (currentGenres.has(g)) currentGenres.delete(g);
                     else currentGenres.add(g);
-                    btn.classList.toggle('active');
+                    btn.classList.toggle('on');
+                    updateGenreButton();
                     filterTable();
                 };
                 container.appendChild(btn);
             });
+            updateGenreButton();
         }
 
         function filterTable() {
@@ -316,8 +396,11 @@
         function startOver() {
             currentGenres.clear();
             document.getElementById('search').value = '';
-            document.querySelectorAll('.genre-btn').forEach(function(btn) { btn.classList.remove('active'); });
-            sortState = {};
+            sortKey = '';
+            sortAsc = true;
+            updateSortButton();
+            updateGenreButton();
+            renderGenreButtons();
             renderTable(fragrances);
             updateFooter();
             updateUrl();
@@ -326,7 +409,7 @@
         function exportToCSV() {
             var rows = Array.from(document.querySelectorAll('#fragrance-table tbody tr'));
             if (rows.length === 0) return alert('No data to export!');
-            var csv = 'House,Name,Genre,Notes,Link,Purchase\n';
+            var csv = 'House,Name,Genre,Priority,Notes,Link,Purchase\n';
             rows.forEach(function(row) {
                 var cells = Array.from(row.cells).map(function(cell) {
                     return '"' + cell.textContent.trim().replace(/"/g, '""') + '"';
@@ -340,23 +423,17 @@
             link.click();
         }
 
-        function sortTable(colIndex) {
-            var tbody = document.querySelector('#fragrance-table tbody');
-            var rows = Array.from(tbody.querySelectorAll('tr'));
-            if (sortState[colIndex] === undefined) sortState[colIndex] = true;
-            else sortState[colIndex] = !sortState[colIndex];
-            var ascending = sortState[colIndex];
-            rows.sort(function(a, b) {
-                var x = a.cells[colIndex].textContent.trim();
-                var y = b.cells[colIndex].textContent.trim();
-                return ascending ? x.localeCompare(y) : y.localeCompare(x);
-            });
-            rows.forEach(function(row) { tbody.appendChild(row); });
-        }
+
 
         function toggleMenu() { document.getElementById('menu').classList.toggle('active'); }
         document.addEventListener('click', function(e) {
             if (!e.target.closest('.nav')) document.getElementById('menu').classList.remove('active');
+            if (!e.target.closest('.pill-wrap')) {
+                var sm = document.getElementById('sort-menu');
+                var gm = document.getElementById('genre-menu');
+                if (sm) sm.style.display = 'none';
+                if (gm) gm.style.display = 'none';
+            }
         });
         document.getElementById('modal').addEventListener('click', function(e) {
             if (e.target.id === 'modal') closeModal();

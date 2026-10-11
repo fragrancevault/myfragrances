@@ -145,6 +145,13 @@
         }
         .export-btn { background: #15803d !important; }
 
+
+        .pill-row { width: 100%; display: flex; justify-content: center; margin: 6px 0; }
+        #sort-btn, #genre-btn { min-width: 180px; border-radius: 999px; }
+        .pill-wrap { position: relative; }
+        #sort-menu, #genre-menu { display: none; position: absolute; top: 44px; left: 50%; transform: translateX(-50%); background: #1a1a1a; border: 1px solid #444; border-radius: 12px; min-width: 180px; z-index: 40; max-height: 50vh; overflow-y: auto; }
+        #sort-menu button, #genre-menu button { display: block; width: 100%; border-radius: 0; background: transparent; text-align: left; }
+        #sort-menu button.on, #genre-menu button.on { background: #0066cc; color: #fff; }
         .inspiration-toggle {
             background: #0066cc;
             color: white;
@@ -327,7 +334,22 @@
             </select>
         </div>
         
-        <div id="genre-filters"></div>
+        <div class="pill-row">
+            <div class="pill-wrap">
+                <button type="button" id="sort-btn" onclick="toggleSortMenu()">Sort</button>
+                <div id="sort-menu">
+                    <button type="button" data-sort="house" onclick="pickSort('house')">House</button>
+                    <button type="button" data-sort="name" onclick="pickSort('name')">Name</button>
+                    <button type="button" data-sort="rating" onclick="pickSort('rating')">Rating</button>
+                </div>
+            </div>
+        </div>
+        <div class="pill-row">
+            <div class="pill-wrap">
+                <button type="button" id="genre-btn" onclick="toggleGenreMenu()">Genre</button>
+                <div id="genre-menu"></div>
+            </div>
+        </div>
 
         <button onclick="startOver()" class="startover-btn">Start Over</button>
         <button onclick="showTop10()" id="top10-btn" class="top10-btn">Top 10</button>
@@ -696,26 +718,72 @@
             }
         }
 
+        let sortKey = '';
+        let sortAsc = true;
+        function toggleSortMenu() {
+            const menu = document.getElementById('sort-menu');
+            const open = menu.style.display === 'block';
+            document.getElementById('genre-menu').style.display = 'none';
+            menu.style.display = open ? 'none' : 'block';
+        }
+        function toggleGenreMenu() {
+            const menu = document.getElementById('genre-menu');
+            const open = menu.style.display === 'block';
+            document.getElementById('sort-menu').style.display = 'none';
+            menu.style.display = open ? 'none' : 'block';
+        }
+        function updateSortButton() {
+            const labels = { house:'House', name:'Name', rating:'Rating' };
+            document.getElementById('sort-btn').textContent = sortKey ? (labels[sortKey] + (sortAsc ? ' ↑' : ' ↓')) : 'Sort';
+            document.querySelectorAll('#sort-menu button').forEach(function(b){
+                b.classList.toggle('on', b.getAttribute('data-sort') === sortKey);
+            });
+        }
+        function updateGenreButton() {
+            document.getElementById('genre-btn').textContent = currentFilter === 'All' ? 'Genre' : ('Genre: ' + currentFilter);
+        }
+        function pickSort(key) {
+            if (sortKey === key) sortAsc = !sortAsc;
+            else { sortKey = key; sortAsc = key === 'rating' ? false : true; }
+            document.getElementById('sort-menu').style.display = 'none';
+            updateSortButton();
+            applySort();
+        }
+        function applySort() {
+            if (!sortKey) return;
+            const cols = { house:0, name:1, rating:2 };
+            const tbody = document.querySelector('#fragrance-table tbody');
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            rows.sort(function(a, b) {
+                const x = a.cells[cols[sortKey]].textContent.trim();
+                const y = b.cells[cols[sortKey]].textContent.trim();
+                const nx = parseFloat(x), ny = parseFloat(y);
+                if (!isNaN(nx) && !isNaN(ny)) return sortAsc ? nx - ny : ny - nx;
+                return sortAsc ? x.localeCompare(y) : y.localeCompare(x);
+            });
+            rows.forEach(function(row){ tbody.appendChild(row); });
+        }
         function renderGenreButtons() {
-            const genres = ['All', ...new Set(fragrances.map(f => f.Genre).filter(Boolean))].sort();
-            const container = document.getElementById('genre-filters');
+            const genres = [...new Set(fragrances.map(f => f.Genre).filter(Boolean))].sort();
+            const container = document.getElementById('genre-menu');
             container.innerHTML = '';
-            
             genres.forEach(g => {
                 const btn = document.createElement('button');
-                btn.className = 'genre-btn';
+                btn.type = 'button';
                 btn.textContent = g;
-                if (g === currentFilter) btn.classList.add('active');
-                
-                btn.onclick = () => {
-                    document.querySelectorAll('.genre-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    currentFilter = g;
+                if (g === currentFilter) btn.classList.add('on');
+                btn.onclick = function(e) {
+                    e.stopPropagation();
+                    currentFilter = (currentFilter === g) ? 'All' : g;
+                    document.getElementById('genre-menu').style.display = 'none';
+                    updateGenreButton();
                     applyFilters();
                     updateUrl();
+                    renderGenreButtons();
                 };
                 container.appendChild(btn);
             });
+            updateGenreButton();
         }
 
         function renderTable(data) {
@@ -836,10 +904,14 @@
         function startOver() {
             currentFilter = 'All';
             document.getElementById('season-filter').value = 'Everything';
-            document.querySelectorAll('.genre-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('top10-btn').classList.remove('active');
             isTop10Active = false;
             inspirationFilter = 0;
+            sortKey = '';
+            sortAsc = true;
+            updateSortButton();
+            updateGenreButton();
+            renderGenreButtons();
             updateInspirationButton();
             
             applyFilters();
@@ -892,6 +964,12 @@
         document.addEventListener('click', function(e) {
             if (!e.target.closest('.nav')) {
                 document.getElementById('menu').classList.remove('active');
+            }
+            if (!e.target.closest('.pill-wrap')) {
+                const sm = document.getElementById('sort-menu');
+                const gm = document.getElementById('genre-menu');
+                if (sm) sm.style.display = 'none';
+                if (gm) gm.style.display = 'none';
             }
         });
 

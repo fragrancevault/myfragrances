@@ -153,6 +153,13 @@
             color: #7c3aed; 
         }
 
+
+        .pill-row { width: 100%; display: flex; justify-content: center; margin: 6px 0; }
+        #sort-btn, #genre-btn { min-width: 180px; }
+        .pill-wrap { position: relative; }
+        #sort-menu, #genre-menu { display: none; position: absolute; top: 44px; left: 50%; transform: translateX(-50%); background: #1a1a1a; border: 1px solid #444; border-radius: 12px; min-width: 180px; z-index: 40; max-height: 50vh; overflow-y: auto; }
+        #sort-menu button, #genre-menu button { display: block; width: 100%; border-radius: 0; background: transparent; text-align: left; min-width: 0; }
+        #sort-menu button.on, #genre-menu button.on { background: #0066cc; color: #fff; }
         .inspiration-toggle {
             background: #0066cc;
             color: white;
@@ -383,7 +390,29 @@
             <input type="text" id="search" placeholder="Search House, Name, Perfumer..." onkeyup="filterTable()">
             <button class="clear-btn" id="clear-search" onclick="clearSearch()" aria-label="Clear search">×</button>
         </div>
-        <div id="genre-filters"></div>
+        <div class="pill-row">
+            <div class="pill-wrap">
+                <button type="button" id="sort-btn" onclick="toggleSortMenu()">Sort</button>
+                <div id="sort-menu">
+                    <button type="button" data-sort="0" onclick="pickSort(0)">House</button>
+                    <button type="button" data-sort="1" onclick="pickSort(1)">Name</button>
+                    <button type="button" data-sort="2" onclick="pickSort(2)">Rating</button>
+                    <button type="button" data-sort="3" onclick="pickSort(3)">Hours</button>
+                    <button type="button" data-sort="4" onclick="pickSort(4)">Silliage</button>
+                    <button type="button" data-sort="5" onclick="pickSort(5)">Genre</button>
+                    <button type="button" data-sort="6" onclick="pickSort(6)">Perfumer</button>
+                    <button type="button" data-sort="7" onclick="pickSort(7)">Parfumo</button>
+                    <button type="button" data-sort="8" onclick="pickSort(8)">Season</button>
+                    <button type="button" data-sort="9" onclick="pickSort(9)">ml</button>
+                </div>
+            </div>
+        </div>
+        <div class="pill-row">
+            <div class="pill-wrap">
+                <button type="button" id="genre-btn" onclick="toggleGenreMenu()">Genre</button>
+                <div id="genre-menu"></div>
+            </div>
+        </div>
 
         <div class="season-controls">
             <select id="season-filter" onchange="filterTable()">
@@ -411,15 +440,6 @@
             </select>
         </div>
         
-        <button onclick="sortTable(0)">House</button>
-        <button onclick="sortTable(1)">Name</button>
-        <button onclick="sortTable(2)">Rating</button>
-        <button onclick="sortTable(3)">Hours</button>
-        <button onclick="sortTable(4)">Silliage</button>
-        <button onclick="sortTable(6)">Perfumer</button>
-        <button onclick="sortTable(7)">Parfumo</button>
-        <button onclick="sortTable(9)" class="ml-btn">ml</button>
-
         <button onclick="startOver()" class="startover-btn">Start Over</button>
         <button onclick="showTop10()" id="top10-btn" class="top10-btn">Top 10</button>
         <button onclick="exportToCSV()" class="export-btn">Export To CSV</button>
@@ -432,7 +452,7 @@
         <table id="fragrance-table">
             <thead>
                 <tr>
-                    <th onclick="sortTable(0)" class="house-col">House</th>
+                    <th data-old="sortTable(0)" class="house-col">House</th>
                     <th onclick="sortTable(1)" class="name-col">Name</th>
                     <th onclick="sortTable(2)" class="rating-col">Rating</th>
                     <th onclick="sortTable(3)" class="hours-col">Hours</th>
@@ -1036,16 +1056,13 @@
                         applyUrlParams();
                         toggleClearButton();
                         
-                        document.querySelectorAll('.genre-btn').forEach(btn => {
-                            if (currentGenres.has(btn.textContent.trim())) {
-                                btn.classList.add('active');
-                            }
-                        });
+                        renderGenreButtons();
 
                         filterTable();
 
                         if (currentSortCol !== null) {
                             sortTable(currentSortCol, true);
+                            updateSortButton();
                         }
                     }
                 });
@@ -1107,22 +1124,58 @@
             });
         }
 
+        const sortLabels = {0:'House',1:'Name',2:'Rating',3:'Hours',4:'Silliage',5:'Genre',6:'Perfumer',7:'Parfumo',8:'Season',9:'ml'};
+        function toggleSortMenu() {
+            const menu = document.getElementById('sort-menu');
+            const open = menu.style.display === 'block';
+            document.getElementById('genre-menu').style.display = 'none';
+            menu.style.display = open ? 'none' : 'block';
+        }
+        function toggleGenreMenu() {
+            const menu = document.getElementById('genre-menu');
+            const open = menu.style.display === 'block';
+            document.getElementById('sort-menu').style.display = 'none';
+            menu.style.display = open ? 'none' : 'block';
+        }
+        function updateSortButton() {
+            const btn = document.getElementById('sort-btn');
+            if (currentSortCol === null) btn.textContent = 'Sort';
+            else {
+                const asc = !!sortState[currentSortCol];
+                btn.textContent = sortLabels[currentSortCol] + (asc ? ' ↑' : ' ↓');
+            }
+            document.querySelectorAll('#sort-menu button').forEach(function(b){
+                b.classList.toggle('on', parseInt(b.getAttribute('data-sort'), 10) === currentSortCol);
+            });
+        }
+        function updateGenreButton() {
+            document.getElementById('genre-btn').textContent = currentGenres.size ? ('Genre · ' + currentGenres.size) : 'Genre';
+        }
+        function pickSort(col) {
+            document.getElementById('sort-menu').style.display = 'none';
+            sortTable(col);
+            updateSortButton();
+        }
         function renderGenreButtons() {
             const genres = [...new Set(fragrances.map(f => f.Genre).filter(Boolean))].sort();
-            const container = document.getElementById('genre-filters');
-            container.innerHTML = '<strong>Genres:</strong> ';
+            const container = document.getElementById('genre-menu');
+            container.innerHTML = '';
             genres.forEach(g => {
                 const btn = document.createElement('button');
-                btn.className = 'genre-btn';
+                btn.type = 'button';
                 btn.textContent = g;
-                btn.onclick = () => {
+                if (currentGenres.has(g)) btn.classList.add('on');
+                btn.onclick = function(e) {
+                    e.stopPropagation();
                     if (currentGenres.has(g)) currentGenres.delete(g);
                     else currentGenres.add(g);
-                    btn.classList.toggle('active');
+                    btn.classList.toggle('on');
+                    updateGenreButton();
                     filterTable();
                 };
                 container.appendChild(btn);
             });
+            updateGenreButton();
         }
 
         function filterTable() {
@@ -1233,11 +1286,13 @@
             document.getElementById('search').value = '';
             document.getElementById('season-filter').value = '';
             document.getElementById('rating-filter').value = '';
-            document.querySelectorAll('.genre-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById('top10-btn').classList.remove('active');
             isTop10Active = false;
             sortState = {};
             currentSortCol = null;
+            updateSortButton();
+            updateGenreButton();
+            renderGenreButtons();
             inspirationFilter = 0;
             selectedAccords = [];
             pickerDraft = [];
@@ -1372,6 +1427,12 @@
         document.addEventListener('click', function(e) {
             if (!e.target.closest('.nav')) {
                 document.getElementById('menu').classList.remove('active');
+            }
+            if (!e.target.closest('.pill-wrap')) {
+                const sm = document.getElementById('sort-menu');
+                const gm = document.getElementById('genre-menu');
+                if (sm) sm.style.display = 'none';
+                if (gm) gm.style.display = 'none';
             }
         });
 
