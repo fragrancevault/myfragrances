@@ -389,6 +389,7 @@
             updateViewButton();
             filterTable();
         }
+        function matchesType(s) { return !selectedType || parseTypeValue(s).toLowerCase() === selectedType.toLowerCase(); }
         function matchesAccords(s) {
             if (!selectedAccords.length) return true;
             var have = parseMainAccords(s).map(function(a){ return a.toLowerCase(); });
