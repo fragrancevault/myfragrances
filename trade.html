@@ -25,6 +25,9 @@
         #sort-menu button, #picker-menu button { display: block; width: 100%; border-radius: 0; background: transparent; text-align: left; min-width: 0; }
         #sort-menu button.on, #picker-menu button.on { background: #3a2416; color: #f0c27a; }
         .bottom-actions { display: flex; justify-content: center; gap: 10px; padding: 8px 12px 18px; }
+        .view-btn { min-width: 130px; }
+        .view-btn.soon { background: #eab308 !important; color: #1f2937 !important; }
+        .view-btn.avail { background: #15803d !important; color: #fff !important; }
         .startover-btn { background: #b45309 !important; }
         .export-btn { background: #3f6b3a !important; }
         .table-wrapper { padding: 0 12px 16px; overflow-x: auto; max-height: 72vh; overflow-y: auto; }
@@ -121,6 +124,7 @@
         </div>
         <div class="bottom-actions">
             <button onclick="startOver()" class="startover-btn">Start Over</button>
+            <button type="button" id="view-btn" class="view-btn soon" onclick="toggleView()">Coming Soon</button>
             <button onclick="showSelectionModal()" class="export-btn">Total</button>
         </div>
     </div>
@@ -170,7 +174,8 @@
             <div style="text-align:right;"><button onclick="closeHelpModal()" class="close-btn">Close</button></div>
             <h2 style="text-align:center;color:#f0c27a;">How to trade</h2>
             <ul>
-                <li>Search and sort the decant list.</li>
+                <li>Search and sort the current view.</li>
+                <li>Coming Soon switches to upcoming decants. Available switches back.</li>
                 <li>Check available bottles and set quantity.</li>
                 <li>Total copies a paste-ready list.</li>
                 <li>Tap a row for notes, accords, and links.</li>
@@ -218,6 +223,7 @@
         var trades = [];
         var sortKey = '';
         var sortAsc = true;
+        var viewMode = 'available'; // 'available' or 'soon'
         var selectedType = '';
         var selectedAccords = [];
         var accordDraft = [];
@@ -290,12 +296,12 @@
         }
         function uniqueTypes() {
             var set = {};
-            trades.forEach(function(s){ var t = parseTypeValue(s); if (t) set[t] = true; });
+            trades.forEach(function(s){ if (!matchesView(s)) return; var t = parseTypeValue(s); if (t) set[t] = true; });
             return Object.keys(set).sort(function(a,b){ return a.toLowerCase().localeCompare(b.toLowerCase()); });
         }
         function uniqueMains() {
             var set = {};
-            trades.forEach(function(s){ parseMainAccords(s).forEach(function(a){ set[a.toLowerCase()] = a; }); });
+            trades.forEach(function(s){ if (!matchesView(s)) return; parseMainAccords(s).forEach(function(a){ set[a.toLowerCase()] = a; }); });
             return Object.keys(set).sort().map(function(k){ return set[k]; });
         }
         function updatePickerButtons() {
@@ -356,7 +362,33 @@
         }
         function clearTypePicker() { selectedType = ''; updatePickerButtons(); closeTypePicker(); filterTable(); }
         function clearAccordPicker() { accordDraft = []; selectedAccords = []; updatePickerButtons(); closeAccordPicker(); filterTable(); }
-        function matchesType(s) { return !selectedType || parseTypeValue(s).toLowerCase() === selectedType.toLowerCase(); }
+        function matchesView(s) {
+            var st = ((s.Status || '') + '').toLowerCase();
+            if (viewMode === 'soon') return st.indexOf('coming') !== -1;
+            return st.indexOf('available') !== -1;
+        }
+        function updateViewButton() {
+            var btn = document.getElementById('view-btn');
+            if (viewMode === 'soon') {
+                btn.textContent = 'Available';
+                btn.className = 'view-btn avail';
+            } else {
+                btn.textContent = 'Coming Soon';
+                btn.className = 'view-btn soon';
+            }
+        }
+        function toggleView() {
+            viewMode = viewMode === 'available' ? 'soon' : 'available';
+            sortKey = '';
+            sortAsc = true;
+            selectedType = '';
+            selectedAccords = [];
+            accordDraft = [];
+            updateSortButton();
+            updatePickerButtons();
+            updateViewButton();
+            filterTable();
+        }
         function matchesAccords(s) {
             if (!selectedAccords.length) return true;
             var have = parseMainAccords(s).map(function(a){ return a.toLowerCase(); });
@@ -452,7 +484,7 @@
             var term = document.getElementById('search').value.toLowerCase().trim();
             document.getElementById('clear-search').style.display = term ? 'block' : 'none';
             var filtered = trades.filter(function(s){
-                return matchesSearch(s, term) && matchesType(s) && matchesAccords(s);
+                return matchesView(s) && matchesSearch(s, term) && matchesType(s) && matchesAccords(s);
             });
             if (selectedAccords.length && !filtered.length) showToast('No decants match those main accords.');
             renderTable(filtered);
@@ -469,13 +501,14 @@
             document.getElementById('select-all').checked = false;
             sortKey = '';
             sortAsc = true;
+            viewMode = 'available';
+            updateViewButton();
             updateSortButton();
             selectedType = '';
             selectedAccords = [];
             accordDraft = [];
             updatePickerButtons();
-            renderTable(trades);
-            updateFooter();
+            filterTable();
         }
         function showSelectionModal() {
             var rows = getSelectedRows();
@@ -561,8 +594,9 @@
                         Object.keys(row).forEach(function(k){ if (typeof row[k] === 'string') row[k] = row[k].trim(); });
                         return row;
                     });
-                    renderTable(trades);
-                    updateFooter();
+                    renderTable(trades.filter(matchesView));
+                    updateFooter(trades.filter(matchesView));
+                    updateViewButton();
                 },
                 error: function() {
                     document.getElementById('footer').textContent = 'Could not load TradeCSV.';
